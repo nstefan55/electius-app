@@ -1,0 +1,288 @@
+// prisma/schema.prisma — Electious Database Schema v2
+// PostgreSQL (Neon serverless) + Prisma ORM 7
+// Connection URLs live in prisma.config.ts (migrations) and the Neon adapter (runtime) — not here.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────── BetterAuth — required models (Prisma adapter) ─────────
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  idToken               String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String? // Email/password provider (BetterAuth built-in)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("accounts")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId]) // List active sessions per admin
+  @@index([expiresAt]) // Cleanup job for expired sessions
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier]) // OTP / magic-link lookup by email
+  @@index([expiresAt]) // Cleanup job for expired verifications
+  @@map("verifications")
+}
+
+// ───────── 1. Organization ─────────
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  logoUrl      String?
+  contactEmail String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  admins    User[]
+  elections Election[]
+
+  @@map("organizations")
+}
+
+// ───────── 2. Admin (BetterAuth User) + freemium / Stripe ─────────
+
+model User {
+  id            String  @id @default(cuid())
+  name          String
+  email         String  @unique
+  emailVerified Boolean @default(false)
+  image         String?
+
+  // Freemium / billing (entitlement foundation — enforcement off during MVP)
+  isPro                Boolean @default(false)
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // BetterAuth relations
+  accounts Account[]
+  sessions Session[]
+
+  // Electious relations
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  elections      Election[]
+
+  @@map("users")
+}
+
+// ───────── 3. Elections ─────────
+
+enum ElectionType {
+  STANDARD
+  POLL
+  SURVEY
+}
+
+enum VotingType {
+  SINGLE_CHOICE
+  MULTI_CHOICE
+}
+
+enum ElectionStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  CLOSED
+  ARCHIVED
+}
+
+enum ResultsMode {
+  AFTER_CLOSE
+  LIVE // Pro only
+}
+
+model Election {
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  electionType ElectionType   @default(STANDARD)
+  votingType   VotingType     @default(SINGLE_CHOICE)
+  status       ElectionStatus @default(DRAFT)
+  startsAt     DateTime
+  endsAt       DateTime
+
+  // Settings (wizard step 4)
+  resultsVisible      Boolean     @default(false) // results shown to voters/public at all
+  resultsMode         ResultsMode @default(AFTER_CLOSE) // LIVE = Pro only
+  allowAbstain        Boolean     @default(false) // abstain option — Pro only
+  quorumThreshold     Int? // null = no quorum; otherwise required turnout %
+  autoCloseOnDeadline Boolean     @default(true) // auto-close at endsAt
+  voterReminder24h    Boolean     @default(false) // email reminder 24h before close
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdById String
+  createdBy   User   @relation(fields: [createdById], references: [id])
+
+  voters  Voter[]
+  options VoteOption[]
+  votes   Vote[]
+  archive Archive?
+
+  @@index([organizationId])
+  @@index([status]) // dashboard filtering by status
+  @@map("elections")
+}
+
+// ───────── 4. Voter ─────────
+
+enum VoterStatus {
+  PENDING // imported, invitation not yet sent (election in DRAFT/SCHEDULED)
+  INVITED // invitation sent, awaiting vote
+  VOTED // voter has voted
+}
+
+model Voter {
+  id        String      @id @default(cuid())
+  email     String
+  firstName String?
+  lastName  String?
+  status    VoterStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+
+  electionId String
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  token VoterToken?
+
+  @@unique([email, electionId]) // one voter, one vote per election
+  @@index([electionId])
+  @@map("voters")
+}
+
+// ───────── 5. Token (no updatedAt — write-once, single `used` flip) ─────────
+
+model VoterToken {
+  id        String   @id @default(cuid())
+  hash      String   @unique // SHA-256(rawToken) — raw token never stored
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  voterId String @unique // 1:1 — one token per voter per election
+  voter   Voter  @relation(fields: [voterId], references: [id], onDelete: Cascade)
+
+  electionId String // denormalized for faster validation
+
+  @@index([electionId])
+  @@map("voter_tokens")
+}
+
+// ───────── 6. Vote — NO voterId / NO relation to Voter ─────────
+
+model Vote {
+  id         String   @id @default(cuid())
+  voteHash   String   @unique // SHA-256(electionId + optionIds + timestamp)
+  batchOrder Int // crypto.randomInt() — prevents timing correlation
+  createdAt  DateTime @default(now())
+
+  electionId String
+  election   Election @relation(fields: [electionId], references: [id])
+
+  options VoteToOption[]
+
+  // voterId / voter relation intentionally absent — anonymity guaranteed at schema level.
+
+  @@index([electionId])
+  @@map("votes")
+}
+
+// ───────── 7. Vote option ─────────
+
+model VoteOption {
+  id         String @id @default(cuid())
+  text       String
+  orderIndex Int
+
+  electionId String
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  votes VoteToOption[]
+
+  @@index([electionId])
+  @@map("vote_options")
+}
+
+// ───────── 7b. Junction table — Vote ↔ VoteOption (M:N) ─────────
+
+model VoteToOption {
+  voteId   String
+  optionId String
+
+  vote   Vote       @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  option VoteOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@id([voteId, optionId])
+  @@map("vote_to_options")
+}
+
+// ───────── 8. Archive — Cloudflare R2 (file + link types), retention cap ─────────
+
+model Archive {
+  id           String @id @default(cuid())
+  merkleRoot   String // Merkle tree root hash (SHA-256 hex)
+  proofData    Json // JSONB: {leaves, tree, root, algorithm, leafOrdering}
+  electionData Json // JSONB: snapshot of election config at archival time
+
+  // Stored artifact — Cloudflare R2 (file type) OR external link (link type)
+  fileUrl  String? // Cloudflare R2 object URL (null if link-only)
+  fileName String? // original filename (null if link)
+  fileSize Int? // bytes (null if link)
+  url      String? // external URL for link-type archives
+
+  expiresAt DateTime? // retention cap — Free: createdAt + 1 year; Pro: null (unlimited)
+  createdAt DateTime  @default(now())
+
+  electionId String   @unique
+  election   Election @relation(fields: [electionId], references: [id])
+
+  @@map("archives")
+}

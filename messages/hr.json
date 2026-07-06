@@ -1,0 +1,126 @@
+{
+  "common": {
+    "language": {
+      "label": "Jezik",
+      "hr": "Hrvatski",
+      "en": "Engleski"
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "nav": {
+        "dashboard": "Nadzorna ploča",
+        "elections": "Izbori",
+        "results": "Rezultati",
+        "archive": "Arhiva",
+        "voters": "Glasači"
+      },
+      "account": {
+        "settings": "Postavke",
+        "logout": "Odjava"
+      },
+      "openMenu": "Otvori navigaciju",
+      "collapse": "Sažmi bočnu traku",
+      "expand": "Proširi bočnu traku"
+    },
+    "topbar": {
+      "home": "Početna",
+      "updatedJustNow": "Ažurirano upravo sada",
+      "notifications": "Obavijesti"
+    },
+    "page": {
+      "title": "Nadzorna ploča",
+      "newElection": "Novi izbor",
+      "footerText": "Glasači se autentificiraju putem jednokratnih magičnih veza. Sustav nikada ne povezuje glasača s njihovim glasom.",
+      "stats": {
+        "activeElections": "Aktivni izbori",
+        "activeElectionsHint": "Trenutno otvoreni za glasovanje",
+        "totalVoters": "Ukupno glasača",
+        "totalVotersHint": "S pravom glasa u svim izborima",
+        "avgTurnout": "Prosj. izlaznost",
+        "avgTurnoutHint": "Prosječna stopa sudjelovanja",
+        "archived": "Arhivirano",
+        "archivedHint": "Završeno i pohranjeno"
+      },
+      "live": {
+        "badge": "Uživo — glasovanje u tijeku",
+        "meta": "{type} · Zatvara se {closes}",
+        "progress": "{voted} od {total} glasača dalo je svoj glas",
+        "turnoutLabel": "izlaznost uživo",
+        "viewResults": "Pogledaj rezultate uživo"
+      },
+      "list": {
+        "title": "Nedavni izbori",
+        "count": "{count, plural, one {# izbor} few {# izbora} other {# izbora}} · {active} aktivnih",
+        "viewAll": "Pogledaj sve",
+        "columns": {
+          "election": "Izbor",
+          "status": "Status",
+          "turnout": "Izlaznost",
+          "window": "Razdoblje glasovanja"
+        },
+        "empty": "Još nema izbora",
+        "emptyHint": "Stvorite svoj prvi izbor za početak."
+      },
+      "actions": {
+        "menuLabel": "Radnje retka",
+        "rename": "Preimenuj",
+        "duplicate": "Dupliciraj",
+        "archive": "Arhiviraj",
+        "delete": "Izbriši",
+        "renamePlaceholder": "Naziv izbora",
+        "deleteTitle": "Izbrisati izbore?",
+        "deleteBody": "Trajno ćete izbrisati {name}. Ovo se ne može poništiti i svi povezani listići bit će uklonjeni.",
+        "cancel": "Odustani",
+        "confirmDelete": "Izbriši izbore",
+        "toast": {
+          "renamed": "Izbori preimenovani",
+          "duplicated": "Izbori duplicirani",
+          "archived": "Izbori arhivirani",
+          "deleted": "Izbori izbrisani",
+          "renameEmpty": "Unesite naziv izbora za nastavak",
+          "error": "Nešto je pošlo po zlu. Pokušajte ponovno."
+        }
+      },
+      "status": {
+        "DRAFT": "Skica",
+        "SCHEDULED": "Zakazan",
+        "ACTIVE": "Aktivan",
+        "CLOSED": "Zatvoren",
+        "ARCHIVED": "Arhiviran"
+      },
+      "charts": {
+        "turnoutTitle": "Izlaznost po izboru",
+        "turnoutSubtitle": "Predani glasovi kao udio glasača s pravom glasa",
+        "turnoutTooltip": "Izlaznost",
+        "statusTitle": "Izbori po statusu",
+        "statusSubtitle": "Svi izbori prema fazi životnog ciklusa"
+      }
+    },
+    "empty": {
+      "title": "Pokrenite svoje prve izbore",
+      "subtitle": "Provedite ankete, upitnike ili standardne izbore — od pozivnica e-poštom do arhiviranih PDF izvještaja. Postavljanje u manje od 5 minuta.",
+      "cta": "Pokreni izbore",
+      "setup": "Za izradu nije potrebna kartica. Plaćate tek kad objavite.",
+      "trust": "Birači se prijavljuju putem jednokratnih magičnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom.",
+      "features": {
+        "invites": {
+          "title": "Pozivnice magičnom poveznicom",
+          "desc": "Šaljite jednokratne sigurne poveznice e-poštom — birači ne trebaju račun."
+        },
+        "qr": {
+          "title": "QR kod pozivnice",
+          "desc": "Generirajte QR kodove koje birači skeniraju za trenutačni pristup listiću."
+        },
+        "reports": {
+          "title": "Arhivirani PDF izvještaji",
+          "desc": "Izvezite potpisani, provjerljivi izvještaj čim glasanje završi."
+        },
+        "trust": {
+          "title": "Anonimno i provjerljivo",
+          "desc": "Glasovi se nikada ne povezuju s biračem, a svaki je glas kriptografski zapečaćen i provjerljiv."
+        }
+      }
+    }
+  }
+}

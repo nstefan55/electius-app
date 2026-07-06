@@ -1,0 +1,126 @@
+{
+  "common": {
+    "language": {
+      "label": "Language",
+      "hr": "Croatian",
+      "en": "English"
+    }
+  },
+  "dashboard": {
+    "sidebar": {
+      "nav": {
+        "dashboard": "Dashboard",
+        "elections": "Elections",
+        "results": "Results",
+        "archive": "Archive",
+        "voters": "Voters"
+      },
+      "account": {
+        "settings": "Settings",
+        "logout": "Log out"
+      },
+      "openMenu": "Open navigation",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    },
+    "topbar": {
+      "home": "Home",
+      "updatedJustNow": "Updated just now",
+      "notifications": "Notifications"
+    },
+    "page": {
+      "title": "Dashboard",
+      "newElection": "New election",
+      "footerText": "Voters authenticate via one-time magic links. The system never associates a voter with their ballot.",
+      "stats": {
+        "activeElections": "Active elections",
+        "activeElectionsHint": "Currently open for voting",
+        "totalVoters": "Total voters",
+        "totalVotersHint": "Eligible across all elections",
+        "avgTurnout": "Avg. turnout",
+        "avgTurnoutHint": "Mean participation rate",
+        "archived": "Archived",
+        "archivedHint": "Completed & stored"
+      },
+      "live": {
+        "badge": "Live — voting now",
+        "meta": "{type} · Closes {closes}",
+        "progress": "{voted} of {total} voters have cast their ballot",
+        "turnoutLabel": "live turnout",
+        "viewResults": "View live results"
+      },
+      "list": {
+        "title": "Recent elections",
+        "count": "{count, plural, one {# election} other {# elections}} · {active} active",
+        "viewAll": "View All",
+        "columns": {
+          "election": "Election",
+          "status": "Status",
+          "turnout": "Turnout",
+          "window": "Voting window"
+        },
+        "empty": "No elections yet",
+        "emptyHint": "Create your first election to get started."
+      },
+      "actions": {
+        "menuLabel": "Row actions",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "archive": "Archive",
+        "delete": "Delete",
+        "renamePlaceholder": "Election name",
+        "deleteTitle": "Delete election?",
+        "deleteBody": "You're about to permanently delete {name}. This can't be undone and any associated ballots are removed.",
+        "cancel": "Cancel",
+        "confirmDelete": "Delete election",
+        "toast": {
+          "renamed": "Election renamed",
+          "duplicated": "Election duplicated",
+          "archived": "Election archived",
+          "deleted": "Election deleted",
+          "renameEmpty": "Enter an election name to continue",
+          "error": "Something went wrong. Please try again."
+        }
+      },
+      "status": {
+        "DRAFT": "Draft",
+        "SCHEDULED": "Scheduled",
+        "ACTIVE": "Active",
+        "CLOSED": "Closed",
+        "ARCHIVED": "Archived"
+      },
+      "charts": {
+        "turnoutTitle": "Turnout by election",
+        "turnoutSubtitle": "Ballots cast as a share of eligible voters",
+        "turnoutTooltip": "Turnout",
+        "statusTitle": "Elections by status",
+        "statusSubtitle": "All elections by lifecycle stage"
+      }
+    },
+    "empty": {
+      "title": "Create your first election",
+      "subtitle": "Run polls, surveys or standard elections — from email invitations to archived PDF reports. Set up in under 5 minutes.",
+      "cta": "Create election",
+      "setup": "No credit card needed to build one. You only pay when you publish.",
+      "trust": "Voters authenticate via one-time magic links. The system never links a voter to their vote.",
+      "features": {
+        "invites": {
+          "title": "Magic-link invitations",
+          "desc": "Send one-time secure links by email — voters need no account."
+        },
+        "qr": {
+          "title": "QR code invites",
+          "desc": "Generate scannable QR codes so voters can open their ballot instantly."
+        },
+        "reports": {
+          "title": "Archived PDF reports",
+          "desc": "Export a signed, auditable report the moment voting closes."
+        },
+        "trust": {
+          "title": "Anonymous & verifiable",
+          "desc": "Ballots are never linked to a voter, and every vote is cryptographically sealed and verifiable."
+        }
+      }
+    }
+  }
+}
