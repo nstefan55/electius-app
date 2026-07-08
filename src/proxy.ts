@@ -1,7 +1,49 @@
 import createMiddleware from "next-intl/middleware";
+import { NextRequest, NextResponse } from "next/server";
 import { routing } from "./i18n/routing";
 
-export default createMiddleware(routing);
+const handleI18n = createMiddleware(routing);
+
+// dashboard.electious.hr serves the admin app at its root. Rewrite ONLY the root
+// "/" → the localized "/dashboard"; every other admin route is already root-level
+// under (app), so it needs no rewrite. Auth is NOT enforced here — the session
+// choke point lives in (app)/layout.tsx (Phase 2 seam). See domain-architecture-spec §6.
+function isDashboardHost(host: string): boolean {
+  return host.split(":")[0].startsWith("dashboard."); // covers dashboard.localhost in dev
+}
+
+// Prefixed (non-default) locale sitting at the front of the path, e.g. "en" in "/en".
+// hr is the default and unprefixed (localePrefix: "as-needed").
+function localePrefix(pathname: string): string | null {
+  const seg = pathname.split("/")[1];
+  return seg !== routing.defaultLocale &&
+    (routing.locales as readonly string[]).includes(seg)
+    ? seg
+    : null;
+}
+
+export default function proxy(request: NextRequest) {
+  const host = request.headers.get("host") ?? "";
+
+  if (isDashboardHost(host)) {
+    const { pathname } = request.nextUrl;
+    const prefix = localePrefix(pathname); // "en" or null (hr/default)
+    const rest = prefix ? pathname.slice(prefix.length + 1) : pathname;
+    if (rest === "" || rest === "/") {
+      // Root of the dashboard host → the dashboard overview, at the resolved locale.
+      // We MUST emit the rewrite ourselves. Delegating to next-intl silently drops it:
+      // for the already-canonical "/en/dashboard" next-intl returns next() (no rewrite),
+      // and next() re-routes the ORIGINAL "/en" → the marketing page. Rewriting straight
+      // to the internal /{locale}/dashboard is locale-correct (the [locale] segment drives
+      // getRequestConfig) and works for both hr and en. See domain-architecture-spec §6.
+      const url = request.nextUrl.clone();
+      url.pathname = `/${prefix ?? routing.defaultLocale}/dashboard`;
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  return handleI18n(request);
+}
 
 export const config = {
   // Skip API routes, Next internals, and any path with a file extension.
