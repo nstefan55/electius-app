@@ -23,11 +23,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { key: "elections", href: "/dashboard/elections", icon: CheckCircle2 },
-  { key: "results", href: "/dashboard/results", icon: BarChart3 },
-  { key: "archive", href: "/dashboard/archive", icon: Archive },
-  { key: "voters", href: "/dashboard/voters", icon: Users },
+  { key: "dashboard", href: "/", icon: LayoutDashboard },
+  { key: "elections", href: "/elections", icon: CheckCircle2 },
+  { key: "results", href: "/results", icon: BarChart3 },
+  { key: "archive", href: "/archive", icon: Archive },
+  { key: "voters", href: "/voters", icon: Users },
 ];
 
 // Avatar initials
@@ -79,7 +79,7 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
           const active =
-            href === "/dashboard"
+            href === "/"
               ? pathname === href
               : pathname.startsWith(href);
           const label = t(`nav.${key}`);
@@ -129,7 +129,7 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
         </div>
 
         <Link
-          href="/dashboard/settings"
+          href="/settings"
           onClick={onNavigate}
           title={collapsed ? t("account.settings") : undefined}
           className={cn(

@@ -13,14 +13,40 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
-import { Link } from "@/i18n/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { Toaster } from "react-hot-toast";
+
+type CrumbKey =
+  | "sidebar.nav.dashboard"
+  | "sidebar.nav.elections"
+  | "sidebar.nav.results"
+  | "sidebar.nav.archive"
+  | "sidebar.nav.voters"
+  | "sidebar.account.settings";
+
+function crumbLabelKey(pathname: string): CrumbKey {
+  for (const key of ["elections", "results", "archive", "voters"] as const) {
+    if (pathname === `/${key}` || pathname.startsWith(`/${key}/`)) {
+      return `sidebar.nav.${key}`;
+    }
+  }
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+    return "sidebar.account.settings";
+  }
+  //TODO: Add support for election details and results pages
+  // if (pathname.startsWith("/elections/" || pathname.startsWith("/results/")) {
+  //   return "sidebar.elections.details";
+  // }
+  // "/" (dashboard root via the host rewrite) or "/dashboard"
+  return "sidebar.nav.dashboard";
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const t = useTranslations("dashboard");
+  const crumbKey = crumbLabelKey(usePathname());
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -79,7 +105,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="font-bold">
-                    {t("sidebar.nav.dashboard")}
+                    {t(crumbKey)}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
