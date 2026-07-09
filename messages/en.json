@@ -202,5 +202,22 @@
         }
       }
     }
+  },
+  "marketing": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "hero": {
+      "title": "Secure electronic voting for organizations",
+      "subtitle": "Prepare, run, and archive elections — no technical knowledge required."
+    }
+  },
+  "voter": {
+    "ballot": {
+      "title": "Ballot",
+      "subtitle": "Placeholder (/vote/[token]). The voting flow ships in a separate spec."
+    },
+    "results": {
+      "subtitle": "Placeholder (/results/[id]). The results display ships in a separate spec."
+    }
   }
 }

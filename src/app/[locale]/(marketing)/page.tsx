@@ -1,29 +1,32 @@
-// Marketing landing stub (apex host). Phase 2 wires only the two auth CTAs; the full
-// landing design/content is Phase 4 (routing-structure-phase-4-spec.md), which also
-// moves these links to the shared src/lib/urls.ts helper (signInUrl/signUpUrl).
-//
-// Cross-host links (apex → dashboard host): plain <a> with the absolute NEXT_PUBLIC_APP_URL,
-// never the locale-aware <Link>, and never a hardcoded host (domain-architecture-spec §5, decision C).
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
+import { useTranslations } from "next-intl";
+import { signInUrl, signUpUrl } from "@/lib/urls";
 
+// Apex landing — owns the real "/" (root-collision: marketing owns /, the dashboard overview
+// stays a real page at /dashboard — domain-architecture-spec §3). SCAFFOLD: hero + the two
+// cross-host CTAs only; full landing copy/visual design is owned by the marketing-landing spec.
+// CTAs are plain <a> built from src/lib/urls.ts (apex → dashboard host), never the same-host <Link>.
 export default function Home() {
+  const t = useTranslations("marketing");
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8 text-center">
-      <h1 className="text-3xl font-bold text-neutral-800">Electious Landing Page</h1>
+    <div className="mx-auto flex max-w-content flex-col items-center justify-center gap-6 px-8 py-24 text-center">
+      <h1 className="font-heading text-4xl font-bold text-neutral-800">
+        {t("hero.title")}
+      </h1>
+      <p className="max-w-xl text-lg text-neutral-600">{t("hero.subtitle")}</p>
       <div className="flex items-center gap-4">
         <a
-          href={`${APP_URL}/login`}
-          className="text-sm font-medium text-brand-700 hover:underline"
+          href={signUpUrl()}
+          className="rounded-md bg-brand-700 px-6 py-3 text-base font-medium text-white hover:bg-brand-600"
         >
-          Sign In
+          {t("signUp")}
         </a>
         <a
-          href={`${APP_URL}/signup`}
-          className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
+          href={signInUrl()}
+          className="text-base font-medium text-brand-700 hover:underline"
         >
-          Sign Up
+          {t("signIn")}
         </a>
       </div>
-    </main>
+    </div>
   );
 }
