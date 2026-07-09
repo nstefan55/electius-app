@@ -6,6 +6,29 @@
       "en": "English"
     }
   },
+  "auth": {
+    "todo": "Reserved — the real screen ships via the separate authentication spec.",
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Sign in to your organization.",
+      "continue": "Continue to dashboard"
+    },
+    "signup": {
+      "title": "Sign up",
+      "subtitle": "Create an account for your organization.",
+      "continue": "Continue to setup"
+    },
+    "setup": {
+      "title": "Profile setup",
+      "subtitle": "Finish your organization details.",
+      "continue": "Continue to onboarding"
+    },
+    "onboarding": {
+      "title": "Onboarding",
+      "subtitle": "See how the system works.",
+      "continue": "Enter dashboard"
+    }
+  },
   "dashboard": {
     "sidebar": {
       "nav": {
