@@ -1,12 +1,21 @@
-// SCAFFOLD (routing Phase 1) — CLOSED-elections list; funneling scaffold is Phase 3
-// (routing-structure-phase-3-spec). Content: election-results-overview spec.
-export default function ResultsListPage() {
+import { getTranslations } from "next-intl/server";
+import { getElectionsByStatus } from "@/lib/db/elections";
+import { ElectionFunnelList } from "@/components/elections/election-funnel-list";
+
+export const dynamic = "force-dynamic";
+
+// CLOSED-elections list — a top-level sidebar section, NOT nested under [id]. Each row
+// funnels into the canonical /elections/[id]/results detail. Rich UI: results-overview spec.
+export default async function ResultsListPage() {
+  const t = await getTranslations("dashboard.election.lists.results");
+  const elections = await getElectionsByStatus("CLOSED");
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-semibold text-neutral-800">Results — scaffold</h1>
-      <p className="mt-1 text-sm text-neutral-600">
-        Placeholder route (/results, admin CLOSED list). List/funnel: Phase 3.
-      </p>
-    </div>
+    <ElectionFunnelList
+      title={t("title")}
+      subtitle={t("subtitle")}
+      empty={t("empty")}
+      elections={elections}
+      hrefFor={(id) => `/elections/${id}/results`}
+    />
   );
 }
