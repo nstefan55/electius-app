@@ -16,8 +16,8 @@ import {
 } from "lucide-react";
 import {
   sortRecent,
+  STATUS_STYLES,
   type DashboardElection,
-  type ElectionStatus,
 } from "@/lib/elections-view";
 import {
   renameElection,
@@ -27,18 +27,6 @@ import {
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-
-// Badge tint + text per status (design-system §7.9)
-const STATUS_STYLES: Record<
-  ElectionStatus,
-  { badge: string; dot: string; bar: string }
-> = {
-  ACTIVE: { badge: "bg-success-50 text-success-700", dot: "bg-status-active", bar: "bg-status-active" },
-  SCHEDULED: { badge: "bg-warning-50 text-warning-700", dot: "bg-status-scheduled", bar: "bg-status-scheduled" },
-  CLOSED: { badge: "bg-error-50 text-error-700", dot: "bg-status-closed", bar: "bg-status-closed" },
-  DRAFT: { badge: "bg-brand-50 text-brand-700", dot: "bg-status-draft", bar: "bg-status-draft" },
-  ARCHIVED: { badge: "bg-neutral-100 text-neutral-600", dot: "bg-status-archived", bar: "bg-status-archived" },
-};
 
 // Shared grid track so the column header and body rows line up
 const GRID = "md:grid-cols-[minmax(0,1fr)_120px_190px_130px_44px]";

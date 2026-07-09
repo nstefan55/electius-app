@@ -144,6 +144,63 @@
           "desc": "Glasovi se nikada ne povezuju s biračem, a svaki je glas kriptografski zapečaćen i provjerljiv."
         }
       }
+    },
+    "election": {
+      "tabs": {
+        "label": "Odjeljci izbora",
+        "overview": "Pregled",
+        "results": "Rezultati",
+        "voters": "Glasači"
+      },
+      "overview": {
+        "scaffoldTag": "Skica sadržaja",
+        "draft": {
+          "heading": "Sažetak postavljanja",
+          "note": "Ovdje će biti sažetak konfiguracije i uređivanje izbora u pripremi. Sadržaj slijedi."
+        },
+        "active": {
+          "heading": "Uživo izlaznost i upravljanje",
+          "note": "Ovdje će biti izlaznost uživo te radnje (podsjetnik, rani završetak). Sadržaj slijedi."
+        },
+        "closed": {
+          "heading": "Zapečaćeni sažetak",
+          "note": "Izbori su zatvoreni ili arhivirani — rezultati su u kartici Rezultati. Sadržaj slijedi."
+        }
+      },
+      "resultsFacet": {
+        "heading": "Rezultati izbora",
+        "note": "Ovdje će biti nadzorna ploča rezultata (grafovi, pobjednik, izvoz PDF/CSV). Sadržaj slijedi."
+      },
+      "votersFacet": {
+        "heading": "Upravljanje glasačima",
+        "note": "Ovdje će biti popis glasača i upravljanje pozivnicama. Sadržaj slijedi."
+      },
+      "lists": {
+        "results": {
+          "title": "Rezultati",
+          "subtitle": "Zatvoreni izbori — odaberite izbor za prikaz rezultata.",
+          "empty": "Još nema zatvorenih izbora."
+        },
+        "archive": {
+          "title": "Arhiva",
+          "subtitle": "Arhivirani izbori — zapečaćeni i pohranjeni.",
+          "empty": "Još nema arhiviranih izbora.",
+          "comingSoon": "{action} — uskoro.",
+          "actions": {
+            "menuLabel": "Radnje",
+            "view": "Prikaži detalje",
+            "exportPdf": "Izvezi PDF",
+            "auditLog": "Zapisnik revizije",
+            "hide": "Sakrij",
+            "delete": "Izbriši"
+          }
+        },
+        "voters": {
+          "title": "Glasači",
+          "subtitle": "Odaberite izbor za upravljanje njegovim glasačima.",
+          "empty": "Još nema izbora."
+        }
+      }
     }
   }
 }

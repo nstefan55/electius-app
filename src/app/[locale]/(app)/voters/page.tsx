@@ -1,12 +1,21 @@
-// SCAFFOLD (routing Phase 1) — elections list → per-election voter management; funneling
-// scaffold is Phase 3 (routing-structure-phase-3-spec). Content: voters spec.
-export default function VotersPage() {
+import { getTranslations } from "next-intl/server";
+import { getElectionsByStatus } from "@/lib/db/elections";
+import { ElectionFunnelList } from "@/components/elections/election-funnel-list";
+
+export const dynamic = "force-dynamic";
+
+// Elections list → "select an election to manage its voters". Top-level sidebar section;
+// each row funnels into /elections/[id]/voters. Rich UI owned by the voters spec.
+export default async function VotersListPage() {
+  const t = await getTranslations("dashboard.election.lists.voters");
+  const elections = await getElectionsByStatus(); // all statuses
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-semibold text-neutral-800">Voters — scaffold</h1>
-      <p className="mt-1 text-sm text-neutral-600">
-        Placeholder route (/voters). Election picker → /elections/[id]/voters: Phase 3.
-      </p>
-    </div>
+    <ElectionFunnelList
+      title={t("title")}
+      subtitle={t("subtitle")}
+      empty={t("empty")}
+      elections={elections}
+      hrefFor={(id) => `/elections/${id}/voters`}
+    />
   );
 }

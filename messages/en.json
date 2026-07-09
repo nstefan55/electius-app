@@ -144,6 +144,63 @@
           "desc": "Ballots are never linked to a voter, and every vote is cryptographically sealed and verifiable."
         }
       }
+    },
+    "election": {
+      "tabs": {
+        "label": "Election sections",
+        "overview": "Overview",
+        "results": "Results",
+        "voters": "Voters"
+      },
+      "overview": {
+        "scaffoldTag": "Content scaffold",
+        "draft": {
+          "heading": "Setup summary",
+          "note": "Setup summary + edit for an election in preparation goes here. Content to follow."
+        },
+        "active": {
+          "heading": "Live turnout & management",
+          "note": "Live turnout + actions (send reminder, close early) go here. Content to follow."
+        },
+        "closed": {
+          "heading": "Sealed summary",
+          "note": "Election is closed or archived — results live in the Results tab. Content to follow."
+        }
+      },
+      "resultsFacet": {
+        "heading": "Election results",
+        "note": "Results dashboard (charts, winner, PDF/CSV export) goes here. Content to follow."
+      },
+      "votersFacet": {
+        "heading": "Voter management",
+        "note": "Voter list and invitation management go here. Content to follow."
+      },
+      "lists": {
+        "results": {
+          "title": "Results",
+          "subtitle": "Closed elections — pick one to view its results.",
+          "empty": "No closed elections yet."
+        },
+        "archive": {
+          "title": "Archive",
+          "subtitle": "Archived elections — sealed and stored.",
+          "empty": "No archived elections yet.",
+          "comingSoon": "{action} — coming soon.",
+          "actions": {
+            "menuLabel": "Actions",
+            "view": "View details",
+            "exportPdf": "Export PDF",
+            "auditLog": "Audit log",
+            "hide": "Hide",
+            "delete": "Delete"
+          }
+        },
+        "voters": {
+          "title": "Voters",
+          "subtitle": "Pick an election to manage its voters.",
+          "empty": "No elections yet."
+        }
+      }
     }
   }
 }
