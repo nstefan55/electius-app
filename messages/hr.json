@@ -6,6 +6,29 @@
       "en": "Engleski"
     }
   },
+  "auth": {
+    "todo": "Rezervirano — pravi zaslon dolazi u zasebnoj specifikaciji autentifikacije.",
+    "login": {
+      "title": "Prijava",
+      "subtitle": "Prijavite se u svoju organizaciju.",
+      "continue": "Nastavi na nadzornu ploču"
+    },
+    "signup": {
+      "title": "Registracija",
+      "subtitle": "Otvorite račun za svoju organizaciju.",
+      "continue": "Nastavi na postavljanje"
+    },
+    "setup": {
+      "title": "Postavljanje profila",
+      "subtitle": "Dovršite podatke o svojoj organizaciji.",
+      "continue": "Nastavi na upoznavanje"
+    },
+    "onboarding": {
+      "title": "Upoznavanje",
+      "subtitle": "Pogledajte kako sustav radi.",
+      "continue": "Uđi u nadzornu ploču"
+    }
+  },
   "dashboard": {
     "sidebar": {
       "nav": {
