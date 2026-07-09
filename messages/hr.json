@@ -202,5 +202,22 @@
         }
       }
     }
+  },
+  "marketing": {
+    "signIn": "Prijava",
+    "signUp": "Registracija",
+    "hero": {
+      "title": "Sigurno elektroničko glasovanje za organizacije",
+      "subtitle": "Pripremite, provedite i arhivirajte izbore — bez tehničkog znanja."
+    }
+  },
+  "voter": {
+    "ballot": {
+      "title": "Glasački listić",
+      "subtitle": "Predložak (/vote/[token]). Tijek glasovanja dolazi u zasebnoj specifikaciji."
+    },
+    "results": {
+      "subtitle": "Predložak (/results/[id]). Prikaz rezultata dolazi u zasebnoj specifikaciji."
+    }
   }
 }

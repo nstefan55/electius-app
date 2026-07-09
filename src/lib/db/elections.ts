@@ -117,6 +117,16 @@ function computeStats(els: DashboardElection[]): DashboardStats {
   };
 }
 
+// Public apex results page (/vote-host /results/[id]) — the resultsVisible gate + title only.
+// Null → notFound(); resultsVisible=false → notFound() too (never leak unpublished results).
+// The detailed public-results UI selects more later (public-results spec).
+export async function getPublicResultsElection(id: string) {
+  return prisma.election.findUnique({
+    where: { id },
+    select: { id: true, title: true, resultsVisible: true },
+  });
+}
+
 // Live turnout for the hero panel's polling (see actions/dashboard.ts).
 export async function getElectionTurnout(id: string) {
   const e = await prisma.election.findUnique({
