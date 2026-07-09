@@ -98,6 +98,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
+                {/* TODO: IF possible: Change the breadcrumb link to marketing landing page */}
                   <BreadcrumbLink render={<Link href="/" />}>
                     {t("topbar.home")}
                   </BreadcrumbLink>
