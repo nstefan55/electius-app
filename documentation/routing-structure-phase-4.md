@@ -1,6 +1,6 @@
 # Routing Structure — Phase 4: Public Apex Surfaces
 
-Spec: `context/features/routing-structure-phase-4-spec.md`. The fourth and final phase of the routing/app-structure migration. It promotes the Phase-1 `(marketing)` and `(voter)` route-group stubs into real chrome + scaffolds on the **apex host** (`electious.hr`), and wires every outward cross-host link through one env-var helper.
+Spec: `context/features/routing-structure-phase-4-spec.md`. The fourth and final phase of the routing/app-structure migration. It promotes the Phase-1 `(marketing)` and `(voter)` route-group stubs into real chrome + scaffolds on the **apex host** (`electious.com`), and wires every outward cross-host link through one env-var helper.
 
 **Structural only.** No page content: the voter 5-screen ballot flow, the public-results dashboard UI, and the marketing landing copy/visual design are each owned by their own later feature specs and slot into the scaffolds this phase creates.
 

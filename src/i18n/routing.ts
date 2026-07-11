@@ -1,10 +1,12 @@
 import { defineRouting } from "next-intl/routing";
 import { LOCALES, DEFAULT_LOCALE } from "./config";
 
-// "as-needed": the default locale (hr) has no prefix; others are prefixed (/en).
+// "always": every locale is prefixed, including the default (hr). URLs are /hr/… and
+// /en/… (prod: electious.com/hr, electious.com/en). Bare/unprefixed paths 307-redirect
+// to the default locale. See context/features/next-intl-locale-config-spec.md.
 export const routing = defineRouting({
   locales: LOCALES,
   defaultLocale: DEFAULT_LOCALE,
-  localePrefix: "as-needed", //Removes the default locale prefix from the URL
-  localeDetection: false, //Browser Lang Detection Preference 
+  localePrefix: "always", // Prefix ALL locales, including the default hr
+  localeDetection: false, //Browser Lang Detection Preference
 });
