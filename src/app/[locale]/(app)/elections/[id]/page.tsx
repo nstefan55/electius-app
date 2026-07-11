@@ -1,17 +1,20 @@
 import { useTranslations } from "next-intl";
 import { getElectionDetail } from "@/lib/db/elections";
+import { requireSession } from "@/lib/auth/require-session";
 import type { ElectionStatus } from "@/lib/elections-view";
 
 // Overview facet (default tab) — status-adaptive SHELL only. The three branches are
 // labelled scaffolds; detailed content is owned by election-overview-phase-* specs.
-// Reads the same cache()-wrapped election as the layout (no extra query / authz).
+// Reads the same cache()-wrapped election as the layout (no extra query / authz):
+// same (id, organizationId) key → single DB round trip per request.
 export default async function ElectionOverviewPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const election = await getElectionDetail(id);
+  const { organizationId } = await requireSession();
+  const election = await getElectionDetail(id, organizationId);
   if (!election) return null; // layout already rendered notFound()
 
   // DRAFT/SCHEDULED → setup shell · ACTIVE → live/management shell · CLOSED/ARCHIVED → sealed shell

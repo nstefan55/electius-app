@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/mock-data";
+import type { ShellUser } from "@/components/dashboard/dashboard-shell";
 
 interface NavItem {
   key: "dashboard" | "elections" | "results" | "archive" | "voters";
@@ -30,24 +30,30 @@ const NAV_ITEMS: NavItem[] = [
   { key: "voters", href: "/voters", icon: Users },
 ];
 
-// Avatar initials
-const initials = currentUser.name
-  .split(" ")
-  .map((part) => part[0])
-  .slice(0, 2)
-  .join("")
-  .toUpperCase();
+const toInitials = (name: string) =>
+  name
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
 interface SidebarNavProps {
+  user: ShellUser;
   /** Desktop icon-only collapse. The mobile drawer is always expanded. */
   collapsed?: boolean;
   /** Fired on any nav click — used to close the mobile drawer. */
   onNavigate?: () => void;
 }
 
-export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
+export function SidebarNav({
+  user,
+  collapsed = false,
+  onNavigate,
+}: SidebarNavProps) {
   const pathname = usePathname();
   const t = useTranslations("dashboard.sidebar");
+  const initials = toInitials(user.name);
 
   return (
     <div className="flex h-full flex-col text-sidebar-foreground">
@@ -119,10 +125,10 @@ export function SidebarNav({ collapsed = false, onNavigate }: SidebarNavProps) {
           {!collapsed && (
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-white">
-                {currentUser.name}
+                {user.name}
               </div>
               <div className="text-xs leading-snug wrap-break-word text-white/60">
-                {currentUser.organization}
+                {user.organization}
               </div>
             </div>
           )}

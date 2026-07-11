@@ -63,8 +63,12 @@ const toDashboardElection = (e: ElectionRow): DashboardElection => ({
 
 // Everything the dashboard main area needs, in one round trip.
 // `voted` = ballots cast (anonymous Vote rows); equals voters with status VOTED.
-export async function getDashboardData(): Promise<DashboardData> {
+// Scoped to the signed-in org — cross-tenant leak (finding #2) is blocked here.
+export async function getDashboardData(
+  organizationId: string,
+): Promise<DashboardData> {
   const rows = await prisma.election.findMany({
+    where: { organizationId },
     orderBy: { createdAt: "desc" },
     select: ELECTION_SELECT,
   });
@@ -74,11 +78,13 @@ export async function getDashboardData(): Promise<DashboardData> {
 }
 
 // Cross-election list routes: /results (CLOSED), /archive (ARCHIVED), /voters (all).
+// Org-scoped for the same reason as getDashboardData.
 export async function getElectionsByStatus(
+  organizationId: string,
   status?: ElectionStatus,
 ): Promise<DashboardElection[]> {
   const rows = await prisma.election.findMany({
-    where: status ? { status } : undefined,
+    where: { organizationId, ...(status ? { status } : {}) },
     orderBy: { createdAt: "desc" },
     select: ELECTION_SELECT,
   });
@@ -88,11 +94,15 @@ export async function getElectionsByStatus(
 // One election for the /elections/[id] aggregate-root layout + its facets.
 // cache()-wrapped: the layout (chrome) and each facet page share a SINGLE DB
 // round trip per request — App Router can't prop-drill layout→page, so request
-// memoization is the "fetch once" seam. Returns null → layout renders notFound().
+// memoization is the "fetch once" seam. Returns null → layout renders notFound()
+// (both for a missing id AND a cross-org id — never expose "exists but forbidden").
 export const getElectionDetail = cache(
-  async (id: string): Promise<DashboardElection | null> => {
-    const e = await prisma.election.findUnique({
-      where: { id },
+  async (
+    id: string,
+    organizationId: string,
+  ): Promise<DashboardElection | null> => {
+    const e = await prisma.election.findFirst({
+      where: { id, organizationId },
       select: ELECTION_SELECT,
     });
     return e ? toDashboardElection(e) : null;
@@ -128,9 +138,10 @@ export async function getPublicResultsElection(id: string) {
 }
 
 // Live turnout for the hero panel's polling (see actions/dashboard.ts).
-export async function getElectionTurnout(id: string) {
-  const e = await prisma.election.findUnique({
-    where: { id },
+// Org-scoped so polling can't be pointed at another org's election id.
+export async function getElectionTurnout(id: string, organizationId: string) {
+  const e = await prisma.election.findFirst({
+    where: { id, organizationId },
     select: { _count: { select: { voters: true, votes: true } } },
   });
   return e ? { voters: e._count.voters, voted: e._count.votes } : null;

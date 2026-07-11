@@ -19,12 +19,10 @@ export default async function ElectionLayout({
   const { id } = await params;
 
   // Authz seam — single choke point guarding every facet.
-  // ponytail: no-op passthrough this phase (Phase 2 guard-seam stub).
-  // TODO(auth-spec): enforce that the session's organization owns this election;
-  // 404/redirect otherwise. One-line swap here guards all facets at once.
-  await requireSession();
-
-  const election = await getElectionDetail(id);
+  // Org-scoping enforced via getElectionDetail(id, orgId): cross-org id → null → 404.
+  // Same request → same cache() key → facets share ONE round trip.
+  const { organizationId } = await requireSession();
+  const election = await getElectionDetail(id, organizationId);
   if (!election) notFound();
 
   return (

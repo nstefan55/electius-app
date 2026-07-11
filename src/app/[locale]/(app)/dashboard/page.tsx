@@ -6,19 +6,19 @@ import { RecentElections } from "@/components/dashboard/recent-elections";
 import { DashboardCharts } from "@/components/dashboard/dashboard-charts";
 import { DashboardEmptyState } from "@/components/dashboard/dashboard-empty-state";
 import { getDashboardData } from "@/lib/db/elections";
+import { requireSession } from "@/lib/auth/require-session";
 
-
-export const dynamic = "force-dynamic";
-
+// Dynamic by virtue of the awaited Prisma read — force-dynamic is redundant.
 export default async function DashboardPage() {
-  const { elections, stats } = await getDashboardData();
+  const { organizationId, user } = await requireSession();
+  const { elections, stats } = await getDashboardData(organizationId);
 
   // First run / no elections: show the onboarding empty state instead.
   if (elections.length === 0) return <DashboardEmptyState />;
 
   return (
     <div className="flex flex-col gap-7">
-      <DashboardHeader />
+      <DashboardHeader organization={user.organization} />
       <StatCards stats={stats} />
       <LiveHero elections={elections} />
       <RecentElections elections={elections} />
