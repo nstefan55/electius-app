@@ -1,8 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
-import { currentUser } from "@/lib/mock-data";
 
-export function DashboardHeader() {
+export function DashboardHeader({ organization }: { organization: string }) {
   const t = useTranslations("dashboard.page");
 
   return (
@@ -12,7 +11,7 @@ export function DashboardHeader() {
           {t("title")}
         </h1>
         <p className="mt-1.5 text-[15px] text-muted-foreground">
-          {currentUser.organization}
+          {organization}
         </p>
       </div>
       {/* ponytail: no-op until the creation wizard (/elections/new) lands. */}

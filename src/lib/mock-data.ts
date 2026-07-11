@@ -1,6 +1,8 @@
-// Mock data for the dashboard UI — single source of truth until the DB lands.
-// Statuses match the Prisma ElectionStatus enum. Stats are hardcoded (no helpers).
-// ponytail: plain data, swap for Prisma queries when the DB exists.
+// Mock data — imported by prisma/seed.ts (Node) and require-session.ts (server).
+// ponytail: no "server-only" guard — seed runs under tsx (no react-server condition)
+// and would throw. Client components MUST NOT import from here; they receive
+// user fields as props from (app)/layout.tsx (finding #3 fix).
+// Real PII stays out of the client bundle because no client module reaches here.
 
 export type ElectionStatus =
   | "DRAFT"

@@ -42,7 +42,18 @@ function crumbLabelKey(pathname: string): CrumbKey {
   return "sidebar.nav.dashboard";
 }
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
+export interface ShellUser {
+  name: string;
+  organization: string;
+}
+
+export function DashboardShell({
+  user,
+  children,
+}: {
+  user: ShellUser;
+  children: React.ReactNode;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const t = useTranslations("dashboard");
@@ -57,7 +68,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           collapsed ? "w-16" : "w-60",
         )}
       >
-        <SidebarNav collapsed={collapsed} />
+        <SidebarNav user={user} collapsed={collapsed} />
       </aside>
 
       {/* Mobile sidebar — always a drawer. */}
@@ -68,7 +79,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           className="w-72 gap-0 overflow-hidden border-r-0 bg-sidebar p-0"
         >
           <SheetTitle className="sr-only">{t("sidebar.openMenu")}</SheetTitle>
-          <SidebarNav onNavigate={() => setMobileOpen(false)} />
+          <SidebarNav user={user} onNavigate={() => setMobileOpen(false)} />
         </SheetContent>
       </Sheet>
 

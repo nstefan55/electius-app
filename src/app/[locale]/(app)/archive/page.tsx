@@ -1,14 +1,14 @@
 import { getTranslations } from "next-intl/server";
 import { getElectionsByStatus } from "@/lib/db/elections";
+import { requireSession } from "@/lib/auth/require-session";
 import { ArchiveList } from "@/components/elections/archive-list";
-
-export const dynamic = "force-dynamic";
 
 // ARCHIVED-elections list — top-level sidebar section, NO detail route. Inline row
 // actions funnel to /elections/[id]/results. Rich UI/search owned by elections-archived spec.
 export default async function ArchivePage() {
   const t = await getTranslations("dashboard.election.lists.archive");
-  const elections = await getElectionsByStatus("ARCHIVED");
+  const { organizationId } = await requireSession();
+  const elections = await getElectionsByStatus(organizationId, "ARCHIVED");
   return (
     <div className="p-8">
       <header className="mb-6">

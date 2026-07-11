@@ -1,13 +1,27 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { requireSession } from "@/lib/auth/require-session";
 
 // Election row-management mutations behind the dashboard three-dot menu.
-// No auth yet (MVP) — scoping to the signed-in org lands with BetterAuth.
-// ponytail: manual validation, not Zod (not a dependency); inputs are trivial.
+// Each action verifies the target election belongs to the session's org before
+// mutating — otherwise any authed user could rename/duplicate/archive/delete
+// another org's elections by ID (finding #1). ponytail: manual validation, no Zod.
 type ActionResult = { success: boolean; error?: string };
 
 const MAX_TITLE = 255;
+
+// Cheap shared ownership check — one indexed `findFirst` per mutation.
+async function assertOwned(
+  id: string,
+  organizationId: string,
+): Promise<boolean> {
+  const owned = await prisma.election.findFirst({
+    where: { id, organizationId },
+    select: { id: true },
+  });
+  return owned !== null;
+}
 
 // Rename — the only field the inline editor touches.
 export async function renameElection(
@@ -18,6 +32,10 @@ export async function renameElection(
   if (!id || !name) return { success: false, error: "invalid" };
 
   try {
+    const { organizationId } = await requireSession();
+    if (!(await assertOwned(id, organizationId))) {
+      return { success: false, error: "forbidden" };
+    }
     await prisma.election.update({
       where: { id },
       data: { title: name.slice(0, MAX_TITLE) },
@@ -33,8 +51,9 @@ export async function duplicateElection(id: string): Promise<ActionResult> {
   if (!id) return { success: false, error: "invalid" };
 
   try {
-    const src = await prisma.election.findUnique({
-      where: { id },
+    const { organizationId } = await requireSession();
+    const src = await prisma.election.findFirst({
+      where: { id, organizationId },
       include: { options: { orderBy: { orderIndex: "asc" } } },
     });
     if (!src) return { success: false, error: "notfound" };
@@ -75,6 +94,10 @@ export async function archiveElection(id: string): Promise<ActionResult> {
   if (!id) return { success: false, error: "invalid" };
 
   try {
+    const { organizationId } = await requireSession();
+    if (!(await assertOwned(id, organizationId))) {
+      return { success: false, error: "forbidden" };
+    }
     await prisma.election.update({
       where: { id },
       data: { status: "ARCHIVED" },
@@ -92,6 +115,10 @@ export async function deleteElection(id: string): Promise<ActionResult> {
   if (!id) return { success: false, error: "invalid" };
 
   try {
+    const { organizationId } = await requireSession();
+    if (!(await assertOwned(id, organizationId))) {
+      return { success: false, error: "forbidden" };
+    }
     await prisma.$transaction([
       prisma.archive.deleteMany({ where: { electionId: id } }),
       prisma.vote.deleteMany({ where: { electionId: id } }),
