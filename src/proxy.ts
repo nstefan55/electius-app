@@ -4,7 +4,7 @@ import { routing } from "./i18n/routing";
 
 const handleI18n = createMiddleware(routing);
 
-// dashboard.electious.com serves the admin app at its root. Rewrite ONLY the root
+// dashboard.electius.com serves the admin app at its root. Rewrite ONLY the root
 // "/" → the localized "/dashboard"; every other admin route is already root-level
 // under (app), so it needs no rewrite. Auth is NOT enforced here — the session
 // choke point lives in (app)/layout.tsx (Phase 2 seam). See domain-architecture-spec §6.
