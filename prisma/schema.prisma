@@ -1,4 +1,4 @@
-// prisma/schema.prisma — Electious Database Schema v2
+// prisma/schema.prisma — Electius Database Schema v2
 // PostgreSQL (Neon serverless) + Prisma ORM 7
 // Connection URLs live in prisma.config.ts (migrations) and the Neon adapter (runtime) — not here.
 
@@ -101,7 +101,7 @@ model User {
   accounts Account[]
   sessions Session[]
 
-  // Electious relations
+  // Electius relations
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id])
   elections      Election[]

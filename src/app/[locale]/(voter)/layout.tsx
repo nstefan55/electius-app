@@ -12,7 +12,7 @@ export default function VoterLayout({
       <header className="flex h-14 items-center justify-center border-b border-neutral-200 bg-white">
         <Image
           src="/logo/logo-mark.png"
-          alt="Electious"
+          alt="Electius"
           width={28}
           height={28}
           className="object-contain"

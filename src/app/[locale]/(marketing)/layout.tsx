@@ -16,14 +16,14 @@ export default function MarketingLayout({
         <a href="/" className="flex items-center gap-2.5">
           <Image
             src="/logo/logo-mark.png"
-            alt="Electious"
+            alt="Electius"
             width={30}
             height={30}
             className="object-contain"
             priority
           />
           <span className="font-heading text-xl font-bold tracking-tight text-neutral-800">
-            Electious
+            Electius
           </span>
         </a>
         <nav className="flex items-center gap-4">
@@ -44,7 +44,7 @@ export default function MarketingLayout({
       <main className="flex-1">{children}</main>
       {/* SCAFFOLD — footer content owned by the marketing-landing spec. */}
       <footer className="border-t border-neutral-200 px-6 py-8 text-center text-xs text-neutral-600">
-        © Electious
+        © Electius
       </footer>
     </div>
   );

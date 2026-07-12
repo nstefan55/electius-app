@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ───────── Electious design tokens (source of truth: design-system-spec) ───────── */
+/* ───────── Electius design tokens (source of truth: design-system-spec) ───────── */
 @theme {
   /* Brand */
   --color-brand-900: #1e3a5f;
@@ -98,7 +98,7 @@
   --color-background: var(--background);
 }
 
-/* shadcn semantic vars, remapped to the Electious palette (light mode — MVP) */
+/* shadcn semantic vars, remapped to the Electius palette (light mode — MVP) */
 :root {
   --background: #f9fafb; /* neutral-50 — page bg */
   --foreground: #0a0a0a; /* neutral-950 */

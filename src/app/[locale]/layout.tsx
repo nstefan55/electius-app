@@ -22,8 +22,8 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Electious",
-  description: "Electious Voting App",
+  title: "Electius",
+  description: "Electius Voting App",
 };
 
 export function generateStaticParams() {

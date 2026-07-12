@@ -67,7 +67,7 @@ export function SidebarNav({
         <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-md">
           <Image
             src="/logo/logo-mark-white.png"
-            alt="Electious"
+            alt="Electius"
             width={30}
             height={30}
             className="size-full object-contain"
@@ -76,7 +76,7 @@ export function SidebarNav({
         </span>
         {!collapsed && (
           <span className="font-heading text-xl font-bold tracking-tight">
-            Electious
+            Electius
           </span>
         )}
       </div>
