@@ -41,11 +41,20 @@ yarn-error.log*
 next-env.d.ts
 
 
-.claude
+!.claude
 CLAUDE.md
 AGENTS.md
-context
+!context/*
+!context/project-overview.md
+!context/current-feature.md
 INSTRUCTIONS.md
 logs
+
+subdomain-routing-setup.md
+
+.playwright-mcp
+skills-lock.json
+.mcp.json
+
 
 /src/generated/prisma
