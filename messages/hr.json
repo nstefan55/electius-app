@@ -11,7 +11,14 @@
     "login": {
       "title": "Prijava",
       "subtitle": "Prijavite se u svoju organizaciju.",
-      "continue": "Nastavi na nadzornu ploču"
+      "form": {
+        "google": "Prijava Google računom",
+        "or": "ili",
+        "email": "E-mail adresa",
+        "password": "Lozinka",
+        "submit": "Prijavi se",
+        "error": "Prijava nije uspjela. Provjerite podatke i pokušajte ponovno."
+      }
     },
     "signup": {
       "title": "Registracija",

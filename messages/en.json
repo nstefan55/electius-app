@@ -11,7 +11,14 @@
     "login": {
       "title": "Sign in",
       "subtitle": "Sign in to your organization.",
-      "continue": "Continue to dashboard"
+      "form": {
+        "google": "Sign in with Google",
+        "or": "or",
+        "email": "Email address",
+        "password": "Password",
+        "submit": "Sign in",
+        "error": "Sign-in failed. Check your credentials and try again."
+      }
     },
     "signup": {
       "title": "Sign up",
