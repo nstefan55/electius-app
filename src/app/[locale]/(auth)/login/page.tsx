@@ -1,21 +1,20 @@
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { LoginForm } from "@/components/auth/login-form";
 
-// Boilerplate (routing Phase 2). Real login (BetterAuth + Google OAuth + OTP) = separate auth spec.
-// TODO(auth-spec): bounce to "/" if already signed in; on success → "/" (or "/onboarding" if not onboarded).
+// Functional sign-in (auth-phase-1): BetterAuth email/password + Google OAuth.
+// Unauthenticated dashboard-host traffic lands here via the proxy gate.
+// TODO(auth-ui-spec): full design-system login screen (OTP, forgot password).
 export default function LoginPage() {
   const t = useTranslations("auth");
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-3 text-center">
-      <h1 className="text-2xl font-semibold text-neutral-800">{t("login.title")}</h1>
-      <p className="text-sm text-neutral-600">{t("login.subtitle")}</p>
-      <p className="text-xs text-warning-700">{t("todo")}</p>
-      <Link
-        href="/"
-        className="mt-2 text-sm font-medium text-brand-700 hover:underline"
-      >
-        {t("login.continue")}
-      </Link>
+    <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold text-neutral-800">
+          {t("login.title")}
+        </h1>
+        <p className="text-sm text-neutral-600">{t("login.subtitle")}</p>
+      </div>
+      <LoginForm />
     </div>
   );
 }
