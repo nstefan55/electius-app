@@ -15,7 +15,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { Toaster } from "react-hot-toast";
+import { AppToaster } from "@/components/ui/app-toaster";
 
 type CrumbKey =
   | "sidebar.nav.dashboard"
@@ -146,13 +146,7 @@ export function DashboardShell({
       </div>
 
       {/* Toasts for dashboard mutations. */}
-      <Toaster
-        position="top-center"
-        toastOptions={{
-          className:
-            "!rounded-md !border !border-border !bg-card !text-sm !text-neutral-800 !shadow-md",
-        }}
-      />
+      <AppToaster />
     </div>
   );
 }

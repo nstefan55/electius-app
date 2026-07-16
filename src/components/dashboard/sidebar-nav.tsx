@@ -1,19 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
+import { Menu } from "@base-ui/react/menu";
 import {
   LayoutDashboard,
   CheckCircle2,
   BarChart3,
   Archive,
   Users,
+  ChevronsUpDown,
   Settings,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
+import { authClient } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
+import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import type { ShellUser } from "@/components/dashboard/dashboard-shell";
 
 interface NavItem {
@@ -30,13 +34,8 @@ const NAV_ITEMS: NavItem[] = [
   { key: "voters", href: "/voters", icon: Users },
 ];
 
-const toInitials = (name: string) =>
-  name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+const MENU_ITEM =
+  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-neutral-700 outline-none data-highlighted:bg-neutral-100";
 
 interface SidebarNavProps {
   user: ShellUser;
@@ -52,8 +51,14 @@ export function SidebarNav({
   onNavigate,
 }: SidebarNavProps) {
   const pathname = usePathname();
+  const locale = useLocale();
   const t = useTranslations("dashboard.sidebar");
-  const initials = toInitials(user.name);
+
+  async function signOut() {
+    await authClient.signOut();
+    // Full navigation (not client nav) so the proxy gate re-runs without the cookie.
+    window.location.assign(`/${locale}/login`);
+  }
 
   return (
     <div className="flex h-full flex-col text-sidebar-foreground">
@@ -111,53 +116,61 @@ export function SidebarNav({
         })}
       </nav>
 
-      {/* Account block, settings, logout */}
-      <div className="mt-auto p-3">
-        <div
-          className={cn(
-            "mb-1.5 flex items-center gap-3 border-t border-sidebar-border px-3 pt-3 pb-3.5",
-            collapsed && "justify-center px-0",
-          )}
-        >
-          <span className="flex size-9.5 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[15px] font-semibold text-white">
-            {initials}
-          </span>
-          {!collapsed && (
-            <div className="min-w-0">
-              <div className="truncate text-sm font-semibold text-white">
-                {user.name}
-              </div>
-              <div className="text-xs leading-snug wrap-break-word text-white/60">
-                {user.organization}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <Link
-          href="/settings"
-          onClick={onNavigate}
-          title={collapsed ? t("account.settings") : undefined}
-          className={cn(
-            "flex h-10.5 items-center gap-3 rounded-md px-4 text-[15px] text-white/75 transition-colors hover:bg-white/[0.07] hover:text-white",
-            collapsed && "justify-center px-0",
-          )}
-        >
-          <Settings className="size-4.75 shrink-0" />
-          {!collapsed && <span>{t("account.settings")}</span>}
-        </Link>
-        {/* ponytail: logout is a no-op until BetterAuth lands; wire signOut() then. */}
-        <button
-          type="button"
-          title={collapsed ? t("account.logout") : undefined}
-          className={cn(
-            "flex h-10.5 w-full items-center gap-3 rounded-md px-4 text-left text-[15px] text-white/75 transition-colors hover:bg-white/[0.07] hover:text-white",
-            collapsed && "justify-center px-0",
-          )}
-        >
-          <LogOut className="size-4.75 shrink-0" />
-          {!collapsed && <span>{t("account.logout")}</span>}
-        </button>
+      {/* Account block — dropdown-up with Settings + Sign out (auth-phase-4). */}
+      <div className="mt-auto border-t border-sidebar-border p-3">
+        <Menu.Root>
+          <Menu.Trigger
+            title={collapsed ? user.name : undefined}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-white/[0.07] data-popup-open:bg-white/[0.07]",
+              collapsed && "justify-center px-0",
+            )}
+          >
+            <InitialsAvatar name={user.name} />
+            {!collapsed && (
+              <>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold text-white">
+                    {user.name}
+                  </div>
+                  <div className="text-xs leading-snug wrap-break-word text-white/60">
+                    {user.organization}
+                  </div>
+                </div>
+                <ChevronsUpDown className="size-4 shrink-0 text-white/60" />
+              </>
+            )}
+          </Menu.Trigger>
+          <Menu.Portal>
+            <Menu.Positioner
+              side="top"
+              align="start"
+              sideOffset={8}
+              className="z-50 outline-none"
+            >
+              <Menu.Popup className="min-w-52 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
+                <Menu.Item
+                  className={MENU_ITEM}
+                  render={<Link href="/settings" onClick={onNavigate} />}
+                >
+                  <Settings className="size-4" />
+                  {t("account.settings")}
+                </Menu.Item>
+                <Menu.Separator className="my-1 h-px bg-border" />
+                <Menu.Item
+                  className={cn(
+                    MENU_ITEM,
+                    "text-error-700 data-highlighted:bg-error-50",
+                  )}
+                  onClick={signOut}
+                >
+                  <LogOut className="size-4" />
+                  {t("account.logout")}
+                </Menu.Item>
+              </Menu.Popup>
+            </Menu.Positioner>
+          </Menu.Portal>
+        </Menu.Root>
       </div>
     </div>
   );

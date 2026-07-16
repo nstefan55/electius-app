@@ -1,20 +1,49 @@
 import { useTranslations } from "next-intl";
+import { ClipboardList, BarChart3, FileCheck2 } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { SignupForm } from "@/components/auth/signup-form";
 
-// Functional sign-up (auth-phase-3): POST /api/auth/register (BetterAuth
-// signUpEmail + scrypt) or Google OAuth; success → /setup → /onboarding → "/".
-// TODO(auth-ui-spec): full design-system signup screen (OTP, terms).
+// Sign-up (auth-phase-4): split-screen design-system UI over the phase-3
+// registration wiring; success → /setup → /onboarding → "/".
 export default function SignupPage() {
-  const t = useTranslations("auth");
+  const t = useTranslations("auth.signup");
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold text-neutral-800">
-          {t("signup.title")}
-        </h1>
-        <p className="text-sm text-neutral-600">{t("signup.subtitle")}</p>
-      </div>
+    <AuthSplitLayout
+      title={t("title")}
+      subtitle={t("subtitle")}
+      brand={{
+        title: t("brand.title"),
+        subtitle: t("brand.subtitle"),
+        features: [
+          {
+            icon: ClipboardList,
+            title: t("brand.guided.title"),
+            description: t("brand.guided.description"),
+          },
+          {
+            icon: BarChart3,
+            title: t("brand.turnout.title"),
+            description: t("brand.turnout.description"),
+          },
+          {
+            icon: FileCheck2,
+            title: t("brand.reports.title"),
+            description: t("brand.reports.description"),
+          },
+        ],
+      }}
+    >
       <SignupForm />
-    </div>
+      <p className="text-center text-sm text-neutral-600">
+        {t("haveAccount")}{" "}
+        <Link
+          href="/login"
+          className="font-medium text-brand-700 hover:underline"
+        >
+          {t("signIn")}
+        </Link>
+      </p>
+    </AuthSplitLayout>
   );
 }

@@ -19,6 +19,9 @@ const APEX = process.env.NEXT_PUBLIC_MARKETING_URL ?? "";
 export const signInUrl = () => `${APP}/login`;
 export const signUpUrl = () => `${APP}/signup`;
 
+// Dashboard-host auth pages → apex marketing landing (logo click-through).
+export const marketingHomeUrl = () => `${APEX}/`;
+
 // Voter magic link AND the QR payload — one identical apex URL, no token variant (decision D).
 export const voteUrl = (token: string) => `${APEX}/vote/${token}`;
 
