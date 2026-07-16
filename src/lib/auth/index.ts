@@ -2,19 +2,18 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-// BetterAuth server instance — mounted at /api/auth/[...all]. Auth lives on the
-// dashboard host only (BETTER_AUTH_URL = baseURL, secret = BETTER_AUTH_SECRET,
-// both read from env automatically). See domain-architecture-spec §5.A.
+// BetterAuth server instance, mounted at /api/auth/[...all]; auth lives on the
+// dashboard host only (BETTER_AUTH_URL/BETTER_AUTH_SECRET read from env — see
+// domain-architecture-spec §5.A), with both public hosts trusted as origins
+// because dev keeps auth on http://localhost:3000 while the login page lives
+// on dashboard.localhost (Google rejects non-localhost plain-HTTP redirects).
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: "postgresql" }),
-  // Both of our hosts may originate auth calls. Needed in dev, where
-  // BETTER_AUTH_URL=http://localhost:3000 (Google rejects plain-HTTP redirect
-  // URIs on anything but exactly localhost/127.0.0.1 — dashboard.localhost
-  // fails its rules) while the login page lives on dashboard.localhost.
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.NEXT_PUBLIC_MARKETING_URL,
@@ -23,15 +22,16 @@ export const auth = betterAuth({
   verification: { modelName: "verificationToken" },
   emailAndPassword: {
     enabled: true,
-    // Seeded credential accounts are bcrypt (12 rounds), not BetterAuth's scrypt
-    // default — see prisma/seed.ts. Hash new passwords the same way so one
-    // verify path covers both.
-    // Salting: bcrypt salts automatically — hash(pw, 12) generates a unique
-    // random salt per password (= genSalt(12) + hash) and embeds it in the
-    // stored hash; compare() extracts it on verify. Satisfies "salt + hash".
+    // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
+    // per-password random salt embedded in its `salt:key` format) by leaving
+    // `hash` unset. Verify falls back to bcrypt for legacy seeded accounts
+    // (bcrypt hashes always start with "$2") — keep bcryptjs installed until
+    // those are migrated. See auth-phase-3-spec.
     password: {
-      hash: (password) => bcrypt.hash(password, 12),
-      verify: ({ hash, password }) => bcrypt.compare(password, hash),
+      verify: ({ hash, password }) =>
+        hash.startsWith("$2")
+          ? bcrypt.compare(password, hash)
+          : verifyPassword({ hash, password }),
     },
   },
   socialProviders: {
@@ -40,8 +40,7 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
   },
-  // Keep last — lets Server Actions calling the auth API set cookies (Next.js
-  // integration default). Route-handler flows work without it.
+  // Keep last — lets Server Actions calling the auth API set cookies.
   plugins: [nextCookies()],
 });
 
