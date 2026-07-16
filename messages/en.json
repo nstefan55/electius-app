@@ -8,31 +8,89 @@
   },
   "auth": {
     "todo": "Reserved — the real screen ships via the separate authentication spec.",
+    "footer": {
+      "privacy": "Privacy policy",
+      "terms": "Terms of service"
+    },
     "login": {
-      "title": "Sign in",
-      "subtitle": "Sign in to your organization.",
+      "title": "Welcome back",
+      "subtitle": "Sign in to manage your organization's elections.",
+      "newTo": "New to Electius?",
+      "createAccount": "Create an account",
+      "brand": {
+        "title": "Elections your members can trust",
+        "subtitle": "Electius covers the full election lifecycle — from voter lists to verifiable results.",
+        "anonymity": {
+          "title": "Anonymous by design",
+          "description": "Voters use one-time magic links. The system never links a voter to their vote."
+        },
+        "verifiable": {
+          "title": "Verifiable results",
+          "description": "Every ballot receives a hash, so voters can confirm their vote was counted."
+        },
+        "effortless": {
+          "title": "Effortless voting",
+          "description": "No accounts, no downloads — voters finish in under two minutes."
+        }
+      },
       "form": {
-        "google": "Sign in with Google",
-        "or": "or",
-        "email": "Email address",
+        "google": "Continue with Google",
+        "or": "or sign in with email",
+        "email": "Email",
+        "emailPlaceholder": "you@organization.com",
         "password": "Password",
+        "passwordPlaceholder": "Your password",
+        "forgotPassword": "Forgot password?",
+        "rememberMe": "Keep me signed in",
         "submit": "Sign in",
-        "error": "Sign-in failed. Check your credentials and try again."
+        "success": "Signed in.",
+        "error": "Sign-in failed. Check your credentials and try again.",
+        "errors": {
+          "email": "Enter a valid email address.",
+          "password": "Enter your password."
+        }
       }
     },
     "signup": {
-      "title": "Sign up",
-      "subtitle": "Create an account for your organization.",
-      "continue": "Continue to setup",
+      "title": "Create your account",
+      "subtitle": "Start running secure elections for your organization.",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "brand": {
+        "title": "Set up your first election in minutes",
+        "subtitle": "From voter lists to signed results — everything you need to run an official vote.",
+        "guided": {
+          "title": "Guided setup",
+          "description": "Create an election, add questions, and upload your voter list step by step."
+        },
+        "turnout": {
+          "title": "Live turnout",
+          "description": "Watch participation in real time — you see who voted, never how."
+        },
+        "reports": {
+          "title": "Official reports",
+          "description": "Download signed PDF results the moment voting closes."
+        }
+      },
       "form": {
         "google": "Sign up with Google",
-        "or": "or",
+        "or": "or sign up with email",
         "name": "Full name",
-        "email": "Email address",
+        "namePlaceholder": "Ana Marić",
+        "email": "Work email",
+        "emailPlaceholder": "you@organization.com",
         "password": "Password",
+        "passwordPlaceholder": "At least 8 characters",
+        "passwordHelper": "Use 8 or more characters.",
         "confirmPassword": "Confirm password",
-        "submit": "Sign up",
+        "confirmPasswordPlaceholder": "Repeat your password",
+        "terms": "I agree to the <terms>Terms of service</terms> and <privacy>Privacy policy</privacy>.",
+        "submit": "Create account",
+        "success": "Account created.",
         "errors": {
+          "name": "Enter your full name.",
+          "email": "Enter a valid email address.",
+          "terms": "Accept the terms to continue.",
           "mismatch": "Passwords do not match.",
           "exists": "An account with that email already exists.",
           "tooShort": "Password must be at least 8 characters.",

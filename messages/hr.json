@@ -8,31 +8,89 @@
   },
   "auth": {
     "todo": "Rezervirano — pravi zaslon dolazi u zasebnoj specifikaciji autentifikacije.",
+    "footer": {
+      "privacy": "Pravila privatnosti",
+      "terms": "Uvjeti korištenja"
+    },
     "login": {
-      "title": "Prijava",
-      "subtitle": "Prijavite se u svoju organizaciju.",
+      "title": "Dobrodošli natrag",
+      "subtitle": "Prijavite se za upravljanje izborima svoje organizacije.",
+      "newTo": "Novi na Electiusu?",
+      "createAccount": "Otvorite račun",
+      "brand": {
+        "title": "Izbori kojima vaši članovi mogu vjerovati",
+        "subtitle": "Electius pokriva cijeli životni ciklus izbora — od popisa birača do provjerljivih rezultata.",
+        "anonymity": {
+          "title": "Anonimnost po dizajnu",
+          "description": "Birači koriste jednokratne poveznice. Sustav nikada ne povezuje birača s njegovim glasom."
+        },
+        "verifiable": {
+          "title": "Provjerljivi rezultati",
+          "description": "Svaki listić dobiva hash pa birači mogu potvrditi da je njihov glas prebrojan."
+        },
+        "effortless": {
+          "title": "Glasanje bez napora",
+          "description": "Bez računa i preuzimanja — birači završe za manje od dvije minute."
+        }
+      },
       "form": {
-        "google": "Prijava Google računom",
-        "or": "ili",
-        "email": "E-mail adresa",
+        "google": "Nastavite s Googleom",
+        "or": "ili se prijavite e-poštom",
+        "email": "E-pošta",
+        "emailPlaceholder": "vi@organizacija.hr",
         "password": "Lozinka",
-        "submit": "Prijavi se",
-        "error": "Prijava nije uspjela. Provjerite podatke i pokušajte ponovno."
+        "passwordPlaceholder": "Vaša lozinka",
+        "forgotPassword": "Zaboravili ste lozinku?",
+        "rememberMe": "Ostani prijavljen",
+        "submit": "Prijava",
+        "success": "Prijava uspješna.",
+        "error": "Prijava nije uspjela. Provjerite podatke i pokušajte ponovno.",
+        "errors": {
+          "email": "Unesite ispravnu e-mail adresu.",
+          "password": "Unesite lozinku."
+        }
       }
     },
     "signup": {
-      "title": "Registracija",
-      "subtitle": "Otvorite račun za svoju organizaciju.",
-      "continue": "Nastavi na postavljanje",
+      "title": "Otvorite svoj račun",
+      "subtitle": "Počnite provoditi sigurne izbore za svoju organizaciju.",
+      "haveAccount": "Već imate račun?",
+      "signIn": "Prijavite se",
+      "brand": {
+        "title": "Postavite svoje prve izbore u nekoliko minuta",
+        "subtitle": "Od popisa birača do potpisanih rezultata — sve što vam treba za službeno glasanje.",
+        "guided": {
+          "title": "Vođeno postavljanje",
+          "description": "Kreirajte izbore, dodajte pitanja i učitajte popis birača korak po korak."
+        },
+        "turnout": {
+          "title": "Odaziv uživo",
+          "description": "Pratite sudjelovanje u stvarnom vremenu — vidite tko je glasao, nikada kako."
+        },
+        "reports": {
+          "title": "Službena izvješća",
+          "description": "Preuzmite potpisane PDF rezultate čim glasanje završi."
+        }
+      },
       "form": {
-        "google": "Registracija Google računom",
-        "or": "ili",
+        "google": "Registrirajte se Googleom",
+        "or": "ili se registrirajte e-poštom",
         "name": "Ime i prezime",
-        "email": "E-mail adresa",
+        "namePlaceholder": "Ana Marić",
+        "email": "Poslovna e-pošta",
+        "emailPlaceholder": "vi@organizacija.hr",
         "password": "Lozinka",
+        "passwordPlaceholder": "Najmanje 8 znakova",
+        "passwordHelper": "Koristite 8 ili više znakova.",
         "confirmPassword": "Potvrdite lozinku",
-        "submit": "Registriraj se",
+        "confirmPasswordPlaceholder": "Ponovite lozinku",
+        "terms": "Slažem se s <terms>Uvjetima korištenja</terms> i <privacy>Pravilima privatnosti</privacy>.",
+        "submit": "Otvori račun",
+        "success": "Račun je otvoren.",
         "errors": {
+          "name": "Unesite ime i prezime.",
+          "email": "Unesite ispravnu e-mail adresu.",
+          "terms": "Za nastavak prihvatite uvjete korištenja.",
           "mismatch": "Lozinke se ne podudaraju.",
           "exists": "Račun s tom e-mail adresom već postoji.",
           "tooShort": "Lozinka mora imati najmanje 8 znakova.",

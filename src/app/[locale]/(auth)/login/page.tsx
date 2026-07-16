@@ -1,20 +1,50 @@
 import { useTranslations } from "next-intl";
+import { ShieldCheck, Hash, Clock } from "lucide-react";
+import { Link } from "@/i18n/navigation";
+import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { LoginForm } from "@/components/auth/login-form";
 
-// Functional sign-in (auth-phase-1): BetterAuth email/password + Google OAuth.
-// Unauthenticated dashboard-host traffic lands here via the proxy gate.
-// TODO(auth-ui-spec): full design-system login screen (OTP, forgot password).
+// Sign-in (auth-phase-4): split-screen design-system UI over the phase-1
+// BetterAuth form. Unauthenticated dashboard-host traffic lands here via the
+// proxy gate. TODO(auth-spec): OTP + forgot-password flows.
 export default function LoginPage() {
-  const t = useTranslations("auth");
+  const t = useTranslations("auth.login");
   return (
-    <div className="flex w-full max-w-sm flex-col items-center gap-6 text-center">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold text-neutral-800">
-          {t("login.title")}
-        </h1>
-        <p className="text-sm text-neutral-600">{t("login.subtitle")}</p>
-      </div>
+    <AuthSplitLayout
+      title={t("title")}
+      subtitle={t("subtitle")}
+      brand={{
+        title: t("brand.title"),
+        subtitle: t("brand.subtitle"),
+        features: [
+          {
+            icon: ShieldCheck,
+            title: t("brand.anonymity.title"),
+            description: t("brand.anonymity.description"),
+          },
+          {
+            icon: Hash,
+            title: t("brand.verifiable.title"),
+            description: t("brand.verifiable.description"),
+          },
+          {
+            icon: Clock,
+            title: t("brand.effortless.title"),
+            description: t("brand.effortless.description"),
+          },
+        ],
+      }}
+    >
       <LoginForm />
-    </div>
+      <p className="text-center text-sm text-neutral-600">
+        {t("newTo")}{" "}
+        <Link
+          href="/signup"
+          className="font-medium text-brand-700 hover:underline"
+        >
+          {t("createAccount")}
+        </Link>
+      </p>
+    </AuthSplitLayout>
   );
 }
