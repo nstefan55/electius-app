@@ -23,7 +23,22 @@
     "signup": {
       "title": "Registracija",
       "subtitle": "Otvorite račun za svoju organizaciju.",
-      "continue": "Nastavi na postavljanje"
+      "continue": "Nastavi na postavljanje",
+      "form": {
+        "google": "Registracija Google računom",
+        "or": "ili",
+        "name": "Ime i prezime",
+        "email": "E-mail adresa",
+        "password": "Lozinka",
+        "confirmPassword": "Potvrdite lozinku",
+        "submit": "Registriraj se",
+        "errors": {
+          "mismatch": "Lozinke se ne podudaraju.",
+          "exists": "Račun s tom e-mail adresom već postoji.",
+          "tooShort": "Lozinka mora imati najmanje 8 znakova.",
+          "generic": "Registracija nije uspjela. Provjerite podatke i pokušajte ponovno."
+        }
+      }
     },
     "setup": {
       "title": "Postavljanje profila",

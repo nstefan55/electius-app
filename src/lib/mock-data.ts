@@ -1,8 +1,7 @@
-// Mock data — imported by prisma/seed.ts (Node) and require-session.ts (server).
+// Mock data — imported by prisma/seed.ts (Node) only; the app reads real data
+// (requireSession() is a real BetterAuth session as of auth-phase-3).
 // ponytail: no "server-only" guard — seed runs under tsx (no react-server condition)
-// and would throw. Client components MUST NOT import from here; they receive
-// user fields as props from (app)/layout.tsx (finding #3 fix).
-// Real PII stays out of the client bundle because no client module reaches here.
+// and would throw. Client components MUST NOT import from here.
 
 export type ElectionStatus =
   | "DRAFT"

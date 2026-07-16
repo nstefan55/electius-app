@@ -23,7 +23,22 @@
     "signup": {
       "title": "Sign up",
       "subtitle": "Create an account for your organization.",
-      "continue": "Continue to setup"
+      "continue": "Continue to setup",
+      "form": {
+        "google": "Sign up with Google",
+        "or": "or",
+        "name": "Full name",
+        "email": "Email address",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "submit": "Sign up",
+        "errors": {
+          "mismatch": "Passwords do not match.",
+          "exists": "An account with that email already exists.",
+          "tooShort": "Password must be at least 8 characters.",
+          "generic": "Sign-up failed. Check your details and try again."
+        }
+      }
     },
     "setup": {
       "title": "Profile setup",
