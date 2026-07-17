@@ -7,7 +7,6 @@
     }
   },
   "auth": {
-    "todo": "Reserved — the real screen ships via the separate authentication spec.",
     "footer": {
       "privacy": "Privacy policy",
       "terms": "Terms of service"
@@ -135,9 +134,75 @@
       }
     },
     "onboarding": {
-      "title": "Onboarding",
-      "subtitle": "See how the system works.",
-      "continue": "Enter dashboard"
+      "skip": "Skip to dashboard",
+      "welcomePill": "Welcome",
+      "heroTitle": "Welcome to Electius, {name}",
+      "heroSub": "Here's everything you can do as an administrator — and how voting works for the people you invite. All of it takes under two minutes.",
+      "admin": {
+        "eyebrow": "For you as an administrator",
+        "title": "Running elections",
+        "sub": "From first idea to official report — the whole election lifecycle in one place.",
+        "cards": {
+          "create": {
+            "title": "Create in minutes",
+            "desc": "A 5-step wizard walks you through standard elections, surveys and quick polls."
+          },
+          "people": {
+            "title": "Candidates & voters",
+            "desc": "Add them manually or import a .csv, with validation on every row."
+          },
+          "safeguards": {
+            "title": "Schedule & safeguards",
+            "desc": "Sealed results, quorum thresholds, auto-close and voter reminders."
+          },
+          "results": {
+            "title": "Live results",
+            "desc": "Track turnout in real time and see the vote breakdown the moment voting starts."
+          },
+          "reports": {
+            "title": "Reports & audit",
+            "desc": "Official PDF and CSV reports with a cryptographic audit trail you can verify."
+          },
+          "archive": {
+            "title": "Archive & history",
+            "desc": "Every completed election stored neatly and searchable whenever you need it."
+          }
+        }
+      },
+      "voter": {
+        "eyebrow": "For your voters",
+        "title": "How voting works",
+        "sub": "Voters need no account. They open a secure, one-time ballot and vote in a few taps.",
+        "magicTitle": "Magic links",
+        "magicDesc": "Each voter gets a unique, one-time link delivered to their email.",
+        "qrTitle": "QR code",
+        "qrDesc": "For in-person voting — voters scan a code you generate for the election.",
+        "steps": {
+          "invite": {
+            "title": "Get invited",
+            "desc": "A magic link arrives by email, or a QR code to scan."
+          },
+          "open": {
+            "title": "Open the ballot",
+            "desc": "Secure one-time access — no password, no account."
+          },
+          "cast": {
+            "title": "Cast the vote",
+            "desc": "Review and submit in under two minutes."
+          },
+          "anon": {
+            "title": "Stay anonymous",
+            "desc": "A verification hash confirms the vote — never linked to a person."
+          }
+        },
+        "trustNote": "Voters authenticate via one-time magic links. The system never links a voter to their vote."
+      },
+      "cta": {
+        "title": "Ready to run your first election?",
+        "sub": "Launch the wizard and set up your election in minutes. You can always save it as a draft.",
+        "primary": "Create your first election",
+        "secondary": "Explore the dashboard"
+      }
     }
   },
   "dashboard": {

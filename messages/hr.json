@@ -7,7 +7,6 @@
     }
   },
   "auth": {
-    "todo": "Rezervirano — pravi zaslon dolazi u zasebnoj specifikaciji autentifikacije.",
     "footer": {
       "privacy": "Pravila privatnosti",
       "terms": "Uvjeti korištenja"
@@ -135,9 +134,75 @@
       }
     },
     "onboarding": {
-      "title": "Upoznavanje",
-      "subtitle": "Pogledajte kako sustav radi.",
-      "continue": "Uđi u nadzornu ploču"
+      "skip": "Preskoči na nadzornu ploču",
+      "welcomePill": "Dobrodošli",
+      "heroTitle": "Dobrodošli u Electius, {name}",
+      "heroSub": "Evo svega što možete raditi kao administrator — i kako glasanje funkcionira za ljude koje pozovete. Sve traje manje od dvije minute.",
+      "admin": {
+        "eyebrow": "Za vas kao administratora",
+        "title": "Vođenje izbora",
+        "sub": "Od prve ideje do službenog izvještaja — cijeli životni ciklus izbora na jednom mjestu.",
+        "cards": {
+          "create": {
+            "title": "Izradite u nekoliko minuta",
+            "desc": "Čarobnjak u 5 koraka vodi vas kroz standardne izbore, ankete i brza glasanja."
+          },
+          "people": {
+            "title": "Kandidati i birači",
+            "desc": "Dodajte ih ručno ili uvezite .csv datoteku s provjerom valjanosti svakog reda."
+          },
+          "safeguards": {
+            "title": "Raspored i zaštite",
+            "desc": "Zapečaćeni rezultati, prag kvoruma, automatsko zatvaranje i podsjetnici biračima."
+          },
+          "results": {
+            "title": "Rezultati uživo",
+            "desc": "Pratite izlaznost u stvarnom vremenu i raspodjelu glasova čim glasanje počne."
+          },
+          "reports": {
+            "title": "Izvještaji i revizija",
+            "desc": "Službeni PDF i CSV izvještaji s kriptografskim tragom revizije koji možete provjeriti."
+          },
+          "archive": {
+            "title": "Arhiva i povijest",
+            "desc": "Svi završeni izbori uredno pohranjeni i pretraživi kad god vam zatrebaju."
+          }
+        }
+      },
+      "voter": {
+        "eyebrow": "Za vaše birače",
+        "title": "Kako se glasa",
+        "sub": "Birači ne trebaju račun. Pristupaju sigurnom, jednokratnom listiću i glasuju u nekoliko dodira.",
+        "magicTitle": "Magične poveznice",
+        "magicDesc": "Svaki birač dobiva jedinstvenu, jednokratnu poveznicu na svoju e-poštu.",
+        "qrTitle": "QR kod",
+        "qrDesc": "Za glasanje uživo — birači skeniraju kod koji generirate za izbore.",
+        "steps": {
+          "invite": {
+            "title": "Poziv",
+            "desc": "Stiže magična poveznica e-poštom ili QR kod za skeniranje."
+          },
+          "open": {
+            "title": "Otvaranje listića",
+            "desc": "Sigurni jednokratni pristup — bez lozinke i bez računa."
+          },
+          "cast": {
+            "title": "Glasanje",
+            "desc": "Pregled i predaja glasa u manje od dvije minute."
+          },
+          "anon": {
+            "title": "Anonimnost",
+            "desc": "Potvrda s kodom za provjeru — glas se nikad ne povezuje s osobom."
+          }
+        },
+        "trustNote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom."
+      },
+      "cta": {
+        "title": "Spremni za prve izbore?",
+        "sub": "Pokrenite čarobnjak i postavite svoje izbore u nekoliko minuta. Uvijek ih možete spremiti kao skicu.",
+        "primary": "Izradi prve izbore",
+        "secondary": "Istraži nadzornu ploču"
+      }
     }
   },
   "dashboard": {
