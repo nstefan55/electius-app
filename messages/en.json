@@ -65,7 +65,7 @@
         },
         "turnout": {
           "title": "Live turnout",
-          "description": "Watch participation in real time — you see who voted, never how."
+          "description": "Watch participation in real time and remind voters to cast their ballot before the election closes."
         },
         "reports": {
           "title": "Official reports",
@@ -99,9 +99,40 @@
       }
     },
     "setup": {
-      "title": "Profile setup",
-      "subtitle": "Finish your organization details.",
-      "continue": "Continue to onboarding"
+      "title": "Set up your account",
+      "subtitle": "Tell us who you are and the organization you'll run elections for.",
+      "signOut": "Sign out",
+      "photo": {
+        "googleTitle": "Photo from your Google account",
+        "googleNote": "We use the photo from the account you signed in with.",
+        "initialsTitle": "Your initials for now",
+        "initialsNote": "We'll show your initials until you add a photo in settings."
+      },
+      "form": {
+        "firstName": "First name",
+        "firstNamePlaceholder": "Ana",
+        "lastName": "Last name",
+        "lastNamePlaceholder": "Marić",
+        "organizationName": "Organization name",
+        "organizationNamePlaceholder": "University of Zagreb",
+        "organizationHelper": "Shown to voters on every ballot and invitation.",
+        "organizationType": "Organization type",
+        "organizationTypePlaceholder": "Select type",
+        "types": {
+          "UNIVERSITY": "University or school",
+          "COMPANY": "Company",
+          "UNION": "Union",
+          "ASSOCIATION": "Association or club",
+          "OTHER": "Other"
+        },
+        "submit": "Continue to onboarding",
+        "skip": "Skip to dashboard",
+        "changeLater": "You can change all of this later in settings.",
+        "success": "Your account is set up.",
+        "errors": {
+          "generic": "Something went wrong. Please try again."
+        }
+      }
     },
     "onboarding": {
       "title": "Onboarding",

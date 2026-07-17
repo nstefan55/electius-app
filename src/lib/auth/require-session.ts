@@ -43,8 +43,8 @@ export const requireSession = cache(async (): Promise<Session> => {
     },
   });
   if (!admin?.organizationId || !admin.organization) {
-    // Signed in but no organization yet (fresh signup / Google OAuth) — the
-    // post-signup funnel owns profile + org creation. TODO(setup-spec).
+    // Signed in but no organization yet (fresh signup / Google OAuth) — /setup
+    // owns profile + org creation and unblocks the account.
     redirect(`/${await resolveLocale()}/setup`);
   }
 
