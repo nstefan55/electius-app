@@ -65,7 +65,7 @@
         },
         "turnout": {
           "title": "Odaziv uživo",
-          "description": "Pratite sudjelovanje u stvarnom vremenu — vidite tko je glasao, nikada kako."
+          "description": "Pratite sudjelovanje u stvarnom vremenu i podsjetite birače da glasaju prije zatvaranja izbora."
         },
         "reports": {
           "title": "Službena izvješća",
@@ -99,9 +99,40 @@
       }
     },
     "setup": {
-      "title": "Postavljanje profila",
-      "subtitle": "Dovršite podatke o svojoj organizaciji.",
-      "continue": "Nastavi na upoznavanje"
+      "title": "Postavite svoj račun",
+      "subtitle": "Recite nam tko ste i za koju organizaciju provodite izbore.",
+      "signOut": "Odjava",
+      "photo": {
+        "googleTitle": "Fotografija s vašeg Google računa",
+        "googleNote": "Koristimo fotografiju računa s kojim ste se prijavili.",
+        "initialsTitle": "Za sada vaši inicijali",
+        "initialsNote": "Prikazivat ćemo vaše inicijale dok ne dodate fotografiju u postavkama."
+      },
+      "form": {
+        "firstName": "Ime",
+        "firstNamePlaceholder": "Ana",
+        "lastName": "Prezime",
+        "lastNamePlaceholder": "Marić",
+        "organizationName": "Naziv organizacije",
+        "organizationNamePlaceholder": "Sveučilište u Zagrebu",
+        "organizationHelper": "Prikazuje se biračima na svakom listiću i pozivnici.",
+        "organizationType": "Vrsta organizacije",
+        "organizationTypePlaceholder": "Odaberite vrstu",
+        "types": {
+          "UNIVERSITY": "Sveučilište ili škola",
+          "COMPANY": "Tvrtka",
+          "UNION": "Sindikat",
+          "ASSOCIATION": "Udruga ili klub",
+          "OTHER": "Ostalo"
+        },
+        "submit": "Nastavi na upoznavanje",
+        "skip": "Preskoči na nadzornu ploču",
+        "changeLater": "Sve ovo možete kasnije promijeniti u postavkama.",
+        "success": "Račun je postavljen.",
+        "errors": {
+          "generic": "Nešto je pošlo po zlu. Pokušajte ponovno."
+        }
+      }
     },
     "onboarding": {
       "title": "Upoznavanje",

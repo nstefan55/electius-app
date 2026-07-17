@@ -1,26 +1,34 @@
-import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/navigation";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { SetupForm } from "@/components/auth/setup-form";
 
-// Boilerplate (routing Phase 2). Real profile setup content = its own spec.
-// TODO(setup-spec): org creation form; on success → "/onboarding".
-// Centering lives here since auth-phase-4 — login/signup own a full-screen design.
-export default function SetupPage() {
-  const t = useTranslations("auth");
+// Account setup (setup-page-spec): the post-signup step that creates the
+// organization and completes the admin's profile — requireSession() bounces
+// org-less users here, so this page uses the raw session (requireSession()
+// itself would loop). Session invalid despite the proxy's cookie-presence
+// check → back to /login.
+export default async function SetupPage() {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) redirect(`/${await getLocale()}/login`);
+
+  // Revisit prefill — an admin who already has an org edits it in place.
+  const admin = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { organization: { select: { name: true, type: true } } },
+  });
+
+  const [firstName = "", ...rest] = session.user.name.trim().split(/\s+/);
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-50 p-6">
-      <div className="flex w-full max-w-sm flex-col items-center gap-3 text-center">
-        <h1 className="text-2xl font-semibold text-neutral-800">
-          {t("setup.title")}
-        </h1>
-        <p className="text-sm text-neutral-600">{t("setup.subtitle")}</p>
-        <p className="text-xs text-warning-700">{t("todo")}</p>
-        <Link
-          href="/onboarding"
-          className="mt-2 text-sm font-medium text-brand-700 hover:underline"
-        >
-          {t("setup.continue")}
-        </Link>
-      </div>
-    </main>
+    <SetupForm
+      email={session.user.email}
+      image={session.user.image ?? null}
+      initialFirstName={firstName}
+      initialLastName={rest.join(" ")}
+      initialOrganizationName={admin?.organization?.name ?? ""}
+      initialOrganizationType={admin?.organization?.type ?? ""}
+    />
   );
 }

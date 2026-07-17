@@ -66,13 +66,22 @@ model VerificationToken {
 
 // ───────── 1. Organization ─────────
 
+enum OrganizationType {
+  UNIVERSITY // university or school
+  COMPANY
+  UNION
+  ASSOCIATION // association or club
+  OTHER
+}
+
 model Organization {
-  id           String   @id @default(cuid())
+  id           String            @id @default(cuid())
   name         String
+  type         OrganizationType? // collected in /setup; null on pre-setup rows
   logoUrl      String?
-  contactEmail String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  contactEmail String            @unique
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   admins    User[]
   elections Election[]
