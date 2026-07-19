@@ -11,6 +11,14 @@
       "privacy": "Pravila privatnosti",
       "terms": "Uvjeti korištenja"
     },
+    "verifyEmail": {
+      "subject": "Potvrdite svoju e-mail adresu",
+      "heading": "Potvrdite svoju e-mail adresu",
+      "body": "Hvala što ste otvorili Electius račun. Kliknite gumb u nastavku kako biste potvrdili svoju e-mail adresu i dovršili registraciju.",
+      "cta": "Potvrdi e-mail adresu",
+      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
+      "expiry": "Poveznica vrijedi 24 sata. Ako niste otvorili račun na Electiusu, slobodno zanemarite ovu poruku."
+    },
     "login": {
       "title": "Dobrodošli natrag",
       "subtitle": "Prijavite se za upravljanje izborima svoje organizacije.",
@@ -46,7 +54,8 @@
         "error": "Prijava nije uspjela. Provjerite podatke i pokušajte ponovno.",
         "errors": {
           "email": "Unesite ispravnu e-mail adresu.",
-          "password": "Unesite lozinku."
+          "password": "Unesite lozinku.",
+          "unverified": "Potvrdite svoju e-mail adresu — upravo smo vam poslali novu poveznicu za potvrdu."
         }
       }
     },
@@ -85,7 +94,11 @@
         "confirmPasswordPlaceholder": "Ponovite lozinku",
         "terms": "Slažem se s <terms>Uvjetima korištenja</terms> i <privacy>Pravilima privatnosti</privacy>.",
         "submit": "Otvori račun",
-        "success": "Račun je otvoren.",
+        "verify": {
+          "title": "Provjerite svoju e-poštu",
+          "body": "Poslali smo poveznicu za potvrdu na <email></email>. Kliknite je kako biste aktivirali svoj račun.",
+          "hint": "Ne vidite poruku? Provjerite mapu neželjene pošte ili se pokušajte prijaviti kako bismo vam poslali novu poveznicu."
+        },
         "errors": {
           "name": "Unesite ime i prezime.",
           "email": "Unesite ispravnu e-mail adresu.",

@@ -6,6 +6,7 @@ import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { sendVerificationEmail } from "@/lib/services/email.service";
 
 // BetterAuth server instance, mounted at /api/auth/[...all]; auth lives on the
 // dashboard host only (BETTER_AUTH_URL/BETTER_AUTH_SECRET read from env — see
@@ -20,8 +21,26 @@ export const auth = betterAuth({
   ].filter((origin): origin is string => Boolean(origin)),
   // Our Prisma model is `VerificationToken`; BetterAuth's default is `verification`.
   verification: { modelName: "verificationToken" },
+  // Email/password accounts must click the Resend-delivered link before they
+  // can sign in (requireEmailVerification below). Google arrives pre-verified,
+  // so sendOnSignUp skips OAuth users. Clicking the link opens the session
+  // (autoSignInAfterVerification) and lands on the callbackURL from signup.
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail(user.email, url);
+    },
+    sendOnSignUp: true,
+    // A blocked sign-in attempt re-sends a fresh link — the "resend" UX with
+    // zero extra UI.
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    expiresIn: 60 * 60 * 24, // 24h, not the 1h default — signup emails get opened late
+  },
   emailAndPassword: {
     enabled: true,
+    // Unverified accounts get 403 EMAIL_NOT_VERIFIED on sign-in; signUpEmail
+    // stops issuing the autoSignIn cookie (funnel: signup → inbox → /setup).
+    requireEmailVerification: true,
     // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
     // per-password random salt embedded in its `salt:key` format) by leaving
     // `hash` unset. Verify falls back to bcrypt for legacy seeded accounts
