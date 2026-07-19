@@ -71,7 +71,7 @@ export function SidebarNav({
       >
         <span className="flex shrink-0 items-center justify-center overflow-hidden rounded-md">
           <Image
-            src="/logo/logo-mark-white.png"
+            src="/logo/logo-mark.png"
             alt="Electius"
             width={30}
             height={30}
