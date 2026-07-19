@@ -53,7 +53,9 @@ export function LoginForm() {
       rememberMe,
     });
     if (error) {
-      toast.error(t("error"));
+      // 403 = EMAIL_NOT_VERIFIED — the attempt itself re-sent a fresh
+      // verification link (sendOnSignIn), so the toast points at the inbox.
+      toast.error(error.status === 403 ? t("errors.unverified") : t("error"));
       setPending(false);
       return;
     }

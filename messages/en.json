@@ -11,6 +11,14 @@
       "privacy": "Privacy policy",
       "terms": "Terms of service"
     },
+    "verifyEmail": {
+      "subject": "Verify your email address",
+      "heading": "Verify your email address",
+      "body": "Thanks for creating an Electius account. Click the button below to verify your email address and finish setting up your account.",
+      "cta": "Verify email address",
+      "fallback": "If the button doesn't work, copy this link into your browser:",
+      "expiry": "The link is valid for 24 hours. If you didn't create an Electius account, you can safely ignore this message."
+    },
     "login": {
       "title": "Welcome back",
       "subtitle": "Sign in to manage your organization's elections.",
@@ -46,7 +54,8 @@
         "error": "Sign-in failed. Check your credentials and try again.",
         "errors": {
           "email": "Enter a valid email address.",
-          "password": "Enter your password."
+          "password": "Enter your password.",
+          "unverified": "Verify your email address — we've just sent you a new verification link."
         }
       }
     },
@@ -85,7 +94,11 @@
         "confirmPasswordPlaceholder": "Repeat your password",
         "terms": "I agree to the <terms>Terms of service</terms> and <privacy>Privacy policy</privacy>.",
         "submit": "Create account",
-        "success": "Account created.",
+        "verify": {
+          "title": "Check your email",
+          "body": "We've sent a verification link to <email></email>. Click it to activate your account.",
+          "hint": "Don't see the message? Check your spam folder, or try signing in and we'll send you a new link."
+        },
         "errors": {
           "name": "Enter your full name.",
           "email": "Enter a valid email address.",

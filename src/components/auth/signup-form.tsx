@@ -3,14 +3,17 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
+import { MailCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/auth/google-icon";
 
 // Sign-up form (auth-phase-4 UI over the phase-3 registration wiring): posts to
-// /api/auth/register (BetterAuth signUpEmail — scrypt hash, autoSignIn cookie),
-// zod-validated, errors/success via toast.
+// /api/auth/register (BetterAuth signUpEmail — scrypt hash), zod-validated,
+// errors via toast. With requireEmailVerification a successful signup opens no
+// session — the form swaps to a "check your inbox" panel; clicking the emailed
+// link verifies, auto-signs-in and lands on /{locale}/setup.
 type Field = "name" | "email" | "password" | "confirmPassword" | "terms";
 
 type SignupError = "mismatch" | "exists" | "tooShort" | "generic";
@@ -37,6 +40,8 @@ export function SignupForm() {
   const [terms, setTerms] = useState(false);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Partial<Record<Field, boolean>>>({});
+  // Non-null once registration succeeded — swaps the form for the inbox panel.
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const schema = z
     .object({
@@ -75,7 +80,7 @@ export function SignupForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmPassword }),
+        body: JSON.stringify({ name, email, password, confirmPassword, locale }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => null)) as {
@@ -85,15 +90,34 @@ export function SignupForm() {
         setPending(false);
         return;
       }
-      toast.success(t("success"));
-      // ponytail: the spec says "redirect to sign-in", but autoSignIn already set the
-      // session cookie — /login would just bounce to the dashboard. Keep the verified
-      // phase-3 funnel hop: full navigation so the proxy re-runs with the cookie.
-      window.location.assign(`/${locale}/setup`);
+      // No session cookie until the emailed link is clicked — stay here and
+      // point at the inbox instead of navigating into the (gated) funnel.
+      setSentTo(parsed.data.email);
     } catch {
       toast.error(t("errors.generic"));
       setPending(false);
     }
+  }
+
+  if (sentTo) {
+    return (
+      <div className="flex w-full flex-col items-center gap-4 text-center">
+        <span className="flex size-14 items-center justify-center rounded-full bg-brand-50">
+          <MailCheck className="size-7 text-brand-700" aria-hidden />
+        </span>
+        <h2 className="font-heading text-xl font-semibold text-neutral-800">
+          {t("verify.title")}
+        </h2>
+        <p className="text-base leading-relaxed text-neutral-600">
+          {t.rich("verify.body", {
+            email: () => (
+              <span className="font-medium text-neutral-950">{sentTo}</span>
+            ),
+          })}
+        </p>
+        <p className="text-sm text-neutral-600">{t("verify.hint")}</p>
+      </div>
+    );
   }
 
   return (

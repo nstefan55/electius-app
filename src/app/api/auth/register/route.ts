@@ -1,13 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
 import { auth } from "@/lib/auth";
+import { routing } from "@/i18n/routing";
 
 // Registration endpoint (auth-phase-3-spec). A thin wrapper over BetterAuth's
 // signUpEmail so one engine owns the whole flow: it rejects existing users,
 // enforces email format + password length (8–128), salts + hashes with scrypt
-// (the configured default in lib/auth), creates the user, and — autoSignIn —
-// opens a session whose Set-Cookie we forward. The only check BetterAuth
-// doesn't do is the confirmPassword match, added here.
+// (the configured default in lib/auth), creates the user, and sends the
+// verification email (sendOnSignUp) — with requireEmailVerification on, no
+// session opens until the link is clicked; the emailed link's callbackURL
+// lands the verified (and auto-signed-in) user on /{locale}/setup. The only
+// check BetterAuth doesn't do is the confirmPassword match, added here.
 // ponytail: field checks are plain guards, not zod — zod isn't installed yet;
 // adopt it here when it lands per coding-standards.
 export async function POST(request: NextRequest) {
@@ -21,10 +24,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { name, email, password, confirmPassword } = (body ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const { name, email, password, confirmPassword, locale } = (body ??
+    {}) as Record<string, unknown>;
+  const safeLocale = routing.locales.find((l) => l === locale)
+    ? (locale as string)
+    : routing.defaultLocale;
   if (
     typeof name !== "string" ||
     name.trim() === "" ||
@@ -46,7 +50,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const { headers, response } = await auth.api.signUpEmail({
-      body: { name: name.trim(), email, password },
+      body: {
+        name: name.trim(),
+        email,
+        password,
+        callbackURL: `/${safeLocale}/setup`,
+      },
       returnHeaders: true,
     });
 
@@ -63,7 +72,8 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-    // Forward the autoSignIn session cookie(s) from BetterAuth's response.
+    // With requireEmailVerification there's no autoSignIn cookie to forward —
+    // kept as a no-op loop so nothing breaks if verification is ever relaxed.
     for (const cookie of headers.getSetCookie()) {
       res.headers.append("set-cookie", cookie);
     }
