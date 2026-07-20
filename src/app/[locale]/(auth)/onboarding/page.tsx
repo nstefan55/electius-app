@@ -58,10 +58,10 @@ export default async function OnboardingPage() {
       <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-neutral-200 bg-white px-6 sm:px-8">
         <div className="flex items-center gap-2.5">
           <Image
-            src="/logo/logo-mark.png"
+            src="/logo/logo-mark-light.png"
             alt="Electius"
-            width={26}
-            height={26}
+            width={30}
+            height={30}
             className="object-contain"
             priority
           />
@@ -70,7 +70,7 @@ export default async function OnboardingPage() {
           </span>
         </div>
         <Link
-          href="/dashboard"
+          href="/home"
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-neutral-600 hover:text-brand-700"
         >
           {t("skip")}
@@ -78,9 +78,9 @@ export default async function OnboardingPage() {
         </Link>
       </header>
 
-      <div className="mx-auto max-w-[1000px] px-6 pt-13 pb-18 sm:px-8">
+      <div className="mx-auto max-w-250 px-6 pt-13 pb-18 sm:px-8">
         {/* Hero */}
-        <div className="mx-auto max-w-[680px] text-center">
+        <div className="mx-auto max-w-170 text-center">
           <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-brand-50 px-3.5 text-[12.5px] font-bold tracking-wider text-brand-700 uppercase">
             <Star className="size-3.5" aria-hidden />
             {t("welcomePill")}
@@ -221,7 +221,7 @@ export default async function OnboardingPage() {
           <h2 className="font-heading text-[26px] leading-tight font-bold text-white">
             {t("cta.title")}
           </h2>
-          <p className="mx-auto mt-3 max-w-[520px] text-base leading-normal text-white/70">
+          <p className="mx-auto mt-3 max-w-130 text-base leading-normal text-white/70">
             {t("cta.sub")}
           </p>
           <div className="mt-6.5 flex flex-wrap justify-center gap-3">
@@ -233,7 +233,7 @@ export default async function OnboardingPage() {
               {t("cta.primary")}
             </Link>
             <Link
-              href="/dashboard"
+              href="/home"
               className="inline-flex h-12.5 items-center gap-2 rounded-[9px] border border-white/25 px-6 text-base font-semibold text-white transition-colors hover:bg-white/10"
             >
               {t("cta.secondary")}

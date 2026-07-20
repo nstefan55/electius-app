@@ -65,7 +65,7 @@ export function SetupForm({
     organizationName.trim() !== "" &&
     organizationType !== "";
 
-  async function save(target: "onboarding" | "dashboard") {
+  async function save(target: "onboarding" | "home") {
     // `complete` narrows organizationType to OrganizationType past this guard.
     if (!complete || pending) return;
     setPending(true);
@@ -87,13 +87,13 @@ export function SetupForm({
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-6 sm:px-8">
+      <header className="flex h-20 shrink-0 items-center justify-between border-b border-neutral-200 bg-white px-6 sm:px-8">
         <div className="flex items-center gap-2.5">
           <Image
-            src="/logo/logo-mark.png"
+            src="/logo/logo-mark-light.png"
             alt="Electius"
-            width={28}
-            height={28}
+            width={40}
+            height={40}
             className="object-contain"
             priority
           />
@@ -240,7 +240,7 @@ export function SetupForm({
               <button
                 type="button"
                 disabled={!complete || pending}
-                onClick={() => save("dashboard")}
+                onClick={() => save("home")}
                 className={cn(
                   "font-medium",
                   complete && !pending

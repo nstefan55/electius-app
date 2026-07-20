@@ -6,7 +6,10 @@ import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { sendVerificationEmail } from "@/lib/services/email.service";
+import {
+  sendResetPasswordEmail,
+  sendVerificationEmail,
+} from "@/lib/services/email.service";
 
 // Kill switch for the whole email-verification-on-register flow. Default ON
 // (prod-safe); only the literal "false" disables it — for dev/testing when the
@@ -50,6 +53,15 @@ export const auth = betterAuth({
     // Unverified accounts get 403 EMAIL_NOT_VERIFIED on sign-in; signUpEmail
     // stops issuing the autoSignIn cookie (funnel: signup → inbox → /setup).
     requireEmailVerification: emailVerificationEnabled,
+    // Forgot-password flow: requestPasswordReset emails a link whose click
+    // lands on redirectTo?token=… (or ?error=INVALID_TOKEN). The single-use
+    // token is persisted through the `verification` mapping above — i.e. in
+    // our existing VerificationToken model, identifier "reset-password:<token>"
+    // (1h default expiry). Deliberately NOT gated on emailVerificationEnabled —
+    // reset must work regardless of the verification toggle.
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail(user.email, url);
+    },
     // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
     // per-password random salt embedded in its `salt:key` format) by leaving
     // `hash` unset. Verify falls back to bcrypt for legacy seeded accounts

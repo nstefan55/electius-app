@@ -3,6 +3,7 @@ import { ShieldCheck, Hash, Clock } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { LoginForm } from "@/components/auth/login-form";
+import { SessionBounce } from "@/components/auth/session-bounce";
 
 // Sign-in (auth-phase-4): split-screen design-system UI over the phase-1
 // BetterAuth form. Unauthenticated dashboard-host traffic lands here via the
@@ -35,6 +36,7 @@ export default function LoginPage() {
         ],
       }}
     >
+      <SessionBounce />
       <LoginForm />
       <p className="text-center text-sm text-neutral-600">
         {t("newTo")}{" "}

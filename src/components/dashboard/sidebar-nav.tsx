@@ -5,7 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { Menu } from "@base-ui/react/menu";
 import {
-  LayoutDashboard,
+  House,
   CheckCircle2,
   BarChart3,
   Archive,
@@ -27,7 +27,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", href: "/", icon: LayoutDashboard },
+  { key: "dashboard", href: "/", icon: House },
   { key: "elections", href: "/elections", icon: CheckCircle2 },
   { key: "results", href: "/results", icon: BarChart3 },
   { key: "archive", href: "/archive", icon: Archive },

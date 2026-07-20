@@ -21,13 +21,18 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // "Electius <noreply@electius.com>") once the domain is verified in Resend.
 const FROM = process.env.RESEND_FROM_EMAIL ?? "Electius <onboarding@resend.dev>";
 
-export async function sendVerificationEmail(
-  to: string,
-  url: string,
-  locale: Locale = "hr",
-) {
-  const t = CATALOGS[locale].auth.verifyEmail;
+// Shared branded action-link template (verification + password reset use the
+// same layout: heading, body, CTA button, plain-link fallback, expiry note).
+interface ActionEmailCopy {
+  subject: string;
+  heading: string;
+  body: string;
+  cta: string;
+  fallback: string;
+  expiry: string;
+}
 
+async function sendActionEmail(to: string, url: string, t: ActionEmailCopy) {
   const { error } = await resend.emails.send({
     from: FROM,
     to,
@@ -45,8 +50,24 @@ export async function sendVerificationEmail(
   });
 
   if (error) {
-    // Surface the failure — a silently unsent verification email strands the
-    // account (requireEmailVerification blocks sign-in until the link is clicked).
+    // Surface the failure — a silently unsent email strands the account
+    // (unverifiable signup / a reset request the user is waiting on).
     throw new Error(`resend: ${error.message}`);
   }
+}
+
+export async function sendVerificationEmail(
+  to: string,
+  url: string,
+  locale: Locale = "hr",
+) {
+  await sendActionEmail(to, url, CATALOGS[locale].auth.verifyEmail);
+}
+
+export async function sendResetPasswordEmail(
+  to: string,
+  url: string,
+  locale: Locale = "hr",
+) {
+  await sendActionEmail(to, url, CATALOGS[locale].auth.resetEmail);
 }

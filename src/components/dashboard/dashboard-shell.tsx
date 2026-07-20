@@ -38,7 +38,7 @@ function crumbLabelKey(pathname: string): CrumbKey {
   // if (pathname.startsWith("/elections/" || pathname.startsWith("/results/")) {
   //   return "sidebar.elections.details";
   // }
-  // "/" (dashboard root via the host rewrite) or "/dashboard"
+  // "/" (host-root rewrite) or "/home"
   return "sidebar.nav.dashboard";
 }
 
@@ -108,18 +108,30 @@ export function DashboardShell({
 
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem>
-                {/* TODO: IF possible: Change the breadcrumb link to marketing landing page */}
-                  <BreadcrumbLink render={<Link href="/" />}>
-                    {t("topbar.home")}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="font-bold">
-                    {t(crumbKey)}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
+                {/* On the home overview the crumb IS "Home" — a "Home / Home"
+                    pair would be noise, so render the single page crumb. */}
+                {crumbKey === "sidebar.nav.dashboard" ? (
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="font-bold">
+                      {t("topbar.home")}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                ) : (
+                  <>
+                    <BreadcrumbItem>
+                    {/* TODO: IF possible: Change the breadcrumb link to marketing landing page */}
+                      <BreadcrumbLink render={<Link href="/" />}>
+                        {t("topbar.home")}
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="font-bold">
+                        {t(crumbKey)}
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </>
+                )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>

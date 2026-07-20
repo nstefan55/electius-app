@@ -13,11 +13,19 @@
     },
     "verifyEmail": {
       "subject": "Potvrdite svoju e-mail adresu",
-      "heading": "Potvrdite svoju e-mail adresu",
+      "heading": "Dobrodošli u Electius!",
       "body": "Hvala što ste otvorili Electius račun. Kliknite gumb u nastavku kako biste potvrdili svoju e-mail adresu i dovršili registraciju.",
       "cta": "Potvrdi e-mail adresu",
       "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
       "expiry": "Poveznica vrijedi 24 sata. Ako niste otvorili račun na Electiusu, slobodno zanemarite ovu poruku."
+    },
+    "resetEmail": {
+      "subject": "Ponovno postavljanje lozinke",
+      "heading": "Ponovno postavljanje lozinke",
+      "body": "Zaprimili smo zahtjev za ponovno postavljanje lozinke vašeg Electius računa. Kliknite gumb u nastavku kako biste postavili novu lozinku.",
+      "cta": "Postavi novu lozinku",
+      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
+      "expiry": "Poveznica vrijedi 1 sat i može se iskoristiti samo jednom. Ako niste zatražili promjenu lozinke, slobodno zanemarite ovu poruku — lozinka ostaje nepromijenjena."
     },
     "login": {
       "title": "Dobrodošli natrag",
@@ -56,6 +64,50 @@
           "email": "Unesite ispravnu e-mail adresu.",
           "password": "Unesite lozinku.",
           "unverified": "Potvrdite svoju e-mail adresu — upravo smo vam poslali novu poveznicu za potvrdu."
+        }
+      }
+    },
+    "forgot": {
+      "title": "Zaboravljena lozinka?",
+      "subtitle": "Unesite e-mail adresu računa i poslat ćemo vam poveznicu za ponovno postavljanje lozinke.",
+      "backTo": "Sjetili ste se lozinke?",
+      "backToLink": "Natrag na prijavu",
+      "form": {
+        "email": "E-pošta",
+        "emailPlaceholder": "vi@organizacija.hr",
+        "submit": "Pošalji poveznicu",
+        "errors": {
+          "email": "Unesite ispravnu e-mail adresu.",
+          "generic": "Slanje nije uspjelo. Pokušajte ponovno."
+        },
+        "sent": {
+          "title": "Provjerite svoju e-poštu",
+          "body": "Ako račun za <email></email> postoji, poslali smo poveznicu za ponovno postavljanje lozinke.",
+          "hint": "Ne vidite poruku? Provjerite mapu neželjene pošte."
+        }
+      }
+    },
+    "reset": {
+      "title": "Postavite novu lozinku",
+      "subtitle": "Unesite novu lozinku za svoj Electius račun.",
+      "form": {
+        "password": "Nova lozinka",
+        "passwordPlaceholder": "Najmanje 8 znakova",
+        "passwordHelper": "Najmanje 8 znakova.",
+        "confirmPassword": "Potvrdite novu lozinku",
+        "confirmPasswordPlaceholder": "Ponovite novu lozinku",
+        "submit": "Postavi lozinku",
+        "success": "Lozinka je promijenjena. Prijavite se novom lozinkom.",
+        "errors": {
+          "tooShort": "Lozinka mora imati najmanje 8 znakova.",
+          "mismatch": "Lozinke se ne podudaraju.",
+          "invalidToken": "Poveznica je nevažeća ili je istekla. Zatražite novu.",
+          "generic": "Nešto je pošlo po zlu. Pokušajte ponovno."
+        },
+        "invalid": {
+          "title": "Poveznica nije važeća",
+          "body": "Poveznica za ponovno postavljanje lozinke je nevažeća ili je istekla.",
+          "cta": "Zatražite novu poveznicu"
         }
       }
     },
@@ -221,7 +273,7 @@
   "dashboard": {
     "sidebar": {
       "nav": {
-        "dashboard": "Nadzorna ploča",
+        "dashboard": "Početna",
         "elections": "Izbori",
         "results": "Rezultati",
         "archive": "Arhiva",
@@ -241,7 +293,7 @@
       "notifications": "Obavijesti"
     },
     "page": {
-      "title": "Nadzorna ploča",
+      "title": "Početna",
       "newElection": "Novi izbor",
       "footerText": "Glasači se autentificiraju putem jednokratnih magičnih veza. Sustav nikada ne povezuje glasača s njihovim glasom.",
       "stats": {
