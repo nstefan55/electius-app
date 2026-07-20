@@ -82,12 +82,19 @@ export function SignupForm() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ name, email, password, confirmPassword, locale }),
       });
+      const data = (await res.json().catch(() => null)) as {
+        error?: string;
+        data?: { verificationRequired?: boolean };
+      } | null;
       if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as {
-          error?: string;
-        } | null;
         toast.error(t(`errors.${ERROR_BY_CODE[data?.error ?? ""] ?? "generic"}`));
         setPending(false);
+        return;
+      }
+      if (data?.data?.verificationRequired === false) {
+        // Verification disabled (EMAIL_VERIFICATION_ENABLED=false) — the 201
+        // carried the autoSignIn cookie; hard nav so the proxy re-runs with it.
+        window.location.assign(`/${locale}/setup`);
         return;
       }
       // No session cookie until the emailed link is clicked — stay here and

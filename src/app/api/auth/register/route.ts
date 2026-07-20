@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
-import { auth } from "@/lib/auth";
+import { auth, emailVerificationEnabled } from "@/lib/auth";
 import { routing } from "@/i18n/routing";
 
 // Registration endpoint (auth-phase-3-spec). A thin wrapper over BetterAuth's
@@ -68,12 +68,15 @@ export async function POST(request: NextRequest) {
             name: response.user.name,
             email: response.user.email,
           },
+          // The form branches on this: true → "check your inbox" panel,
+          // false → straight into the /setup funnel (autoSignIn cookie below).
+          verificationRequired: emailVerificationEnabled,
         },
       },
       { status: 201 },
     );
-    // With requireEmailVerification there's no autoSignIn cookie to forward —
-    // kept as a no-op loop so nothing breaks if verification is ever relaxed.
+    // With requireEmailVerification there's no autoSignIn cookie to forward;
+    // with verification disabled this loop forwards the autoSignIn cookie.
     for (const cookie of headers.getSetCookie()) {
       res.headers.append("set-cookie", cookie);
     }

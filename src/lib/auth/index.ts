@@ -8,6 +8,13 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendVerificationEmail } from "@/lib/services/email.service";
 
+// Kill switch for the whole email-verification-on-register flow. Default ON
+// (prod-safe); only the literal "false" disables it — for dev/testing when the
+// Resend domain isn't verified (fallback sender only delivers to the account
+// owner, so any other test email could never log in).
+export const emailVerificationEnabled =
+  process.env.EMAIL_VERIFICATION_ENABLED !== "false";
+
 // BetterAuth server instance, mounted at /api/auth/[...all]; auth lives on the
 // dashboard host only (BETTER_AUTH_URL/BETTER_AUTH_SECRET read from env — see
 // domain-architecture-spec §5.A), with both public hosts trusted as origins
@@ -25,14 +32,16 @@ export const auth = betterAuth({
   // can sign in (requireEmailVerification below). Google arrives pre-verified,
   // so sendOnSignUp skips OAuth users. Clicking the link opens the session
   // (autoSignInAfterVerification) and lands on the callbackURL from signup.
+  // The whole flow is gated on emailVerificationEnabled (see above) — when off,
+  // no emails send and signup reverts to autoSignIn → /setup.
   emailVerification: {
     sendVerificationEmail: async ({ user, url }) => {
       await sendVerificationEmail(user.email, url);
     },
-    sendOnSignUp: true,
+    sendOnSignUp: emailVerificationEnabled,
     // A blocked sign-in attempt re-sends a fresh link — the "resend" UX with
     // zero extra UI.
-    sendOnSignIn: true,
+    sendOnSignIn: emailVerificationEnabled,
     autoSignInAfterVerification: true,
     expiresIn: 60 * 60 * 24, // 24h, not the 1h default — signup emails get opened late
   },
@@ -40,7 +49,7 @@ export const auth = betterAuth({
     enabled: true,
     // Unverified accounts get 403 EMAIL_NOT_VERIFIED on sign-in; signUpEmail
     // stops issuing the autoSignIn cookie (funnel: signup → inbox → /setup).
-    requireEmailVerification: true,
+    requireEmailVerification: emailVerificationEnabled,
     // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
     // per-password random salt embedded in its `salt:key` format) by leaving
     // `hash` unset. Verify falls back to bcrypt for legacy seeded accounts
