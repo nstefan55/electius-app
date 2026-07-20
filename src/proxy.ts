@@ -14,7 +14,12 @@ function isDashboardHost(host: string): boolean {
 
 // Pre-session auth surfaces; /setup + /onboarding come AFTER signup
 // (autoSignIn sets the cookie), so they stay gated (§5.B).
-const PUBLIC_AUTH_PATHS = ["/login", "/signup"];
+const PUBLIC_AUTH_PATHS = [
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+];
 
 // Admin-only surfaces the apex would otherwise also serve (route folders exist
 // once) — apex hits 307 to NEXT_PUBLIC_APP_URL. Prefix-matched; /results is
@@ -23,7 +28,7 @@ const DASHBOARD_ONLY_PATHS = [
   ...PUBLIC_AUTH_PATHS,
   "/setup",
   "/onboarding",
-  "/dashboard",
+  "/home",
   "/elections",
   "/archive",
   "/voters",
@@ -56,8 +61,10 @@ export default function proxy(request: NextRequest) {
     }
 
     // Auth gate (auth-phase-1): everything on this host needs a session cookie
-    // except login/signup; signed-in users bounce off those to the dashboard.
-    // Locale resolved here for a single hop.
+    // except the public auth surfaces. Cookie PRESENCE only — the signed-in
+    // bounce off login/signup lives in those pages (SessionBounce) with real
+    // DB validation; bouncing on presence here redirect-looped for stale
+    // cookies (e.g. sessions revoked by a password reset).
     const isPublicAuth = PUBLIC_AUTH_PATHS.some(
       (p) => rest === p || rest.startsWith(`${p}/`),
     );
@@ -68,19 +75,14 @@ export default function proxy(request: NextRequest) {
       url.pathname = `/${prefix ?? routing.defaultLocale}/login`;
       return NextResponse.redirect(url);
     }
-    if (hasSessionCookie && isPublicAuth) {
-      const url = request.nextUrl.clone();
-      url.pathname = `/${prefix ?? routing.defaultLocale}/dashboard`;
-      return NextResponse.redirect(url);
-    }
 
     if (rest === "" || rest === "/") {
-      // Host root ("/", "/hr", "/en") → the localized dashboard overview. We
+      // Host root ("/", "/hr", "/en") → the localized home overview. We
       // MUST emit the rewrite ourselves: next-intl returns next() for an
       // already-canonical path, which would re-route the ORIGINAL "/hr" to the
       // marketing page (the phase-1 bilingual gap). See domain-architecture-spec §6.
       const url = request.nextUrl.clone();
-      url.pathname = `/${prefix ?? routing.defaultLocale}/dashboard`;
+      url.pathname = `/${prefix ?? routing.defaultLocale}/home`;
       return NextResponse.rewrite(url);
     }
   } else {

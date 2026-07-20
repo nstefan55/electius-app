@@ -2,7 +2,7 @@ import { useTranslations } from "next-intl";
 import { signInUrl, signUpUrl } from "@/lib/urls";
 
 // Apex landing — owns the real "/" (root-collision: marketing owns /, the dashboard overview
-// stays a real page at /dashboard — domain-architecture-spec §3). SCAFFOLD: hero + the two
+// stays a real page at /home — domain-architecture-spec §3). SCAFFOLD: hero + the two
 // cross-host CTAs only; full landing copy/visual design is owned by the marketing-landing spec.
 // CTAs are plain <a> built from src/lib/urls.ts (apex → dashboard host), never the same-host <Link>.
 export default function Home() {
