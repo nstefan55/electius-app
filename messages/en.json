@@ -13,11 +13,19 @@
     },
     "verifyEmail": {
       "subject": "Verify your email address",
-      "heading": "Verify your email address",
+      "heading": "Welcome to Electius!",
       "body": "Thanks for creating an Electius account. Click the button below to verify your email address and finish setting up your account.",
       "cta": "Verify email address",
       "fallback": "If the button doesn't work, copy this link into your browser:",
       "expiry": "The link is valid for 24 hours. If you didn't create an Electius account, you can safely ignore this message."
+    },
+    "resetEmail": {
+      "subject": "Reset your password",
+      "heading": "Reset your password",
+      "body": "We received a request to reset the password for your Electius account. Click the button below to set a new password.",
+      "cta": "Set a new password",
+      "fallback": "If the button doesn't work, copy this link into your browser:",
+      "expiry": "The link is valid for 1 hour and can be used only once. If you didn't request a password change, you can safely ignore this message — your password stays unchanged."
     },
     "login": {
       "title": "Welcome back",
@@ -56,6 +64,50 @@
           "email": "Enter a valid email address.",
           "password": "Enter your password.",
           "unverified": "Verify your email address — we've just sent you a new verification link."
+        }
+      }
+    },
+    "forgot": {
+      "title": "Forgot your password?",
+      "subtitle": "Enter your account email and we'll send you a link to reset your password.",
+      "backTo": "Remembered your password?",
+      "backToLink": "Back to sign in",
+      "form": {
+        "email": "Email",
+        "emailPlaceholder": "you@organization.com",
+        "submit": "Send reset link",
+        "errors": {
+          "email": "Enter a valid email address.",
+          "generic": "Sending failed. Please try again."
+        },
+        "sent": {
+          "title": "Check your email",
+          "body": "If an account exists for <email></email>, we've sent a link to reset your password.",
+          "hint": "Don't see it? Check your spam folder."
+        }
+      }
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Enter a new password for your Electius account.",
+      "form": {
+        "password": "New password",
+        "passwordPlaceholder": "At least 8 characters",
+        "passwordHelper": "At least 8 characters.",
+        "confirmPassword": "Confirm new password",
+        "confirmPasswordPlaceholder": "Repeat the new password",
+        "submit": "Set password",
+        "success": "Password changed. Sign in with your new password.",
+        "errors": {
+          "tooShort": "Password must be at least 8 characters.",
+          "mismatch": "Passwords don't match.",
+          "invalidToken": "The link is invalid or has expired. Request a new one.",
+          "generic": "Something went wrong. Please try again."
+        },
+        "invalid": {
+          "title": "Link not valid",
+          "body": "The password reset link is invalid or has expired.",
+          "cta": "Request a new link"
         }
       }
     },
@@ -221,7 +273,7 @@
   "dashboard": {
     "sidebar": {
       "nav": {
-        "dashboard": "Dashboard",
+        "dashboard": "Home",
         "elections": "Elections",
         "results": "Results",
         "archive": "Archive",
@@ -241,7 +293,7 @@
       "notifications": "Notifications"
     },
     "page": {
-      "title": "Dashboard",
+      "title": "Home",
       "newElection": "New election",
       "footerText": "Voters authenticate via one-time magic links. The system never associates a voter with their ballot.",
       "stats": {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
 import toast from "react-hot-toast";
+import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/auth/google-icon";
@@ -109,10 +110,12 @@ export function LoginForm() {
             >
               {t("password")}
             </label>
-            {/* ponytail: dead link — forgot-password/OTP is its own open thread. */}
-            <a href="#" className="text-[13px] text-brand-700 hover:underline">
+            <Link
+              href="/forgot-password"
+              className="text-[13px] text-brand-700 hover:underline"
+            >
               {t("forgotPassword")}
-            </a>
+            </Link>
           </div>
           <input
             id="login-password"
