@@ -3,6 +3,7 @@ import { ClipboardList, BarChart3, FileCheck2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { AuthSplitLayout } from "@/components/auth/auth-split-layout";
 import { SignupForm } from "@/components/auth/signup-form";
+import { SessionBounce } from "@/components/auth/session-bounce";
 
 // Sign-up (auth-phase-4): split-screen design-system UI over the phase-3
 // registration wiring; success → /setup → /onboarding → "/".
@@ -34,6 +35,7 @@ export default function SignupPage() {
         ],
       }}
     >
+      <SessionBounce />
       <SignupForm />
       <p className="text-center text-sm text-neutral-600">
         {t("haveAccount")}{" "}
