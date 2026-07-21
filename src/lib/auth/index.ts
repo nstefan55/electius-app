@@ -2,14 +2,38 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import {
+  checkRateLimit,
+  clientIp,
+  retryAfterSeconds,
+  type RateLimitAction,
+} from "@/lib/rate-limit";
+import {
   sendResetPasswordEmail,
   sendVerificationEmail,
 } from "@/lib/services/email.service";
+
+// Rate-limited BetterAuth paths (rate-limiting-spec). These endpoints live
+// inside the /api/auth/[...all] catch-all, so the limiter runs as a `before`
+// hook keyed on ctx.path. `withEmail` folds the target email into the key —
+// tighter per-account limits, and one shared IP (campus NAT) can't exhaust
+// everyone's attempts. /sign-up/email is NOT listed: registration goes through
+// our own /api/auth/register route, which rate-limits itself (the server-side
+// auth.api.signUpEmail call carries no client IP for a hook to read).
+const RATE_LIMIT_RULES: Record<
+  string,
+  { action: RateLimitAction; withEmail?: boolean }
+> = {
+  "/sign-in/email": { action: "login", withEmail: true },
+  "/request-password-reset": { action: "forgotPassword" },
+  "/reset-password": { action: "resetPassword" },
+  "/send-verification-email": { action: "resendVerification", withEmail: true },
+};
 
 // Kill switch for the whole email-verification-on-register flow. Default ON
 // (prod-safe); only the literal "false" disables it — for dev/testing when the
@@ -79,6 +103,32 @@ export const auth = betterAuth({
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
     },
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      const rule = RATE_LIMIT_RULES[ctx.path];
+      if (!rule) return;
+      const email =
+        rule.withEmail && typeof ctx.body?.email === "string"
+          ? ctx.body.email.toLowerCase()
+          : null;
+      const ip = clientIp(ctx.headers);
+      const { success, reset } = await checkRateLimit(
+        rule.action,
+        email ? `${ip}:${email}` : ip,
+      );
+      if (!success) {
+        const seconds = retryAfterSeconds(reset);
+        throw new APIError(
+          "TOO_MANY_REQUESTS",
+          {
+            code: "RATE_LIMITED",
+            message: `Too many attempts. Please try again in ${Math.ceil(seconds / 60)} minutes.`,
+          },
+          { "Retry-After": String(seconds) },
+        );
+      }
+    }),
   },
   // Keep last — lets Server Actions calling the auth API set cookies.
   plugins: [nextCookies()],

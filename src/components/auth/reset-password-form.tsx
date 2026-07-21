@@ -83,10 +83,13 @@ export function ResetPasswordForm() {
     });
     if (error) {
       // INVALID_TOKEN = already used or expired between page load and submit.
+      // 429 = rate limited (5 attempts / 15 min per IP).
       toast.error(
-        error.code === "INVALID_TOKEN"
-          ? t("errors.invalidToken")
-          : t("errors.generic"),
+        error.status === 429
+          ? t("errors.rateLimited")
+          : error.code === "INVALID_TOKEN"
+            ? t("errors.invalidToken")
+            : t("errors.generic"),
       );
       setPending(false);
       return;

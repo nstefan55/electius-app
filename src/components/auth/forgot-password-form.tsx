@@ -42,7 +42,10 @@ export function ForgotPasswordForm() {
       redirectTo: `/${locale}/reset-password`,
     });
     if (error) {
-      toast.error(t("errors.generic"));
+      // 429 = rate limited (3 requests / hour per IP).
+      toast.error(
+        error.status === 429 ? t("errors.rateLimited") : t("errors.generic"),
+      );
       setPending(false);
       return;
     }

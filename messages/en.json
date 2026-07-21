@@ -63,7 +63,8 @@
         "errors": {
           "email": "Enter a valid email address.",
           "password": "Enter your password.",
-          "unverified": "Verify your email address — we've just sent you a new verification link."
+          "unverified": "Verify your email address — we've just sent you a new verification link.",
+          "rateLimited": "Too many attempts. Please try again in a few minutes."
         }
       }
     },
@@ -78,7 +79,8 @@
         "submit": "Send reset link",
         "errors": {
           "email": "Enter a valid email address.",
-          "generic": "Sending failed. Please try again."
+          "generic": "Sending failed. Please try again.",
+          "rateLimited": "Too many attempts. Please try again in a few minutes."
         },
         "sent": {
           "title": "Check your email",
@@ -102,7 +104,8 @@
           "tooShort": "Password must be at least 8 characters.",
           "mismatch": "Passwords don't match.",
           "invalidToken": "The link is invalid or has expired. Request a new one.",
-          "generic": "Something went wrong. Please try again."
+          "generic": "Something went wrong. Please try again.",
+          "rateLimited": "Too many attempts. Please try again in a few minutes."
         },
         "invalid": {
           "title": "Link not valid",
@@ -158,7 +161,8 @@
           "mismatch": "Passwords do not match.",
           "exists": "An account with that email already exists.",
           "tooShort": "Password must be at least 8 characters.",
-          "generic": "Sign-up failed. Check your details and try again."
+          "generic": "Sign-up failed. Check your details and try again.",
+          "rateLimited": "Too many attempts. Please try again in a few minutes."
         }
       }
     },
