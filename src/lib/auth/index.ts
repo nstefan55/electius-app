@@ -5,6 +5,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
+import { oAuthProxy } from "better-auth/plugins";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import {
@@ -130,8 +131,23 @@ export const auth = betterAuth({
       }
     }),
   },
-  // Keep last — lets Server Actions calling the auth API set cookies.
-  plugins: [nextCookies()],
+  plugins: [
+    // Routes OAuth through the registered callback host (BETTER_AUTH_URL) and
+    // hands the session back to the app host it can't serve directly. Dev:
+    // fixes state_security_mismatch when signing in from dashboard.localhost
+    // while Google's callback is registered on localhost:3000 (Chrome treats
+    // localhost as a public suffix — no cookie sharing between the two).
+    // currentURL must be explicit: Next dev normalizes request.url to
+    // localhost:3000 regardless of the Host header, so the plugin's own
+    // origin detection would always skip. Prod: NEXT_PUBLIC_APP_URL ===
+    // BETTER_AUTH_URL (both dashboard.electius.com), so the proxy is inert.
+    oAuthProxy({
+      productionURL: process.env.BETTER_AUTH_URL,
+      currentURL: process.env.NEXT_PUBLIC_APP_URL,
+    }),
+    // Keep last — lets Server Actions calling the auth API set cookies.
+    nextCookies(),
+  ],
 });
 
 // Typed session (user.id included) — BetterAuth infers this; no .d.ts augmentation.
