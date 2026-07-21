@@ -56,7 +56,14 @@ export function LoginForm() {
     if (error) {
       // 403 = EMAIL_NOT_VERIFIED — the attempt itself re-sent a fresh
       // verification link (sendOnSignIn), so the toast points at the inbox.
-      toast.error(error.status === 403 ? t("errors.unverified") : t("error"));
+      // 429 = rate limited (5 attempts / 15 min per IP+email).
+      toast.error(
+        error.status === 429
+          ? t("errors.rateLimited")
+          : error.status === 403
+            ? t("errors.unverified")
+            : t("error"),
+      );
       setPending(false);
       return;
     }

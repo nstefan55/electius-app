@@ -63,7 +63,8 @@
         "errors": {
           "email": "Unesite ispravnu e-mail adresu.",
           "password": "Unesite lozinku.",
-          "unverified": "Potvrdite svoju e-mail adresu — upravo smo vam poslali novu poveznicu za potvrdu."
+          "unverified": "Potvrdite svoju e-mail adresu — upravo smo vam poslali novu poveznicu za potvrdu.",
+          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
         }
       }
     },
@@ -78,7 +79,8 @@
         "submit": "Pošalji poveznicu",
         "errors": {
           "email": "Unesite ispravnu e-mail adresu.",
-          "generic": "Slanje nije uspjelo. Pokušajte ponovno."
+          "generic": "Slanje nije uspjelo. Pokušajte ponovno.",
+          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
         },
         "sent": {
           "title": "Provjerite svoju e-poštu",
@@ -102,7 +104,8 @@
           "tooShort": "Lozinka mora imati najmanje 8 znakova.",
           "mismatch": "Lozinke se ne podudaraju.",
           "invalidToken": "Poveznica je nevažeća ili je istekla. Zatražite novu.",
-          "generic": "Nešto je pošlo po zlu. Pokušajte ponovno."
+          "generic": "Nešto je pošlo po zlu. Pokušajte ponovno.",
+          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
         },
         "invalid": {
           "title": "Poveznica nije važeća",
@@ -158,7 +161,8 @@
           "mismatch": "Lozinke se ne podudaraju.",
           "exists": "Račun s tom e-mail adresom već postoji.",
           "tooShort": "Lozinka mora imati najmanje 8 znakova.",
-          "generic": "Registracija nije uspjela. Provjerite podatke i pokušajte ponovno."
+          "generic": "Registracija nije uspjela. Provjerite podatke i pokušajte ponovno.",
+          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
         }
       }
     },

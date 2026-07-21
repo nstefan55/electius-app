@@ -16,13 +16,14 @@ import { GoogleIcon } from "@/components/auth/google-icon";
 // link verifies, auto-signs-in and lands on /{locale}/setup.
 type Field = "name" | "email" | "password" | "confirmPassword" | "terms";
 
-type SignupError = "mismatch" | "exists" | "tooShort" | "generic";
+type SignupError = "mismatch" | "exists" | "tooShort" | "rateLimited" | "generic";
 
 const ERROR_BY_CODE: Record<string, SignupError> = {
   password_mismatch: "mismatch",
   USER_ALREADY_EXISTS: "exists",
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: "exists", // the code v1.6.23 emits
   PASSWORD_TOO_SHORT: "tooShort",
+  rate_limited: "rateLimited", // 429 from the register route (3/hour per IP)
 };
 
 const inputClass =

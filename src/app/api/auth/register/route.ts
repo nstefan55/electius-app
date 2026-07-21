@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
 import { auth, emailVerificationEnabled } from "@/lib/auth";
+import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import { routing } from "@/i18n/routing";
 
 // Registration endpoint (auth-phase-3-spec). A thin wrapper over BetterAuth's
@@ -14,6 +15,23 @@ import { routing } from "@/i18n/routing";
 // ponytail: field checks are plain guards, not zod — zod isn't installed yet;
 // adopt it here when it lands per coding-standards.
 export async function POST(request: NextRequest) {
+  // Rate limit BEFORE parsing — registration is email-sending, keyed by IP
+  // only (rate-limiting-spec: 3/h). The BetterAuth paths get the same
+  // treatment via the hook in lib/auth; this route limits itself because its
+  // server-side signUpEmail call carries no client IP for that hook to read.
+  const limit = await checkRateLimit("register", clientIp(request.headers));
+  if (!limit.success) {
+    const seconds = retryAfterSeconds(limit.reset);
+    return NextResponse.json(
+      {
+        success: false,
+        error: "rate_limited",
+        message: `Too many attempts. Please try again in ${Math.ceil(seconds / 60)} minutes.`,
+      },
+      { status: 429, headers: { "Retry-After": String(seconds) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();
