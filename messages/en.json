@@ -442,6 +442,73 @@
           "empty": "No elections yet."
         }
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Manage your account, organization and plan.",
+      "profile": {
+        "title": "Your profile",
+        "subtitle": "You manage elections on behalf of {orgName}.",
+        "memberSince": "Member since {date}",
+        "stats": {
+          "active": "{count, plural, one {active election} other {active elections}}",
+          "total": "{count, plural, one {election total} other {elections total}}"
+        },
+        "form": {
+          "firstName": "First name",
+          "lastName": "Last name",
+          "email": "Email",
+          "verified": "Verified",
+          "emailHelper": "Your sign-in email can't be changed here — it's tied to your account.",
+          "save": "Save changes",
+          "success": "Profile updated.",
+          "errors": {
+            "firstName": "Enter your first name.",
+            "lastName": "Enter your last name.",
+            "generic": "Something went wrong. Please try again."
+          }
+        },
+        "password": {
+          "toggle": "Change password",
+          "current": "Current password",
+          "new": "New password",
+          "confirm": "Confirm new password",
+          "submit": "Update password",
+          "cancel": "Cancel",
+          "success": "Password updated.",
+          "errors": {
+            "current": "Your current password is incorrect.",
+            "min": "New password must be at least 8 characters.",
+            "match": "Passwords don't match.",
+            "generic": "Something went wrong. Please try again."
+          }
+        }
+      },
+      "organization": {
+        "title": "Organization",
+        "subtitle": "Shown to voters on invitations, ballots and reports.",
+        "logo": {
+          "label": "Organization logo",
+          "helper": "PNG or SVG, square works best. Replaces the Electius mark on organization-branded PDF reports.",
+          "pro": "Pro",
+          "placeholder": "Logo"
+        },
+        "name": "Organization name",
+        "contactEmail": "Contact email",
+        "contactHelper": "Voters see this as the reply-to address on invitations.",
+        "language": {
+          "label": "Interface language",
+          "helper": "Dashboard language. English ships post-launch."
+        },
+        "save": "Save changes",
+        "success": "Organization details updated.",
+        "errors": {
+          "name": "Enter an organization name.",
+          "contactEmail": "Enter a valid email address.",
+          "emailTaken": "That contact email is already in use.",
+          "generic": "Something went wrong. Please try again."
+        }
+      }
     }
   },
   "marketing": {

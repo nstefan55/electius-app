@@ -32,6 +32,7 @@ const DASHBOARD_ONLY_PATHS = [
   "/elections",
   "/archive",
   "/voters",
+  "/settings",
 ];
 
 // Leading locale segment, e.g. "hr" in "/hr/…" — null for a bare "/" since
