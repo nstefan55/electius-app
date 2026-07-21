@@ -23,16 +23,23 @@ import {
 // inside the /api/auth/[...all] catch-all, so the limiter runs as a `before`
 // hook keyed on ctx.path. `withEmail` folds the target email into the key —
 // tighter per-account limits, and one shared IP (campus NAT) can't exhaust
-// everyone's attempts. /sign-up/email is NOT listed: registration goes through
-// our own /api/auth/register route, which rate-limits itself (the server-side
-// auth.api.signUpEmail call carries no client IP for a hook to read).
+// everyone's attempts. /sign-up/email is listed even though registration
+// normally goes through our own /api/auth/register route (which rate-limits
+// itself — its server-side signUpEmail call carries no client IP for this
+// hook to read): the native path is directly POST-able under the catch-all,
+// so without its own rule a scripted client bypasses the 3/h register limit
+// entirely (2026-07-21 audit, HIGH). /change-password shares the
+// resetPassword window — session-gated, but throttles wrong-current-password
+// guessing on a hijacked session (audit, LOW).
 const RATE_LIMIT_RULES: Record<
   string,
   { action: RateLimitAction; withEmail?: boolean }
 > = {
   "/sign-in/email": { action: "login", withEmail: true },
+  "/sign-up/email": { action: "register" },
   "/request-password-reset": { action: "forgotPassword" },
   "/reset-password": { action: "resetPassword" },
+  "/change-password": { action: "resetPassword" },
   "/send-verification-email": { action: "resendVerification", withEmail: true },
 };
 
