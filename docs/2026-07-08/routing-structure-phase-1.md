@@ -16,10 +16,10 @@ own feature specs.
 
 | Host | Route group | Serves | Chrome | Auth |
 |------|-------------|--------|--------|------|
-| `electious.com` (apex) | `(marketing)` | `/` landing | marketing | none |
-| `electious.com` (apex) | `(voter)` | `/vote/[token]`, `/results/[id]` | mobile voter | token / public |
-| `dashboard.electious.com` | `(auth)` | `/login`, `/signup`, `/setup`, `/onboarding` | bare | pre-session |
-| `dashboard.electious.com` | `(app)` | `/dashboard`, `/elections*`, `/results`, `/archive`, `/voters` | sidebar + topbar | guarded (Phase 2) |
+| `electius.com` (apex) | `(marketing)` | `/` landing | marketing | none |
+| `electius.com` (apex) | `(voter)` | `/vote/[token]`, `/results/[id]` | mobile voter | token / public |
+| `dashboard.electius.com` | `(auth)` | `/login`, `/signup`, `/setup`, `/onboarding` | bare | pre-session |
+| `dashboard.electius.com` | `(app)` | `/dashboard`, `/elections*`, `/results`, `/archive`, `/voters` | sidebar + topbar | guarded (Phase 2) |
 
 Route groups (`(...)`) add **no** URL segment — they only attach a layout + (later) an auth boundary.
 
@@ -56,7 +56,7 @@ So `(voter)`/`(marketing)` and `(auth)`/`(app)` stay siblings even though each p
 
 > In Next.js 16, `proxy.ts` **is** the middleware file (renamed from `middleware.ts`).
 
-Only the **dashboard-host root** is rewritten — `dashboard.electious.com/` → the localized
+Only the **dashboard-host root** is rewritten — `dashboard.electius.com/` → the localized
 `/dashboard`. Every other admin route is already root-level under `(app)`, so it needs no
 rewrite. Non-dashboard hosts and all non-root paths fall through to next-intl untouched.
 
