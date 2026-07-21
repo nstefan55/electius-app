@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -11,7 +11,7 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "db:seed": "npx tsx prisma/migration/seed.ts",
+    "db:seed": "npx tsx prisma/seed.ts",
     "db:cleanup-dev": "npx tsx scripts/cleanup-users.ts"
   },
   "dependencies": {
