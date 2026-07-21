@@ -64,7 +64,7 @@ export function AuthSplitLayout({
           className="flex items-center gap-2.5 self-start"
         >
           <Image
-            src="/logo/logo-mark.png"
+            src="/logo/logo-mark-light.png"
             alt="Electius"
             width={34}
             height={34}
