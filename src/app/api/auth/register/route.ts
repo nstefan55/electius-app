@@ -1,8 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
+import * as z from "zod";
 import { auth, emailVerificationEnabled } from "@/lib/auth";
 import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import { routing } from "@/i18n/routing";
+
+// Length caps only — email format and password policy (8–128) are BetterAuth's
+// job downstream; the caps stop unbounded strings reaching the DB (2026-07-21
+// audit, LOW: name had no upper bound and is rendered in the sidebar/settings).
+const registerSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  email: z.string().max(255),
+  password: z.string().max(128),
+  confirmPassword: z.string().max(128),
+  locale: z.unknown().optional(),
+});
 
 // Registration endpoint (auth-phase-3-spec). A thin wrapper over BetterAuth's
 // signUpEmail so one engine owns the whole flow: it rejects existing users,
@@ -12,8 +24,6 @@ import { routing } from "@/i18n/routing";
 // session opens until the link is clicked; the emailed link's callbackURL
 // lands the verified (and auto-signed-in) user on /{locale}/setup. The only
 // check BetterAuth doesn't do is the confirmPassword match, added here.
-// ponytail: field checks are plain guards, not zod — zod isn't installed yet;
-// adopt it here when it lands per coding-standards.
 export async function POST(request: NextRequest) {
   // Rate limit BEFORE parsing — registration is email-sending, keyed by IP
   // only (rate-limiting-spec: 3/h). The BetterAuth paths get the same
@@ -42,23 +52,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { name, email, password, confirmPassword, locale } = (body ??
-    {}) as Record<string, unknown>;
-  const safeLocale = routing.locales.find((l) => l === locale)
-    ? (locale as string)
-    : routing.defaultLocale;
-  if (
-    typeof name !== "string" ||
-    name.trim() === "" ||
-    typeof email !== "string" ||
-    typeof password !== "string" ||
-    typeof confirmPassword !== "string"
-  ) {
+  const parsed = registerSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json(
       { success: false, error: "invalid_input" },
       { status: 400 },
     );
   }
+  const { name, email, password, confirmPassword, locale } = parsed.data;
+  const safeLocale =
+    routing.locales.find((l) => l === locale) ?? routing.defaultLocale;
   if (password !== confirmPassword) {
     return NextResponse.json(
       { success: false, error: "password_mismatch" },
@@ -69,7 +72,7 @@ export async function POST(request: NextRequest) {
   try {
     const { headers, response } = await auth.api.signUpEmail({
       body: {
-        name: name.trim(),
+        name,
         email,
         password,
         callbackURL: `/${safeLocale}/setup`,
