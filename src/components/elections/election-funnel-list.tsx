@@ -1,7 +1,11 @@
 import { ChevronRight } from "lucide-react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
-import type { DashboardElection } from "@/lib/elections-view";
+import {
+  formatVotingDate,
+  type DashboardElection,
+} from "@/lib/elections-view";
 
 // Cross-election list scaffold whose rows deep-link into a nested facet
 // (/elections/[id]/results or /voters). Shared by the /results and /voters pages;
@@ -19,6 +23,7 @@ export function ElectionFunnelList({
   elections: DashboardElection[];
   hrefFor: (id: string) => string;
 }) {
+  const locale = useLocale();
   return (
     <div className="p-8">
       <header className="mb-6">
@@ -47,7 +52,9 @@ export function ElectionFunnelList({
                       {e.name}
                     </div>
                     <div className="mt-0.5 text-[13px] text-muted-foreground">
-                      {e.opens} – {e.closes} · {e.voted}/{e.voters} ({pct}%)
+                      {formatVotingDate(e.opens, locale)} –{" "}
+                      {formatVotingDate(e.closes, locale)} · {e.voted}/
+                      {e.voters} ({pct}%)
                     </div>
                   </div>
                   <StatusBadge status={e.status} />

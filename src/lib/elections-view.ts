@@ -51,3 +51,15 @@ export const sortRecent = (els: DashboardElection[]) =>
   els
     .filter((e) => e.status !== "ARCHIVED")
     .sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status]);
+
+// Voting-window date, locale-aware: en "Jun 18" · hr "18. lip". Takes the ISO
+// string from DashboardElection.opens/closes. timeZone UTC keeps output
+// deterministic across server/browser timezones (prod serverless runs UTC).
+const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
+
+export const formatVotingDate = (iso: string, locale: string) =>
+  new Intl.DateTimeFormat(DATE_LOCALE[locale] ?? locale, {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).format(new Date(iso));
