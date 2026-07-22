@@ -1,12 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Menu } from "@base-ui/react/menu";
 import toast from "react-hot-toast";
 import { MoreVertical, Eye, FileText, ScrollText, EyeOff, Trash2 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
-import type { DashboardElection } from "@/lib/elections-view";
+import {
+  formatVotingDate,
+  type DashboardElection,
+} from "@/lib/elections-view";
 import { cn } from "@/lib/utils";
 
 const MENU_ITEM =
@@ -17,6 +20,7 @@ const MENU_ITEM =
 // Audit log / Hide / Delete are placeholders (owned by results + archive-filtering specs).
 export function ArchiveList({ elections }: { elections: DashboardElection[] }) {
   const t = useTranslations("dashboard.election.lists.archive");
+  const locale = useLocale();
   const soon = (label: string) => toast(t("comingSoon", { action: label }));
 
   if (elections.length === 0) {
@@ -41,7 +45,9 @@ export function ArchiveList({ elections }: { elections: DashboardElection[] }) {
                 {e.name}
               </div>
               <div className="mt-0.5 text-[13px] text-muted-foreground">
-                {e.opens} – {e.closes} · {e.voted}/{e.voters} ({pct}%)
+                {formatVotingDate(e.opens, locale)} –{" "}
+                {formatVotingDate(e.closes, locale)} · {e.voted}/{e.voters} (
+                {pct}%)
               </div>
             </div>
             <StatusBadge status={e.status} />

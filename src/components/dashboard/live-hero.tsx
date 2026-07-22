@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight } from "lucide-react";
-import { sortRecent, type DashboardElection } from "@/lib/elections-view";
+import {
+  formatVotingDate,
+  sortRecent,
+  type DashboardElection,
+} from "@/lib/elections-view";
 import { fetchTurnout } from "@/actions/dashboard";
 
 // Featured live-voting hero: the active election with the most ballots cast.
@@ -12,6 +16,7 @@ import { fetchTurnout } from "@/actions/dashboard";
 // LIVE-results elections poll faster; others just keep the panel reasonably fresh.
 export function LiveHero({ elections }: { elections: DashboardElection[] }) {
   const t = useTranslations("dashboard.page");
+  const locale = useLocale();
 
   const hero =
     sortRecent(elections)
@@ -54,7 +59,10 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
             {hero.name}
           </h2>
           <p className="mt-2 text-sm text-white/65">
-            {t("live.meta", { type: hero.type, closes: hero.closes })}
+            {t("live.meta", {
+              type: hero.type,
+              closes: formatVotingDate(hero.closes, locale),
+            })}
           </p>
           <div className="mt-5 flex max-w-md items-center">
             <div className="h-2 flex-1 overflow-hidden rounded-full bg-white/15">

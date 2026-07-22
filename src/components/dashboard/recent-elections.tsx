@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Menu } from "@base-ui/react/menu";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import toast from "react-hot-toast";
@@ -15,6 +15,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import {
+  formatVotingDate,
   sortRecent,
   STATUS_STYLES,
   type DashboardElection,
@@ -40,6 +41,7 @@ export function RecentElections({
   elections: DashboardElection[];
 }) {
   const t = useTranslations("dashboard.page");
+  const locale = useLocale();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -256,7 +258,8 @@ export function RecentElections({
 
                   {/* Voting window */}
                   <div className="text-[13px] text-muted-foreground">
-                    {e.opens} – {e.closes}
+                    {formatVotingDate(e.opens, locale)} –{" "}
+                    {formatVotingDate(e.closes, locale)}
                   </div>
 
                   {/* Row actions — absolute top-right on mobile, last cell on desktop */}

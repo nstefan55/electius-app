@@ -4,10 +4,6 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
 
-// "Jun 18" — matches the old mock date format.
-const fmtDate = (d: Date) =>
-  d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
 // Schema only has SINGLE_CHOICE / MULTI_CHOICE; render as readable labels.
 const VOTING_TYPE_LABEL: Record<string, string> = {
   SINGLE_CHOICE: "Single choice",
@@ -57,8 +53,10 @@ const toDashboardElection = (e: ElectionRow): DashboardElection => ({
   resultsMode: e.resultsMode,
   voters: e._count.voters,
   voted: e._count.votes,
-  opens: fmtDate(e.startsAt),
-  closes: fmtDate(e.endsAt),
+  // ISO strings — the DB layer has no request locale; render sites format
+  // per-locale via formatVotingDate (lib/elections-view).
+  opens: e.startsAt.toISOString(),
+  closes: e.endsAt.toISOString(),
 });
 
 // Everything the dashboard main area needs, in one round trip.
