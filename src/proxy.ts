@@ -8,7 +8,7 @@ const handleI18n = createMiddleware(routing);
 // Host = audience (domain-architecture-spec §1): dashboard.electius.com is the
 // admin app, the apex is public. The proxy only routes — cookie-PRESENCE gate
 // here, real session validation in requireSession() (the (app) choke point).
-function isDashboardHost(host: string): boolean {
+export function isDashboardHost(host: string): boolean {
   return host.split(":")[0].startsWith("dashboard."); // covers dashboard.localhost in dev
 }
 

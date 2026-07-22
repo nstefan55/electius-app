@@ -4,7 +4,26 @@
       "label": "Jezik",
       "hr": "Hrvatski",
       "en": "Engleski"
-    }
+    },
+    "loading": "Učitavanje…"
+  },
+  "notFound": {
+    "badge": "Greška 404",
+    "cta": "Idi na početnu",
+    "back": "Natrag",
+    "generic": {
+      "title": "Stranica nije pronađena",
+      "description": "Stranica koju tražite ne postoji ili je premještena. Ništa vezano za vaše izbore ili glasove nije pogođeno."
+    },
+    "linkExpired": {
+      "title": "Ova poveznica za glasovanje je istekla",
+      "description": "Izbori na koje se ova poveznica odnosi su zatvoreni, pa poveznica više ne radi. Vaši prethodno zabilježeni glasovi nisu pogođeni."
+    },
+    "voterNote": {
+      "title": "Slijedite poveznicu za glasovanje?",
+      "description": "Provjerite je li cijela poveznica iz vašeg e-maila s pozivnicom kopirana. Poveznice za glasovanje su jednokratne i prestaju raditi nakon zatvaranja izbora — obratite se administratoru izbora ako vam je potrebna nova."
+    },
+    "footerTagline": "Electius — sigurni izbori za organizacije"
   },
   "auth": {
     "footer": {
