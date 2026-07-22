@@ -4,7 +4,26 @@
       "label": "Language",
       "hr": "Croatian",
       "en": "English"
-    }
+    },
+    "loading": "Loading…"
+  },
+  "notFound": {
+    "badge": "Error 404",
+    "cta": "Go to homepage",
+    "back": "Go back",
+    "generic": {
+      "title": "Page not found",
+      "description": "The page you're looking for doesn't exist or may have been moved. Nothing about your elections or votes has been affected."
+    },
+    "linkExpired": {
+      "title": "This voting link has expired",
+      "description": "The election this link belongs to has closed, so the link no longer works. Your previously recorded votes are unaffected."
+    },
+    "voterNote": {
+      "title": "Following a voting link?",
+      "description": "Check that the full link from your invitation email was copied. Voting links are one-time and stop working after the election closes — contact your election administrator if you need a new one."
+    },
+    "footerTagline": "Electius — secure elections for organizations"
   },
   "auth": {
     "footer": {
