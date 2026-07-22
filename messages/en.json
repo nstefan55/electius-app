@@ -384,6 +384,18 @@
         "statusSubtitle": "All elections by lifecycle stage"
       }
     },
+    "electionsPage": {
+      "title": "All elections",
+      "summary": "{total, plural, one {# election} other {# elections}} total · {closed} closed · {archived} archived",
+      "columns": {
+        "turnout": "Avg. turnout",
+        "actions": "Actions"
+      },
+      "votesOf": "{voted, number} of {voters, number}",
+      "noVoters": "no voters",
+      "notScheduled": "Not scheduled",
+      "viewResults": "View results"
+    },
     "empty": {
       "title": "Create your first election",
       "subtitle": "Run polls, surveys or standard elections — from email invitations to archived PDF reports. Set up in under 5 minutes.",

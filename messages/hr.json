@@ -384,6 +384,18 @@
         "statusSubtitle": "Svi izbori prema fazi životnog ciklusa"
       }
     },
+    "electionsPage": {
+      "title": "Svi izbori",
+      "summary": "{total, plural, one {# izbor} few {# izbora} other {# izbora}} ukupno · {closed, plural, one {# zatvoren} few {# zatvorena} other {# zatvorenih}} · {archived, plural, one {# arhiviran} few {# arhivirana} other {# arhiviranih}}",
+      "columns": {
+        "turnout": "Prosj. izlaznost",
+        "actions": "Radnje"
+      },
+      "votesOf": "{voted, number} od {voters, number}",
+      "noVoters": "bez glasača",
+      "notScheduled": "Nije zakazano",
+      "viewResults": "Pogledaj rezultate"
+    },
     "empty": {
       "title": "Pokrenite svoje prve izbore",
       "subtitle": "Provedite ankete, upitnike ili standardne izbore — od pozivnica e-poštom do arhiviranih PDF izvještaja. Postavljanje u manje od 5 minuta.",
