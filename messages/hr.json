@@ -606,7 +606,10 @@
         "closes": "Zatvara se",
         "electionId": "ID izbora",
         "createAnother": "Izradi nove",
-        "goToElection": "Idi na izbore"
+        "goToElection": "Idi na izbore",
+        "qrShow": "Izradi QR kod",
+        "qrHide": "Sakrij QR kod",
+        "qrCaption": "Glasači skeniraju ovaj kod za otvaranje glasačkog listića. Glas ostaje anoniman — kod vodi na izbore, nikad na osobu."
       }
     },
     "empty": {

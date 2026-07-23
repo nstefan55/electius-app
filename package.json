@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -32,6 +32,7 @@
     "next-intl": "^4.13.0",
     "postcss": "^8.5.15",
     "prisma": "^7.8.0",
+    "qrcode.react": "^4.2.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hot-toast": "^2.6.0",
