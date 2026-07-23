@@ -413,6 +413,202 @@
         "emptyBody": "Try adjusting or clearing your filters."
       }
     },
+    "wizard": {
+      "title": "Create election",
+      "stepLabel": "Step {n} of 5 · {name}",
+      "steps": {
+        "basic": "Basic info",
+        "candidates": "Candidates",
+        "voters": "Voter list",
+        "settings": "Settings",
+        "review": "Review"
+      },
+      "close": "Close wizard",
+      "trustLine": "Anonymous & verifiable",
+      "saveDraft": "Save as draft",
+      "draftSaved": "Saved as draft",
+      "back": "Back",
+      "continue": "Continue",
+      "create": "Create election",
+      "creating": "Creating…",
+      "errors": {
+        "titleRequired": "Add an election title to continue",
+        "candidatesRequired": "Add at least two candidates to continue",
+        "scheduleInvalid": "Check the dates — closing must come after opening",
+        "createFailed": "Something went wrong. Please try again."
+      },
+      "step1": {
+        "title": "Basic information",
+        "sub": "Name your election and choose how people will vote. You can change any of this before it opens.",
+        "electionTitle": "Election title",
+        "titlePlaceholder": "e.g. Student Council representative election",
+        "description": "Description",
+        "optional": "optional",
+        "descriptionPlaceholder": "Explain what voters are deciding and any context they need.",
+        "electionType": "Election type",
+        "defaultBadge": "DEFAULT",
+        "types": {
+          "STANDARD": {
+            "label": "Standard",
+            "desc": "Elect a candidate or approve a motion."
+          },
+          "SURVEY": {
+            "label": "Survey",
+            "desc": "Collect opinions across multiple questions."
+          },
+          "POLL": {
+            "label": "Quick poll",
+            "desc": "A simple yes / no or single question."
+          }
+        },
+        "votingMethod": "Voting method",
+        "methods": {
+          "SINGLE_CHOICE": {
+            "label": "Single choice",
+            "desc": "Voters pick exactly one option."
+          },
+          "MULTI_CHOICE": {
+            "label": "Multiple choice",
+            "desc": "Voters can select more than one."
+          }
+        },
+        "noteStandard": "Ranked choice and approval voting are coming soon.",
+        "noteSurvey": "Surveys use multiple choice so voters can respond to several options.",
+        "notePoll": "Quick polls use a single choice — one answer per voter.",
+        "singleUnavailable": "Single choice isn’t available for surveys",
+        "multiUnavailable": "Multiple choice isn’t available for quick polls"
+      },
+      "step2": {
+        "title": "Candidates & options",
+        "sub": "Add the choices voters will see on the ballot. Add them one at a time or import a list.",
+        "addManually": "Add manually",
+        "uploadCsv": "Upload CSV",
+        "candidateName": "Candidate name",
+        "namePlaceholder": "Full name",
+        "candidateRole": "Role / description",
+        "rolePlaceholder": "e.g. 3rd year, Law",
+        "optional": "optional",
+        "add": "Add",
+        "dropTitle": "Drop a .csv here or browse",
+        "dropHintPrefix": "One candidate per row:",
+        "csvNotCsv": "Please choose a .csv file",
+        "csvTooLarge": "File is too large (max 1 MB)",
+        "csvEmpty": "No candidates found in that file.",
+        "csvSkipped": "{count, plural, one {# row was skipped for invalid data.} other {# rows were skipped for invalid data.}}",
+        "csvImported": "{count, plural, one {# candidate imported} other {# candidates imported}}",
+        "allowAbstain": "Allow abstain",
+        "allowAbstainDesc": "Adds an “Abstain” option so voters can formally decline to choose.",
+        "count": "{count, plural, one {# candidate on the ballot} other {# candidates on the ballot}}",
+        "empty": "No candidates yet — add at least two to open voting.",
+        "nameRequired": "Enter a candidate name",
+        "remove": "Remove"
+      },
+      "step3": {
+        "title": "Voter list",
+        "sub": "Each voter receives a one-time magic link. Emails are used only to send that link — the system never links a voter to their vote.",
+        "addManually": "Add manually",
+        "uploadCsv": "Upload CSV",
+        "fullName": "Full name",
+        "namePlaceholder": "Jane Doe",
+        "email": "Email address",
+        "emailPlaceholder": "jane@university.edu",
+        "add": "Add",
+        "dropTitle": "Drop a .csv here or browse",
+        "dropHintPrefix": "Required columns:",
+        "csvNotCsv": "Please choose a .csv file",
+        "csvTooLarge": "File is too large (max 1 MB)",
+        "csvEmpty": "No valid rows found. Each row needs a full name and a valid email.",
+        "csvSkipped": "{count, plural, one {# row was skipped for a malformed email address.} other {# rows were skipped for a malformed email address.}}",
+        "csvImported": "{count, plural, one {# voter imported} other {# voters imported}}",
+        "count": "{count, plural, one {# voter added} other {# voters added}}",
+        "removeAll": "Remove all",
+        "empty": "No voters added yet.",
+        "nameRequired": "Enter the voter’s full name",
+        "emailInvalid": "Enter a valid email address",
+        "emailDuplicate": "That email is already on the list",
+        "remove": "Remove"
+      },
+      "step4": {
+        "title": "Schedule & settings",
+        "sub": "Decide when voting runs and turn on the safeguards you need.",
+        "startMode": "Start mode",
+        "manual": {
+          "label": "Start manually",
+          "desc": "You open voting with a button when you’re ready."
+        },
+        "scheduled": {
+          "label": "Schedule start",
+          "desc": "Voting opens automatically at a set time."
+        },
+        "opens": "Opens",
+        "closes": "Closes",
+        "time": "Time (optional)",
+        "options": "Options",
+        "toggles": {
+          "sealedResults": {
+            "label": "Sealed results",
+            "desc": "Hide all tallies — even from admins — until voting closes."
+          },
+          "quorum": {
+            "label": "Quorum threshold",
+            "desc": "Require a minimum share of eligible voters to participate for the result to be valid."
+          },
+          "autoCloseOnDeadline": {
+            "label": "Auto-close on deadline",
+            "desc": "End voting automatically at the close date and time."
+          },
+          "adminTurnoutReminder": {
+            "label": "Automatic admin reminders",
+            "desc": "Email you turnout updates while voting is open."
+          },
+          "voterReminder24h": {
+            "label": "Automatic voter reminders",
+            "desc": "Nudge voters who haven’t voted before the deadline."
+          }
+        },
+        "quorumInput": "Minimum turnout required",
+        "quorumChip": "Quorum {pct}%"
+      },
+      "step5": {
+        "title": "Review & confirm",
+        "sub": "Check everything below. Use Edit on any section to jump back and make changes.",
+        "edit": "Edit",
+        "basicInfo": "Basic information",
+        "labels": {
+          "title": "Title",
+          "description": "Description",
+          "type": "Type",
+          "method": "Voting method",
+          "start": "Start",
+          "closes": "Closes",
+          "enabled": "Enabled"
+        },
+        "noDescription": "No description",
+        "candidates": "Candidates",
+        "candidateCount": "{count, plural, one {# candidate} other {# candidates}}",
+        "abstainEnabled": "Abstain option enabled.",
+        "voters": "Voter list",
+        "voterCount": "{count, plural, one {# voter} other {# voters}}",
+        "voterSummary": "{count, plural, one {# voter will be invited} other {# voters will be invited}} — {sample}{more, plural, =0 {} other { and # more}}",
+        "noVoters": "No voters added yet",
+        "settings": "Schedule & settings",
+        "startManual": "Manually (you open voting)",
+        "startUnset": "Scheduled — no time set",
+        "closeUnset": "Not set",
+        "defaultsOnly": "Defaults only"
+      },
+      "success": {
+        "title": "Election created",
+        "body": "<name></name> is ready. Manage it from its election page or your elections list.",
+        "method": "Method",
+        "candidates": "Candidates",
+        "voters": "Voters",
+        "closes": "Closes",
+        "electionId": "Election ID",
+        "createAnother": "Create another",
+        "goToElection": "Go to election"
+      }
+    },
     "empty": {
       "title": "Create your first election",
       "subtitle": "Run polls, surveys or standard elections — from email invitations to archived PDF reports. Set up in under 5 minutes.",
