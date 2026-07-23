@@ -606,7 +606,10 @@
         "closes": "Closes",
         "electionId": "Election ID",
         "createAnother": "Create another",
-        "goToElection": "Go to election"
+        "goToElection": "Go to election",
+        "qrShow": "Create QR code",
+        "qrHide": "Hide QR code",
+        "qrCaption": "Voters scan this code to open their ballot. Their vote stays anonymous — the code links to the election, never to a person."
       }
     },
     "empty": {

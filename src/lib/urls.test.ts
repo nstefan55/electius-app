@@ -21,10 +21,10 @@ describe("urls", () => {
   });
 
   it("builds apex voter + results links", async () => {
-    const { voteUrl, publicResultsUrl, marketingHomeUrl } = await import(
-      "@/lib/urls"
-    );
+    const { voteUrl, electionVoteUrl, publicResultsUrl, marketingHomeUrl } =
+      await import("@/lib/urls");
     expect(voteUrl("abc123")).toBe("https://electius.com/vote/abc123");
+    expect(electionVoteUrl("elc1")).toBe("https://electius.com/vote/elc1");
     expect(publicResultsUrl("election1")).toBe(
       "https://electius.com/results/election1",
     );

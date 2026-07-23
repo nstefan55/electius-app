@@ -1,13 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { CircleCheckBig, ChevronRight } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
+import { CircleCheckBig, ChevronRight, QrCode } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { electionVoteUrl } from "@/lib/urls";
 import { formatWizardDateTime } from "./step-review";
 import type { WizardData } from "./wizard-shared";
 
-// Final "Election created" screen (spec: summary + Create another / Go to
-// election). QR sharing belongs to the phase-2.5 follow-up spec.
+// Final "Election created" screen: summary + Create another / QR code toggle /
+// Go to election (phase-3 spec + Election Wizard.dc.html success section).
 export function WizardSuccess({
   data,
   createdId,
@@ -21,6 +24,8 @@ export function WizardSuccess({
   const t1 = useTranslations("dashboard.wizard.step1");
   const t5 = useTranslations("dashboard.wizard.step5");
   const locale = useLocale();
+  const [qrShown, setQrShown] = useState(false);
+  const qrUrl = electionVoteUrl(createdId);
 
   const closeText = data.closeAt
     ? formatWizardDateTime(data.closeAt, locale)
@@ -71,6 +76,31 @@ export function WizardSuccess({
           </div>
         </div>
 
+        {qrShown && (
+          <div className="mb-7.5 flex flex-col items-center rounded-2xl border border-border bg-white p-6.5 text-center">
+            <div className="size-49 rounded-xl border border-border bg-white p-3.5 shadow-xs">
+              <QRCodeSVG value={qrUrl} level="M" className="size-full" />
+            </div>
+            <h2 className="mt-4.5 font-heading text-lg leading-tight font-semibold text-neutral-800">
+              {data.title.trim()}
+            </h2>
+            <span className="mt-2 inline-flex h-5.5 items-center rounded-full bg-brand-50 px-2.5 text-xs font-semibold text-brand-700">
+              {t1(`types.${data.electionType}.label`)}
+            </span>
+            <div className="mt-3 text-[13.5px] leading-normal text-muted-foreground">
+              {t1(`methods.${data.votingType}.label`)} ·{" "}
+              {t5("voterCount", { count: data.voters.length })} · {t("closes")}{" "}
+              {closeText}
+            </div>
+            <div className="mt-3.5 max-w-full rounded-md border border-border bg-neutral-50 px-3.5 py-2.5 font-mono text-[12.5px] break-all text-neutral-800">
+              {qrUrl}
+            </div>
+            <p className="mt-3.5 max-w-80 text-[12.5px] leading-normal text-neutral-600">
+              {t("qrCaption")}
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-wrap justify-center gap-3">
           <button
             type="button"
@@ -78,6 +108,15 @@ export function WizardSuccess({
             className="h-12 rounded-md border border-border bg-white px-5.5 text-[15px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
           >
             {t("createAnother")}
+          </button>
+          <button
+            type="button"
+            aria-expanded={qrShown}
+            onClick={() => setQrShown((s) => !s)}
+            className="inline-flex h-12 items-center gap-2 rounded-md border border-[#BFDBFE] bg-white px-5 text-[15px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+          >
+            <QrCode className="size-4.5" />
+            {t(qrShown ? "qrHide" : "qrShow")}
           </button>
           <Link
             href={`/elections/${createdId}`}
