@@ -394,7 +394,24 @@
       "votesOf": "{voted, number} of {voters, number}",
       "noVoters": "no voters",
       "notScheduled": "Not scheduled",
-      "viewResults": "View results"
+      "viewResults": "View results",
+      "filters": {
+        "status": "Status",
+        "turnout": "Turnout",
+        "window": "Voting window",
+        "allStatuses": "All statuses",
+        "anyTurnout": "Any turnout",
+        "high": "High — 75%+",
+        "medium": "Medium — 40–74%",
+        "low": "Low — under 40%",
+        "none": "No votes yet",
+        "allWindows": "All windows",
+        "clear": "Clear filters",
+        "showing": "Showing {shown} of {total}",
+        "count": "{total, plural, one {# election} other {# elections}}",
+        "emptyTitle": "No elections match these filters",
+        "emptyBody": "Try adjusting or clearing your filters."
+      }
     },
     "empty": {
       "title": "Create your first election",
