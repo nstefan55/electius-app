@@ -394,7 +394,24 @@
       "votesOf": "{voted, number} od {voters, number}",
       "noVoters": "bez glasača",
       "notScheduled": "Nije zakazano",
-      "viewResults": "Pogledaj rezultate"
+      "viewResults": "Pogledaj rezultate",
+      "filters": {
+        "status": "Status",
+        "turnout": "Izlaznost",
+        "window": "Razdoblje glasovanja",
+        "allStatuses": "Svi statusi",
+        "anyTurnout": "Bilo koja izlaznost",
+        "high": "Visoka — 75%+",
+        "medium": "Srednja — 40–74%",
+        "low": "Niska — ispod 40%",
+        "none": "Još nema glasova",
+        "allWindows": "Sva razdoblja",
+        "clear": "Očisti filtre",
+        "showing": "Prikazano {shown} od {total}",
+        "count": "{total, plural, one {# izbor} few {# izbora} other {# izbora}}",
+        "emptyTitle": "Nijedni izbori ne odgovaraju filtrima",
+        "emptyBody": "Pokušajte prilagoditi ili očistiti filtre."
+      }
     },
     "empty": {
       "title": "Pokrenite svoje prve izbore",

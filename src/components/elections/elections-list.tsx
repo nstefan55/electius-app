@@ -6,6 +6,7 @@ import { Menu } from "@base-ui/react/menu";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import toast from "react-hot-toast";
 import {
+  ChevronDown,
   Copy,
   Eye,
   MoreVertical,
@@ -13,11 +14,19 @@ import {
   Plus,
   Trash2,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import {
   formatVotingDate,
+  matchesTurnout,
+  matchesWindow,
   STATUS_STYLES,
+  windowYears,
   type DashboardElection,
+  type ElectionStatus,
+  type StatusFilter,
+  type TurnoutFilter,
+  type WindowFilter,
 } from "@/lib/elections-view";
 import {
   renameElection,
@@ -32,6 +41,47 @@ const GRID = "md:grid-cols-[minmax(0,1fr)_128px_208px_172px_80px]";
 
 const MENU_ITEM =
   "flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm text-neutral-800 outline-none select-none data-highlighted:bg-neutral-100";
+
+// Filter-toolbar option order (design: Elections.dc.html)
+const STATUS_OPTIONS: ElectionStatus[] = [
+  "ACTIVE",
+  "SCHEDULED",
+  "DRAFT",
+  "CLOSED",
+  "ARCHIVED",
+];
+const TURNOUT_OPTIONS = ["high", "medium", "low", "none"] as const;
+
+// Styled native select with label + chevron, per the design toolbar
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-semibold text-muted-foreground">
+        {label}
+      </span>
+      <span className="relative">
+        <select
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 min-w-38 cursor-pointer appearance-none rounded-md border border-border bg-white pr-9 pl-3 text-sm text-neutral-800 transition-colors outline-none focus:border-brand-700 focus:shadow-focus"
+        >
+          {children}
+        </select>
+        <ChevronDown className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-neutral-400" />
+      </span>
+    </label>
+  );
+}
 
 export function ElectionsList({
   elections,
@@ -61,6 +111,25 @@ export function ElectionsList({
   } | null>(null);
   const editRef = useRef<HTMLInputElement>(null);
   const cancelRename = useRef(false); // Escape sets this so the blur-commit is skipped
+
+  // Filter toolbar — client-side over the already-fetched org-scoped rows
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [turnoutFilter, setTurnoutFilter] = useState<TurnoutFilter>("all");
+  const [windowFilter, setWindowFilter] = useState<WindowFilter>("all");
+  const anyFilter =
+    statusFilter !== "all" || turnoutFilter !== "all" || windowFilter !== "all";
+  const clearFilters = () => {
+    setStatusFilter("all");
+    setTurnoutFilter("all");
+    setWindowFilter("all");
+  };
+  const filtered = rows.filter(
+    (e) =>
+      (statusFilter === "all" || e.status === statusFilter) &&
+      matchesTurnout(e, turnoutFilter) &&
+      matchesWindow(e, windowFilter),
+  );
+  const years = windowYears(rows);
 
   const run = (fn: () => Promise<{ success: boolean }>, onOk: () => void) =>
     startTransition(async () => {
@@ -121,202 +190,286 @@ export function ElectionsList({
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
-      {rows.length === 0 ? (
-        <div className="px-6 py-14 text-center">
-          <div className="font-heading text-base font-semibold text-neutral-800">
-            {tp("list.empty")}
-          </div>
-          <div className="mt-1.5 text-sm text-muted-foreground">
-            {tp("list.emptyHint")}
-          </div>
-          <Link
-            href="/elections/new"
-            className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+    <div className="space-y-4">
+      {/* Filter toolbar — hidden when there is nothing to filter */}
+      {rows.length > 0 && (
+        <div className="flex flex-wrap items-end gap-4">
+          <FilterSelect
+            label={t("filters.status")}
+            value={statusFilter}
+            onChange={(v) => setStatusFilter(v as StatusFilter)}
           >
-            <Plus className="size-4.5" />
-            {tp("newElection")}
-          </Link>
-        </div>
-      ) : (
-        <>
-          {/* Column header — hidden on mobile, where rows stack. */}
-          <div
-            className={cn(
-              "hidden gap-4 border-b border-border bg-neutral-50 px-6 py-3 md:grid",
-              GRID,
-            )}
-          >
-            {(["election", "status"] as const).map((col) => (
-              <span
-                key={col}
-                className="font-heading text-[13px] font-semibold text-muted-foreground"
-              >
-                {tp(`list.columns.${col}`)}
-              </span>
+            <option value="all">{t("filters.allStatuses")}</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {tp(`status.${s}`)}
+              </option>
             ))}
-            <span className="font-heading text-[13px] font-semibold text-muted-foreground">
-              {t("columns.turnout")}
-            </span>
-            <span className="font-heading text-[13px] font-semibold text-muted-foreground">
-              {tp("list.columns.window")}
-            </span>
-            <span className="text-right font-heading text-[13px] font-semibold text-muted-foreground">
-              {t("columns.actions")}
-            </span>
+          </FilterSelect>
+          <FilterSelect
+            label={t("filters.turnout")}
+            value={turnoutFilter}
+            onChange={(v) => setTurnoutFilter(v as TurnoutFilter)}
+          >
+            <option value="all">{t("filters.anyTurnout")}</option>
+            {TURNOUT_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {t(`filters.${o}`)}
+              </option>
+            ))}
+          </FilterSelect>
+          <FilterSelect
+            label={t("filters.window")}
+            value={windowFilter}
+            onChange={setWindowFilter}
+          >
+            <option value="all">{t("filters.allWindows")}</option>
+            {years.map((y) => (
+              <option key={y} value={y}>
+                {y}
+              </option>
+            ))}
+            <option value="unscheduled">{t("notScheduled")}</option>
+          </FilterSelect>
+          {anyFilter && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="inline-flex h-10 items-center gap-1.5 rounded-md border border-border bg-white px-3.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+            >
+              <X className="size-3.75" />
+              {t("filters.clear")}
+            </button>
+          )}
+          <div className="ml-auto self-center text-[13px] text-muted-foreground">
+            {anyFilter
+              ? t("filters.showing", {
+                  shown: filtered.length,
+                  total: rows.length,
+                })
+              : t("filters.count", { total: rows.length })}
           </div>
-
-          <ul aria-busy={isPending}>
-            {rows.map((e) => {
-              const style = STATUS_STYLES[e.status];
-              const pct =
-                e.voters > 0 ? Math.round((e.voted / e.voters) * 100) : 0;
-              const isEditing = editingId === e.id;
-              return (
-                <li
-                  key={e.id}
-                  className={cn(
-                    "relative grid grid-cols-1 gap-2 border-b border-border px-6 py-4 transition-colors last:border-b-0 hover:bg-brand-50 md:items-center md:gap-4",
-                    GRID,
-                  )}
-                >
-                  {/* Name + type (inline-editable) */}
-                  <div className="min-w-0 pr-10 md:pr-0">
-                    {isEditing ? (
-                      <input
-                        ref={editRef}
-                        value={editValue}
-                        autoFocus
-                        onChange={(ev) => setEditValue(ev.target.value)}
-                        onKeyDown={(ev) => {
-                          if (ev.key === "Enter") commitRename(e.id);
-                          if (ev.key === "Escape") {
-                            cancelRename.current = true;
-                            setEditingId(null);
-                          }
-                        }}
-                        onBlur={() => commitRename(e.id)}
-                        aria-label={tp("actions.renamePlaceholder")}
-                        className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[15px] font-semibold text-neutral-800 shadow-focus outline-none"
-                      />
-                    ) : (
-                      <>
-                        <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
-                          {e.name}
-                        </div>
-                        <div className="mt-0.5 text-[13px] text-muted-foreground">
-                          {e.type}
-                        </div>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Status */}
-                  <div>
-                    <span
-                      className={cn(
-                        "inline-flex h-5.5 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium",
-                        style.badge,
-                      )}
-                    >
-                      <span className={cn("size-1.5 rounded-full", style.dot)} />
-                      {tp(`status.${e.status}`)}
-                    </span>
-                  </div>
-
-                  {/* Turnout — % + votes-of label above the bar (design) */}
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="font-heading text-[15px] font-semibold text-neutral-800">
-                        {e.voters > 0 ? `${pct}%` : "—"}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {e.voters > 0
-                          ? t("votesOf", { voted: e.voted, voters: e.voters })
-                          : t("noVoters")}
-                      </span>
-                    </div>
-                    <div className="mt-1.5 h-1.5 max-w-40 overflow-hidden rounded-full bg-neutral-100">
-                      <div
-                        className={cn(
-                          "h-full rounded-full transition-[width] duration-500 ease-out",
-                          style.bar,
-                        )}
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Voting window — schema requires startsAt/endsAt, so drafts carry
-                      placeholder dates; "not scheduled" is a display rule on DRAFT. */}
-                  <div className="text-[13px] text-muted-foreground">
-                    {e.status === "DRAFT"
-                      ? t("notScheduled")
-                      : `${formatVotingDate(e.opens, locale)} – ${formatVotingDate(e.closes, locale)}`}
-                  </div>
-
-                  {/* Row actions — absolute top-right on mobile, last cell on desktop */}
-                  <div className="absolute top-3 right-3 md:static md:justify-self-end">
-                    <Menu.Root>
-                      <Menu.Trigger
-                        aria-label={tp("actions.menuLabel")}
-                        className="flex size-8.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
-                      >
-                        <MoreVertical className="size-4.5" />
-                      </Menu.Trigger>
-                      <Menu.Portal>
-                        <Menu.Positioner
-                          side="bottom"
-                          align="end"
-                          sideOffset={6}
-                          className="z-50 outline-none"
-                        >
-                          <Menu.Popup className="min-w-46 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => router.push(`/elections/${e.id}`)}
-                            >
-                              <Eye className="size-4" />
-                              {t("viewResults")}
-                            </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => startRename(e)}
-                            >
-                              <Pencil className="size-4" />
-                              {tp("actions.rename")}
-                            </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => onDuplicate(e.id)}
-                            >
-                              <Copy className="size-4" />
-                              {tp("actions.duplicate")}
-                            </Menu.Item>
-                            <Menu.Separator className="my-1 h-px bg-border" />
-                            <Menu.Item
-                              className={cn(
-                                MENU_ITEM,
-                                "text-error-700 data-highlighted:bg-error-50",
-                              )}
-                              onClick={() =>
-                                setDeleteTarget({ id: e.id, name: e.name })
-                              }
-                            >
-                              <Trash2 className="size-4" />
-                              {tp("actions.delete")}
-                            </Menu.Item>
-                          </Menu.Popup>
-                        </Menu.Positioner>
-                      </Menu.Portal>
-                    </Menu.Root>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        </>
+        </div>
       )}
+
+      <div className="overflow-hidden rounded-lg border border-border bg-card shadow-sm">
+        {rows.length === 0 ? (
+          <div className="px-6 py-14 text-center">
+            <div className="font-heading text-base font-semibold text-neutral-800">
+              {tp("list.empty")}
+            </div>
+            <div className="mt-1.5 text-sm text-muted-foreground">
+              {tp("list.emptyHint")}
+            </div>
+            <Link
+              href="/elections/new"
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+            >
+              <Plus className="size-4.5" />
+              {tp("newElection")}
+            </Link>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="px-6 py-14 text-center">
+            <div className="font-heading text-base font-semibold text-neutral-800">
+              {t("filters.emptyTitle")}
+            </div>
+            <div className="mt-1.5 text-sm text-muted-foreground">
+              {t("filters.emptyBody")}
+            </div>
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="mt-5 inline-flex h-10 items-center gap-2 rounded-md border-[1.5px] border-brand-700 bg-white px-4.5 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            >
+              <X className="size-4" />
+              {t("filters.clear")}
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Column header — hidden on mobile, where rows stack. */}
+            <div
+              className={cn(
+                "hidden gap-4 border-b border-border bg-neutral-50 px-6 py-3 md:grid",
+                GRID,
+              )}
+            >
+              {(["election", "status"] as const).map((col) => (
+                <span
+                  key={col}
+                  className="font-heading text-[13px] font-semibold text-muted-foreground"
+                >
+                  {tp(`list.columns.${col}`)}
+                </span>
+              ))}
+              <span className="font-heading text-[13px] font-semibold text-muted-foreground">
+                {t("columns.turnout")}
+              </span>
+              <span className="font-heading text-[13px] font-semibold text-muted-foreground">
+                {tp("list.columns.window")}
+              </span>
+              <span className="text-right font-heading text-[13px] font-semibold text-muted-foreground">
+                {t("columns.actions")}
+              </span>
+            </div>
+
+            <ul aria-busy={isPending}>
+              {filtered.map((e) => {
+                const style = STATUS_STYLES[e.status];
+                const pct =
+                  e.voters > 0 ? Math.round((e.voted / e.voters) * 100) : 0;
+                const isEditing = editingId === e.id;
+                return (
+                  <li
+                    key={e.id}
+                    className={cn(
+                      "relative grid grid-cols-1 gap-2 border-b border-border px-6 py-4 transition-colors last:border-b-0 hover:bg-brand-50 md:items-center md:gap-4",
+                      GRID,
+                    )}
+                  >
+                    {/* Name + type (inline-editable) */}
+                    <div className="min-w-0 pr-10 md:pr-0">
+                      {isEditing ? (
+                        <input
+                          ref={editRef}
+                          value={editValue}
+                          autoFocus
+                          onChange={(ev) => setEditValue(ev.target.value)}
+                          onKeyDown={(ev) => {
+                            if (ev.key === "Enter") commitRename(e.id);
+                            if (ev.key === "Escape") {
+                              cancelRename.current = true;
+                              setEditingId(null);
+                            }
+                          }}
+                          onBlur={() => commitRename(e.id)}
+                          aria-label={tp("actions.renamePlaceholder")}
+                          className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[15px] font-semibold text-neutral-800 shadow-focus outline-none"
+                        />
+                      ) : (
+                        <>
+                          <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
+                            {e.name}
+                          </div>
+                          <div className="mt-0.5 text-[13px] text-muted-foreground">
+                            {e.type}
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <span
+                        className={cn(
+                          "inline-flex h-5.5 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium",
+                          style.badge,
+                        )}
+                      >
+                        <span
+                          className={cn("size-1.5 rounded-full", style.dot)}
+                        />
+                        {tp(`status.${e.status}`)}
+                      </span>
+                    </div>
+
+                    {/* Turnout — % + votes-of label above the bar (design) */}
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="font-heading text-[15px] font-semibold text-neutral-800">
+                          {e.voters > 0 ? `${pct}%` : "—"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {e.voters > 0
+                            ? t("votesOf", { voted: e.voted, voters: e.voters })
+                            : t("noVoters")}
+                        </span>
+                      </div>
+                      <div className="mt-1.5 h-1.5 max-w-40 overflow-hidden rounded-full bg-neutral-100">
+                        <div
+                          className={cn(
+                            "h-full rounded-full transition-[width] duration-500 ease-out",
+                            style.bar,
+                          )}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Voting window — schema requires startsAt/endsAt, so drafts carry
+                      placeholder dates; "not scheduled" is a display rule on DRAFT. */}
+                    <div className="text-[13px] text-muted-foreground">
+                      {e.status === "DRAFT"
+                        ? t("notScheduled")
+                        : `${formatVotingDate(e.opens, locale)} – ${formatVotingDate(e.closes, locale)}`}
+                    </div>
+
+                    {/* Row actions — absolute top-right on mobile, last cell on desktop */}
+                    <div className="absolute top-3 right-3 md:static md:justify-self-end">
+                      <Menu.Root>
+                        <Menu.Trigger
+                          aria-label={tp("actions.menuLabel")}
+                          className="flex size-8.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
+                        >
+                          <MoreVertical className="size-4.5" />
+                        </Menu.Trigger>
+                        <Menu.Portal>
+                          <Menu.Positioner
+                            side="bottom"
+                            align="end"
+                            sideOffset={6}
+                            className="z-50 outline-none"
+                          >
+                            <Menu.Popup className="min-w-46 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
+                              <Menu.Item
+                                className={MENU_ITEM}
+                                onClick={() =>
+                                  router.push(`/elections/${e.id}`)
+                                }
+                              >
+                                <Eye className="size-4" />
+                                {t("viewResults")}
+                              </Menu.Item>
+                              <Menu.Item
+                                className={MENU_ITEM}
+                                onClick={() => startRename(e)}
+                              >
+                                <Pencil className="size-4" />
+                                {tp("actions.rename")}
+                              </Menu.Item>
+                              <Menu.Item
+                                className={MENU_ITEM}
+                                onClick={() => onDuplicate(e.id)}
+                              >
+                                <Copy className="size-4" />
+                                {tp("actions.duplicate")}
+                              </Menu.Item>
+                              <Menu.Separator className="my-1 h-px bg-border" />
+                              <Menu.Item
+                                className={cn(
+                                  MENU_ITEM,
+                                  "text-error-700 data-highlighted:bg-error-50",
+                                )}
+                                onClick={() =>
+                                  setDeleteTarget({ id: e.id, name: e.name })
+                                }
+                              >
+                                <Trash2 className="size-4" />
+                                {tp("actions.delete")}
+                              </Menu.Item>
+                            </Menu.Popup>
+                          </Menu.Positioner>
+                        </Menu.Portal>
+                      </Menu.Root>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+      </div>
 
       {/* Delete confirmation */}
       <AlertDialog.Root
