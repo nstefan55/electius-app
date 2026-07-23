@@ -1,11 +1,15 @@
-// SCAFFOLD (routing Phase 1) — content owned by elections-creation-wizard-page spec.
+import { ElectionWizard } from "@/components/elections/wizard/election-wizard";
+
+// /elections/new — the 5-step creation wizard as a centered ~90% modal over
+// the dashboard shell (user decision 2026-07-23). The route stays real and
+// deep-linkable; the "modal" is page styling, not a client dialog. Session is
+// enforced by the (app) layout choke point.
 export default function NewElectionPage() {
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-semibold text-neutral-800">New election wizard — scaffold</h1>
-      <p className="mt-1 text-sm text-neutral-600">
-        Placeholder route (/elections/new). Content: elections-creation-wizard spec.
-      </p>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-0 md:p-[4vh_4vw]">
+      <div className="h-full w-full overflow-hidden bg-neutral-50 shadow-lg md:h-[90vh] md:w-[90vw] md:rounded-2xl">
+        <ElectionWizard />
+      </div>
     </div>
   );
 }

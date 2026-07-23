@@ -161,6 +161,8 @@ model Election {
   quorumThreshold     Int? // null = no quorum; otherwise required turnout %
   autoCloseOnDeadline Boolean     @default(true) // auto-close at endsAt
   voterReminder24h    Boolean     @default(false) // email reminder 24h before close
+  adminTurnoutReminder Boolean    @default(false) // email admin turnout updates during voting — Pro only
+  sealedResults       Boolean     @default(false) // hide tallies from everyone (admins included) until close
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -247,9 +249,10 @@ model Vote {
 // ───────── 7. Vote option ─────────
 
 model VoteOption {
-  id         String @id @default(cuid())
-  text       String
-  orderIndex Int
+  id          String  @id @default(cuid())
+  text        String
+  description String? // candidate role/description (wizard step 2, optional)
+  orderIndex  Int
 
   electionId String
   election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)

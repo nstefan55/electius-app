@@ -413,6 +413,202 @@
         "emptyBody": "Pokušajte prilagoditi ili očistiti filtre."
       }
     },
+    "wizard": {
+      "title": "Izrada izbora",
+      "stepLabel": "Korak {n} od 5 · {name}",
+      "steps": {
+        "basic": "Osnovni podaci",
+        "candidates": "Kandidati",
+        "voters": "Popis glasača",
+        "settings": "Postavke",
+        "review": "Pregled"
+      },
+      "close": "Zatvori čarobnjak",
+      "trustLine": "Anonimno i provjerljivo",
+      "saveDraft": "Spremi kao skicu",
+      "draftSaved": "Spremljeno kao skica",
+      "back": "Natrag",
+      "continue": "Nastavi",
+      "create": "Izradi izbore",
+      "creating": "Izrada…",
+      "errors": {
+        "titleRequired": "Dodajte naziv izbora za nastavak",
+        "candidatesRequired": "Dodajte barem dva kandidata za nastavak",
+        "scheduleInvalid": "Provjerite datume — zatvaranje mora biti nakon otvaranja",
+        "createFailed": "Nešto je pošlo po zlu. Pokušajte ponovno."
+      },
+      "step1": {
+        "title": "Osnovni podaci",
+        "sub": "Nazovite izbore i odaberite način glasovanja. Sve možete promijeniti prije otvaranja.",
+        "electionTitle": "Naziv izbora",
+        "titlePlaceholder": "npr. Izbori za predstavnika studenata",
+        "description": "Opis",
+        "optional": "neobavezno",
+        "descriptionPlaceholder": "Objasnite o čemu glasači odlučuju i dodajte potreban kontekst.",
+        "electionType": "Vrsta izbora",
+        "defaultBadge": "ZADANO",
+        "types": {
+          "STANDARD": {
+            "label": "Standardni",
+            "desc": "Izbor kandidata ili potvrda prijedloga."
+          },
+          "SURVEY": {
+            "label": "Anketa",
+            "desc": "Prikupite mišljenja kroz više pitanja."
+          },
+          "POLL": {
+            "label": "Brza anketa",
+            "desc": "Jednostavno da/ne ili jedno pitanje."
+          }
+        },
+        "votingMethod": "Način glasovanja",
+        "methods": {
+          "SINGLE_CHOICE": {
+            "label": "Jedan izbor",
+            "desc": "Glasači biraju točno jednu opciju."
+          },
+          "MULTI_CHOICE": {
+            "label": "Više izbora",
+            "desc": "Glasači mogu odabrati više opcija."
+          }
+        },
+        "noteStandard": "Rangirano i odobravajuće glasovanje stižu uskoro.",
+        "noteSurvey": "Ankete koriste više izbora kako bi glasači mogli odgovoriti na više opcija.",
+        "notePoll": "Brze ankete koriste jedan izbor — jedan odgovor po glasaču.",
+        "singleUnavailable": "Jedan izbor nije dostupan za ankete",
+        "multiUnavailable": "Više izbora nije dostupno za brze ankete"
+      },
+      "step2": {
+        "title": "Kandidati i opcije",
+        "sub": "Dodajte opcije koje će glasači vidjeti na listiću. Dodajte ih jednu po jednu ili uvezite popis.",
+        "addManually": "Dodaj ručno",
+        "uploadCsv": "Učitaj CSV",
+        "candidateName": "Ime kandidata",
+        "namePlaceholder": "Puno ime",
+        "candidateRole": "Uloga / opis",
+        "rolePlaceholder": "npr. 3. godina, Pravo",
+        "optional": "neobavezno",
+        "add": "Dodaj",
+        "dropTitle": "Ispustite .csv ovdje ili kliknite",
+        "dropHintPrefix": "Jedan kandidat po retku:",
+        "csvNotCsv": "Odaberite .csv datoteku",
+        "csvTooLarge": "Datoteka je prevelika (najviše 1 MB)",
+        "csvEmpty": "U toj datoteci nema kandidata.",
+        "csvSkipped": "{count, plural, one {# redak je preskočen zbog neispravnih podataka.} few {# retka su preskočena zbog neispravnih podataka.} other {# redaka je preskočeno zbog neispravnih podataka.}}",
+        "csvImported": "{count, plural, one {Uvezen # kandidat} few {Uvezena # kandidata} other {Uvezeno # kandidata}}",
+        "allowAbstain": "Dopusti suzdržane",
+        "allowAbstainDesc": "Dodaje opciju „Suzdržan” kako bi glasači mogli formalno odbiti izbor.",
+        "count": "{count, plural, one {# kandidat na listiću} few {# kandidata na listiću} other {# kandidata na listiću}}",
+        "empty": "Još nema kandidata — dodajte barem dva za otvaranje glasovanja.",
+        "nameRequired": "Unesite ime kandidata",
+        "remove": "Ukloni"
+      },
+      "step3": {
+        "title": "Popis glasača",
+        "sub": "Svaki glasač dobiva jednokratnu čarobnu poveznicu. E-mail se koristi samo za slanje te poveznice — sustav nikada ne povezuje glasača s njegovim glasom.",
+        "addManually": "Dodaj ručno",
+        "uploadCsv": "Učitaj CSV",
+        "fullName": "Puno ime",
+        "namePlaceholder": "Ana Anić",
+        "email": "E-mail adresa",
+        "emailPlaceholder": "ana@sveuciliste.hr",
+        "add": "Dodaj",
+        "dropTitle": "Ispustite .csv ovdje ili kliknite",
+        "dropHintPrefix": "Obavezni stupci:",
+        "csvNotCsv": "Odaberite .csv datoteku",
+        "csvTooLarge": "Datoteka je prevelika (najviše 1 MB)",
+        "csvEmpty": "Nema valjanih redaka. Svaki redak treba puno ime i ispravnu e-mail adresu.",
+        "csvSkipped": "{count, plural, one {# redak je preskočen zbog neispravne e-mail adrese.} few {# retka su preskočena zbog neispravne e-mail adrese.} other {# redaka je preskočeno zbog neispravne e-mail adrese.}}",
+        "csvImported": "{count, plural, one {Uvezen # glasač} few {Uvezena # glasača} other {Uvezeno # glasača}}",
+        "count": "{count, plural, one {# glasač dodan} few {# glasača dodana} other {# glasača dodano}}",
+        "removeAll": "Ukloni sve",
+        "empty": "Još nema dodanih glasača.",
+        "nameRequired": "Unesite puno ime glasača",
+        "emailInvalid": "Unesite ispravnu e-mail adresu",
+        "emailDuplicate": "Ta je e-mail adresa već na popisu",
+        "remove": "Ukloni"
+      },
+      "step4": {
+        "title": "Raspored i postavke",
+        "sub": "Odlučite kada se glasa i uključite zaštite koje trebate.",
+        "startMode": "Način početka",
+        "manual": {
+          "label": "Pokreni ručno",
+          "desc": "Glasovanje otvarate gumbom kada budete spremni."
+        },
+        "scheduled": {
+          "label": "Zakaži početak",
+          "desc": "Glasovanje se automatski otvara u zadano vrijeme."
+        },
+        "opens": "Otvara se",
+        "closes": "Zatvara se",
+        "time": "Vrijeme (neobavezno)",
+        "options": "Opcije",
+        "toggles": {
+          "sealedResults": {
+            "label": "Zapečaćeni rezultati",
+            "desc": "Sakrij sve rezultate — čak i administratorima — dok se glasovanje ne zatvori."
+          },
+          "quorum": {
+            "label": "Prag kvoruma",
+            "desc": "Zahtijevaj minimalni udio glasača s pravom glasa za valjanost rezultata."
+          },
+          "autoCloseOnDeadline": {
+            "label": "Automatsko zatvaranje na rok",
+            "desc": "Automatski završi glasovanje na datum i vrijeme zatvaranja."
+          },
+          "adminTurnoutReminder": {
+            "label": "Automatski podsjetnici administratoru",
+            "desc": "Primajte e-mailom ažuriranja o izlaznosti dok je glasovanje otvoreno."
+          },
+          "voterReminder24h": {
+            "label": "Automatski podsjetnici glasačima",
+            "desc": "Podsjetite glasače koji još nisu glasali prije isteka roka."
+          }
+        },
+        "quorumInput": "Minimalna potrebna izlaznost",
+        "quorumChip": "Kvorum {pct}%"
+      },
+      "step5": {
+        "title": "Pregled i potvrda",
+        "sub": "Provjerite sve u nastavku. Koristite Uredi na bilo kojem odjeljku za povratak i izmjene.",
+        "edit": "Uredi",
+        "basicInfo": "Osnovni podaci",
+        "labels": {
+          "title": "Naziv",
+          "description": "Opis",
+          "type": "Vrsta",
+          "method": "Način glasovanja",
+          "start": "Početak",
+          "closes": "Zatvaranje",
+          "enabled": "Uključeno"
+        },
+        "noDescription": "Bez opisa",
+        "candidates": "Kandidati",
+        "candidateCount": "{count, plural, one {# kandidat} few {# kandidata} other {# kandidata}}",
+        "abstainEnabled": "Opcija suzdržanog glasa je uključena.",
+        "voters": "Popis glasača",
+        "voterCount": "{count, plural, one {# glasač} few {# glasača} other {# glasača}}",
+        "voterSummary": "{count, plural, one {Pozvat će se # glasač} few {Pozvat će se # glasača} other {Pozvat će se # glasača}} — {sample}{more, plural, =0 {} one { i još #} few { i još #} other { i još #}}",
+        "noVoters": "Još nema dodanih glasača",
+        "settings": "Raspored i postavke",
+        "startManual": "Ručno (vi otvarate glasovanje)",
+        "startUnset": "Zakazano — vrijeme nije postavljeno",
+        "closeUnset": "Nije postavljeno",
+        "defaultsOnly": "Samo zadane postavke"
+      },
+      "success": {
+        "title": "Izbori su izrađeni",
+        "body": "<name></name> je spremno. Izborima upravljate s njihove stranice ili popisa izbora.",
+        "method": "Način",
+        "candidates": "Kandidati",
+        "voters": "Glasači",
+        "closes": "Zatvara se",
+        "electionId": "ID izbora",
+        "createAnother": "Izradi nove",
+        "goToElection": "Idi na izbore"
+      }
+    },
     "empty": {
       "title": "Pokrenite svoje prve izbore",
       "subtitle": "Provedite ankete, upitnike ili standardne izbore — od pozivnica e-poštom do arhiviranih PDF izvještaja. Postavljanje u manje od 5 minuta.",
