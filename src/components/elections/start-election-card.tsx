@@ -3,8 +3,14 @@
 import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
-import { ChevronRight, CircleCheckBig, Play, TriangleAlert } from "lucide-react";
-import { startElection } from "@/actions/elections";
+import {
+  ChevronRight,
+  CircleCheckBig,
+  Play,
+  RefreshCw,
+  TriangleAlert,
+} from "lucide-react";
+import { resendInvitations, startElection } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
 
 // Manual-start screen for a DRAFT election (election-manual-start-spec, design:
@@ -77,7 +83,11 @@ export function StartElectionCard({
   const tTypes = useTranslations("dashboard.wizard.step1.types");
   const locale = useLocale();
   const router = useRouter();
-  const [started, setStarted] = useState(false);
+  // null until the start action succeeds; then the real publication numbers.
+  const [sendReport, setSendReport] = useState<{
+    sent: number;
+    failed: number;
+  } | null>(null);
   const [pending, startTransition] = useTransition();
 
   // Unscheduled manual drafts carry endsAt === startsAt (wizard placeholder rule)
@@ -88,7 +98,7 @@ export function StartElectionCard({
     startTransition(async () => {
       const res = await startElection(id);
       if (res.success) {
-        setStarted(true);
+        setSendReport({ sent: res.sent ?? 0, failed: res.failed ?? 0 });
       } else {
         toast.error(
           t(res.error === "invalidStatus" ? "errors.invalidStatus" : "errors.failed"),
@@ -96,7 +106,22 @@ export function StartElectionCard({
       }
     });
 
-  if (started) {
+  const handleRetry = () =>
+    startTransition(async () => {
+      const res = await resendInvitations(id);
+      if (res.success) {
+        setSendReport((prev) => ({
+          sent: (prev?.sent ?? 0) + (res.sent ?? 0),
+          failed: res.failed ?? 0,
+        }));
+        if ((res.sent ?? 0) > 0) toast.success(t("success.retryDone"));
+        if ((res.failed ?? 0) > 0) toast.error(t("errors.resendFailed"));
+      } else {
+        toast.error(t("errors.resendFailed"));
+      }
+    });
+
+  if (sendReport) {
     return (
       <div className="mx-auto w-full max-w-150">
         <div className="rounded-2xl border border-neutral-200 bg-white p-10 text-center shadow-sm max-sm:p-6">
@@ -107,8 +132,33 @@ export function StartElectionCard({
             {t("success.title")}
           </h2>
           <p className="mt-2 text-base text-neutral-600">
-            {t("success.body", { count: voters })}
+            {t("success.body", { count: sendReport.sent })}
           </p>
+          {sendReport.failed > 0 && (
+            <div className="mx-auto mt-5 flex max-w-105 items-start gap-3 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-left">
+              <TriangleAlert
+                className="mt-0.5 size-4.5 shrink-0 text-warning-700"
+                aria-hidden
+              />
+              <div className="min-w-0">
+                <p className="text-[13px] leading-normal text-warning-700">
+                  {t("success.failedNote", { count: sendReport.failed })}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleRetry}
+                  disabled={pending}
+                  className="mt-2 inline-flex h-9 cursor-pointer items-center gap-2 rounded-md bg-warning-700 px-4 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <RefreshCw
+                    className={`size-3.5${pending ? " animate-spin" : ""}`}
+                    aria-hidden
+                  />
+                  {t("success.retry")}
+                </button>
+              </div>
+            </div>
+          )}
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/elections"

@@ -663,14 +663,18 @@
         "startCta": "Start election & send invitations",
         "success": {
           "title": "Voting is now live",
-          "body": "{count, plural, one {Invitations are on their way to # voter.} other {Invitations are on their way to # voters.}}",
+          "body": "{count, plural, =0 {No invitations were sent.} one {# invitation sent by email.} other {# invitations sent by email.}}",
+          "failedNote": "{count, plural, one {# invitation failed to send — the voter stays pending.} other {# invitations failed to send — those voters stay pending.}} Try sending again.",
+          "retry": "Resend invitations",
+          "retryDone": "Invitations resent.",
           "back": "Back to elections",
           "view": "View election"
         },
         "trust": "Voters authenticate via one-time magic links. The system never links a voter to their vote.",
         "errors": {
           "failed": "Starting the election failed. Please try again.",
-          "invalidStatus": "Only draft elections can be started manually."
+          "invalidStatus": "Only draft elections can be started manually.",
+          "resendFailed": "Resending the invitations failed. Please try again."
         }
       },
       "overview": {
@@ -800,6 +804,14 @@
     }
   },
   "voter": {
+    "inviteEmail": {
+      "subject": "You're invited to vote: {title}",
+      "heading": "You've been invited to vote",
+      "body": "{org} has invited you to vote in \"{title}\". Click the button below to open your ballot — no sign-in required.",
+      "cta": "Start voting",
+      "fallback": "If the button doesn't work, copy this link into your browser:",
+      "expiry": "This link is single-use, personal, and valid until the election closes. If you weren't expecting this email, feel free to ignore it."
+    },
     "ballot": {
       "title": "Ballot",
       "subtitle": "Placeholder (/vote/[token]). The voting flow ships in a separate spec."

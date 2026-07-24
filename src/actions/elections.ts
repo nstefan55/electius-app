@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
+import { publishElection } from "@/lib/services/publication.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
 // Each action verifies the target election belongs to the session's org before
@@ -112,9 +113,16 @@ export async function archiveElection(id: string): Promise<ActionResult> {
 // The status guard lives in the WHERE clause: updateMany flips only a row that
 // is still DRAFT, so a concurrent double-click (or a non-draft id) atomically
 // no-ops with count 0 — no read-then-write race.
-// ponytail: status flip only — token generation + invitation emails are the
-// election-publication spec's job; voters stay PENDING until invites really send.
-export async function startElection(id: string): Promise<ActionResult> {
+// After the flip, publishElection sends the invitations (election-publication
+// spec): tokens + chunked Resend batches, voters flip PENDING → INVITED per
+// successful chunk. The election activates even if sends fail — the voting
+// window is open; failed invitations are a retry problem, never a rollback.
+export type PublishActionResult = ActionResult & {
+  sent?: number;
+  failed?: number;
+};
+
+export async function startElection(id: string): Promise<PublishActionResult> {
   if (!id) return { success: false, error: "invalid" };
 
   try {
@@ -126,7 +134,39 @@ export async function startElection(id: string): Promise<ActionResult> {
       data: { status: "ACTIVE", startsAt: new Date() },
     });
     if (count === 0) return { success: false, error: "invalidStatus" };
-    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+
+  // Outside the try above: from here the election IS active — never report
+  // a start failure for a send failure.
+  const result = await publishElection(id).catch(() => null);
+  if (result) return { success: true, ...result };
+  // Pipeline threw before any chunk resolved — everyone still PENDING.
+  const failed = await prisma.voter
+    .count({ where: { electionId: id, status: "PENDING" } })
+    .catch(() => 0);
+  return { success: true, sent: 0, failed };
+}
+
+// Resend invitations to voters still PENDING after a failed/cut-short send.
+// ACTIVE elections only; publishElection is idempotent (targets PENDING only),
+// so INVITED/VOTED voters are never re-emailed and their links stay valid.
+export async function resendInvitations(
+  id: string,
+): Promise<PublishActionResult> {
+  if (!id) return { success: false, error: "invalid" };
+
+  try {
+    const { organizationId } = await requireSession();
+    const owned = await prisma.election.findFirst({
+      where: { id, organizationId, status: "ACTIVE" },
+      select: { id: true },
+    });
+    if (!owned) return { success: false, error: "invalidStatus" };
+
+    const result = await publishElection(id);
+    return { success: true, ...result };
   } catch {
     return { success: false, error: "failed" };
   }

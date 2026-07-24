@@ -663,14 +663,18 @@
         "startCta": "Pokreni izbore i pošalji pozivnice",
         "success": {
           "title": "Glasanje je pokrenuto",
-          "body": "Pozivnice se šalju za {count} birača.",
+          "body": "{count, plural, =0 {Nijedna pozivnica nije poslana.} one {Poslana je # pozivnica e-poštom.} few {Poslane su # pozivnice e-poštom.} other {Poslano je # pozivnica e-poštom.}}",
+          "failedNote": "{count, plural, one {# pozivnica nije poslana — birač ostaje na čekanju.} few {# pozivnice nisu poslane — birači ostaju na čekanju.} other {# pozivnica nije poslano — birači ostaju na čekanju.}} Pokušajte ponovno poslati.",
+          "retry": "Pošalji ponovno",
+          "retryDone": "Pozivnice su ponovno poslane.",
           "back": "Natrag na izbore",
           "view": "Pogledaj izbore"
         },
         "trust": "Birači se prijavljuju putem jednokratnih magičnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom.",
         "errors": {
           "failed": "Pokretanje izbora nije uspjelo. Pokušajte ponovno.",
-          "invalidStatus": "Samo se izbori u pripremi mogu ručno pokrenuti."
+          "invalidStatus": "Samo se izbori u pripremi mogu ručno pokrenuti.",
+          "resendFailed": "Ponovno slanje pozivnica nije uspjelo. Pokušajte ponovno."
         }
       },
       "overview": {
@@ -800,6 +804,14 @@
     }
   },
   "voter": {
+    "inviteEmail": {
+      "subject": "Pozivnica za glasovanje: {title}",
+      "heading": "Pozvani ste glasovati",
+      "body": "{org} vas poziva da glasujete u izborima „{title}”. Kliknite gumb u nastavku kako biste otvorili svoj glasački listić — prijava nije potrebna.",
+      "cta": "Glasujte",
+      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
+      "expiry": "Poveznica je jednokratna, osobna i vrijedi do zatvaranja izbora. Ako niste očekivali ovu poruku, slobodno je zanemarite."
+    },
     "ballot": {
       "title": "Glasački listić",
       "subtitle": "Predložak (/vote/[token]). Tijek glasovanja dolazi u zasebnoj specifikaciji."
