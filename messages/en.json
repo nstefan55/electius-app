@@ -644,6 +644,35 @@
         "results": "Results",
         "voters": "Voters"
       },
+      "start": {
+        "pageTitle": "Start election",
+        "title": "Ready to start voting?",
+        "body": "Review the details below before sending invitations.",
+        "election": "Election",
+        "candidates": "Candidates",
+        "voters": "Voter list",
+        "closeDate": "Close date",
+        "reminder": "Reminder",
+        "candidatesCount": "{count, plural, one {# candidate} other {# candidates}}",
+        "votersCount": "{count, plural, one {# voter} other {# voters}}",
+        "reminderAuto": "Automatic · 24 h before deadline",
+        "notScheduled": "Not scheduled",
+        "warnTitle": "This action will send emails immediately",
+        "warnBody": "{count, plural, one {# voter will receive an invitation email} other {# voters will receive invitation emails}} the moment you click Start. This cannot be undone.",
+        "cancel": "Cancel",
+        "startCta": "Start election & send invitations",
+        "success": {
+          "title": "Voting is now live",
+          "body": "{count, plural, one {Invitations are on their way to # voter.} other {Invitations are on their way to # voters.}}",
+          "back": "Back to elections",
+          "view": "View election"
+        },
+        "trust": "Voters authenticate via one-time magic links. The system never links a voter to their vote.",
+        "errors": {
+          "failed": "Starting the election failed. Please try again.",
+          "invalidStatus": "Only draft elections can be started manually."
+        }
+      },
       "overview": {
         "scaffoldTag": "Content scaffold",
         "draft": {

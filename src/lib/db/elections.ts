@@ -107,6 +107,20 @@ export const getElectionDetail = cache(
   },
 );
 
+// Extra fields the manual-start screen needs beyond DashboardElection
+// (election-manual-start-spec). cache()-wrapped like getElectionDetail: the
+// [id] layout (type subtitle) and the overview page (review list) share one
+// round trip. Only queried for DRAFT elections.
+export const getElectionStartInfo = cache(
+  async (id: string, organizationId: string) => {
+    const e = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: { electionType: true, _count: { select: { options: true } } },
+    });
+    return e ? { electionType: e.electionType, candidates: e._count.options } : null;
+  },
+);
+
 function computeStats(els: DashboardElection[]): DashboardStats {
   const withVoters = els.filter((e) => e.voters > 0);
   const avgTurnout = withVoters.length

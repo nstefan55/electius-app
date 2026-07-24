@@ -1,10 +1,12 @@
 import { useTranslations } from "next-intl";
-import { getElectionDetail } from "@/lib/db/elections";
+import { getElectionDetail, getElectionStartInfo } from "@/lib/db/elections";
 import { requireSession } from "@/lib/auth/require-session";
+import { StartElectionCard } from "@/components/elections/start-election-card";
 import type { ElectionStatus } from "@/lib/elections-view";
 
-// Overview facet (default tab) — status-adaptive SHELL only. The three branches are
-// labelled scaffolds; detailed content is owned by election-overview-phase-* specs.
+// Overview facet (default tab) — status-adaptive SHELL. DRAFT renders the
+// manual-start screen (election-manual-start-spec); the other branches are
+// labelled scaffolds owned by election-overview-phase-* specs.
 // Reads the same cache()-wrapped election as the layout (no extra query / authz):
 // same (id, organizationId) key → single DB round trip per request.
 export default async function ElectionOverviewPage({
@@ -17,7 +19,23 @@ export default async function ElectionOverviewPage({
   const election = await getElectionDetail(id, organizationId);
   if (!election) return null; // layout already rendered notFound()
 
-  // DRAFT/SCHEDULED → setup shell · ACTIVE → live/management shell · CLOSED/ARCHIVED → sealed shell
+  if (election.status === "DRAFT") {
+    // Same cache() key as the layout's call — no extra round trip.
+    const startInfo = await getElectionStartInfo(id, organizationId);
+    return (
+      <StartElectionCard
+        id={id}
+        title={election.name}
+        electionType={startInfo?.electionType ?? "STANDARD"}
+        candidates={startInfo?.candidates ?? 0}
+        voters={election.voters}
+        opens={election.opens}
+        closes={election.closes}
+      />
+    );
+  }
+
+  // SCHEDULED → setup shell · ACTIVE → live/management shell · CLOSED/ARCHIVED → sealed shell
   const variant: "draft" | "active" | "closed" =
     election.status === "ACTIVE"
       ? "active"
