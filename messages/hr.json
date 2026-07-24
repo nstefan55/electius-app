@@ -644,6 +644,35 @@
         "results": "Rezultati",
         "voters": "Glasači"
       },
+      "start": {
+        "pageTitle": "Pokreni izbore",
+        "title": "Spremni pokrenuti glasanje?",
+        "body": "Pregledajte pojedinosti prije slanja pozivnica.",
+        "election": "Izbori",
+        "candidates": "Kandidati",
+        "voters": "Popis birača",
+        "closeDate": "Datum zatvaranja",
+        "reminder": "Podsjetnik",
+        "candidatesCount": "{count, plural, one {# kandidat} few {# kandidata} other {# kandidata}}",
+        "votersCount": "{count, plural, one {# birač} few {# birača} other {# birača}}",
+        "reminderAuto": "Automatski · 24 h prije roka",
+        "notScheduled": "Nije zakazano",
+        "warnTitle": "Ova radnja odmah šalje e-poštu",
+        "warnBody": "{count, plural, one {# birač će odmah primiti pozivnicu e-poštom čim kliknete Pokreni.} few {# birača će odmah primiti pozivnicu e-poštom čim kliknete Pokreni.} other {# birača će odmah primiti pozivnicu e-poštom čim kliknete Pokreni.}} Ovo se ne može poništiti.",
+        "cancel": "Odustani",
+        "startCta": "Pokreni izbore i pošalji pozivnice",
+        "success": {
+          "title": "Glasanje je pokrenuto",
+          "body": "Pozivnice se šalju za {count} birača.",
+          "back": "Natrag na izbore",
+          "view": "Pogledaj izbore"
+        },
+        "trust": "Birači se prijavljuju putem jednokratnih magičnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom.",
+        "errors": {
+          "failed": "Pokretanje izbora nije uspjelo. Pokušajte ponovno.",
+          "invalidStatus": "Samo se izbori u pripremi mogu ručno pokrenuti."
+        }
+      },
       "overview": {
         "scaffoldTag": "Skica sadržaja",
         "draft": {

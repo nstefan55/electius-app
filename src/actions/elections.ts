@@ -108,6 +108,30 @@ export async function archiveElection(id: string): Promise<ActionResult> {
   }
 }
 
+// Manual start (election-manual-start-spec) — DRAFT → ACTIVE, voting opens now.
+// The status guard lives in the WHERE clause: updateMany flips only a row that
+// is still DRAFT, so a concurrent double-click (or a non-draft id) atomically
+// no-ops with count 0 — no read-then-write race.
+// ponytail: status flip only — token generation + invitation emails are the
+// election-publication spec's job; voters stay PENDING until invites really send.
+export async function startElection(id: string): Promise<ActionResult> {
+  if (!id) return { success: false, error: "invalid" };
+
+  try {
+    const { organizationId } = await requireSession();
+    const { count } = await prisma.election.updateMany({
+      where: { id, organizationId, status: "DRAFT" },
+      // startsAt = now: voting opened at the click, not at the wizard's
+      // placeholder date. endsAt left as-is (may be unscheduled).
+      data: { status: "ACTIVE", startsAt: new Date() },
+    });
+    if (count === 0) return { success: false, error: "invalidStatus" };
+    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
 // Delete — permanent. Vote and Archive have no onDelete cascade (anonymity /
 // integrity are deliberate), so clear them first, then let the election cascade
 // remove voters, tokens and options. All-or-nothing in one transaction.
