@@ -812,9 +812,121 @@
       "fallback": "If the button doesn't work, copy this link into your browser:",
       "expiry": "This link is single-use, personal, and valid until the election closes. If you weren't expecting this email, feel free to ignore it."
     },
-    "ballot": {
-      "title": "Ballot",
-      "subtitle": "Placeholder (/vote/[token]). The voting flow ships in a separate spec."
+    "flow": {
+      "stepLabel": "Step {step} of 5",
+      "invite": {
+        "title": "You've been invited to vote",
+        "sub": "{org} — {title}",
+        "cta": "Start voting",
+        "anon": "Your vote is anonymous and cannot be linked back to you."
+      },
+      "details": {
+        "badgeSingle": "Single choice",
+        "badgeMulti": "Multi choice",
+        "candLabel": "Candidates",
+        "closesLabel": "Closes",
+        "closesOpenEnded": "Not set",
+        "methodLabel": "Voting method",
+        "methodSingle": "One vote",
+        "methodMulti": "Multiple votes",
+        "cta": "Continue"
+      },
+      "cast": {
+        "title": "Cast your vote",
+        "subSingle": "Select one candidate.",
+        "subMulti": "Select one or more options.",
+        "counter": "Selected: {count}",
+        "cta": "Continue"
+      },
+      "review": {
+        "title": "Review your selection",
+        "votingFor": "You are voting for",
+        "votingForMulti": "{count, plural, one {You are voting for # option} other {You are voting for # options}}",
+        "final": "Once submitted, your vote is final and cannot be changed.",
+        "cta": "Confirm & submit",
+        "back": "Go back"
+      },
+      "confirmed": {
+        "title": "Your vote has been recorded",
+        "sub": "Thank you for voting. Keep this code to verify your vote was counted.",
+        "hashLabel": "Your verification code",
+        "copyHash": "Copy code",
+        "download": "Download confirmation",
+        "close": "You can safely close this page."
+      },
+      "receipt": {
+        "heading": "Electius — voting confirmation",
+        "election": "Election: {title}",
+        "org": "Organization: {org}",
+        "time": "Time: {time}",
+        "hash": "Verification code: {hash}",
+        "note": "This code confirms your vote was recorded. Your vote is anonymous and cannot be linked back to you."
+      },
+      "invalid": {
+        "title": "This link isn't valid",
+        "sub": "The link is incorrect or incomplete. Open the full link from your email, or rescan the QR code."
+      },
+      "expired": {
+        "title": "This link has expired",
+        "sub": "For security, voting links are valid for a limited time.",
+        "openUntil": "Voting is still open until {closes}.",
+        "openStill": "Voting is still open.",
+        "cta": "Request a new link"
+      },
+      "used": {
+        "title": "You've already voted",
+        "sub": "This link has been used, and each voter can vote only once.",
+        "alertTitle": "Your vote has been recorded",
+        "alertBody": "Your vote is safe and anonymous — it cannot be linked back to you. Thank you for taking part."
+      },
+      "notStarted": {
+        "title": "Voting hasn't opened yet",
+        "sub": "Your link is valid, but voting has not started.",
+        "subGeneric": "Voting has not started yet.",
+        "opensLabel": "Opens",
+        "closesLabel": "Closes",
+        "keep": "Keep this link — you will need it to vote."
+      },
+      "closed": {
+        "title": "Voting has ended",
+        "sub": "This election closed on {closes}.",
+        "subNoDate": "This election has closed.",
+        "notUsedNote": "Your link was not used.",
+        "votedNote": "Your vote was recorded in this election.",
+        "resultsCta": "View results",
+        "noResults": "Results are published by the election organizer.",
+        "anon": "All votes are anonymous and cryptographically protected."
+      },
+      "qr": {
+        "overline": "Voting",
+        "sub": "Enter the email address your invitation was sent to and we'll send you your personal voting link.",
+        "emailLabel": "Email address",
+        "emailPlaceholder": "first.last@organization.com",
+        "emailHelper": "The address your voting invitation was sent to.",
+        "emailError": "Enter a valid email address.",
+        "cta": "Send my link",
+        "privacy": "The link is single-use and personal — don't share it.",
+        "rateTitle": "Too many attempts",
+        "rateBody": "For security, try again in 15 minutes.",
+        "sentTitle": "Check your email",
+        "sentSub": "If {email} is on the voter list, we sent it a voting link. Check your spam folder too.",
+        "sentBack": "Use a different address",
+        "failed": "Sending failed. Please try again."
+      },
+      "fail": {
+        "title": "Your vote was not submitted",
+        "sub": "Something went wrong and your vote was not recorded. Check your connection and try again.",
+        "retry": "Try again",
+        "back": "Back to review"
+      },
+      "race": {
+        "title": "This link was just used",
+        "sub": "This link was used on another device before your vote was submitted. No new vote was recorded."
+      },
+      "help": {
+        "title": "Think this is a mistake?",
+        "body": "Contact the election organizer who sent your invitation."
+      }
     },
     "results": {
       "subtitle": "Placeholder (/results/[id]). The results display ships in a separate spec."

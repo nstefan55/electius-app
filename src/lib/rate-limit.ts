@@ -39,6 +39,12 @@ const limiters = (() => {
     forgotPassword: make(redis, "forgot-password", 3, "1 h"),
     resetPassword: make(redis, "reset-password", 5, "15 m"),
     resendVerification: make(redis, "resend-verification", 3, "15 m"),
+    // Voter flow (voter-flow-spec): these deter junk load, not brute force —
+    // tokens are 256-bit and single-use. The vote limit is per IP and must
+    // survive a campus-NAT voting session (many voters, one public IP), hence
+    // 30 not 10; resend is keyed IP+email so it stays tight.
+    vote: make(redis, "vote", 30, "15 m"),
+    resendVoteLink: make(redis, "resend-vote-link", 3, "15 m"),
   };
 })();
 

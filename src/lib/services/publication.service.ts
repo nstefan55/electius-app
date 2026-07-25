@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import { mintTokensForPendingVoters } from "./token.service";
+import { mintTokenForVoter, mintTokensForPendingVoters } from "./token.service";
 import { sendInvitationEmails } from "./email.service";
 
 // Publication pipeline (election-publication-spec §2): tokens → chunked Resend
@@ -66,4 +66,51 @@ export async function publishElection(
   }
 
   return { sent, failed };
+}
+
+// Voter-initiated resend (voter-flow spec §4: QR entry + the expired-link CTA).
+// Serves PENDING and INVITED voters of an ACTIVE election; anything else —
+// unknown email, already voted, wrong election status — is a silent no-op so
+// the caller can return an identical enumeration-safe response either way.
+// Re-mint revokes any previously emailed link for this voter.
+export async function resendVoterLink(
+  electionId: string,
+  email: string,
+): Promise<void> {
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: {
+      status: true,
+      title: true,
+      organization: { select: { name: true } },
+    },
+  });
+  if (!election || election.status !== "ACTIVE") return;
+
+  const voter = await prisma.voter.findFirst({
+    where: {
+      electionId,
+      email: { equals: email.trim(), mode: "insensitive" },
+      status: { not: "VOTED" },
+    },
+    select: { id: true, status: true },
+  });
+  if (!voter) return;
+
+  const minted = await mintTokenForVoter(voter.id);
+  if (!minted) return;
+
+  await sendInvitationEmails([minted], {
+    title: election.title,
+    organizationName: election.organization.name,
+  });
+
+  // A PENDING voter has now genuinely been emailed — same semantics as the
+  // bulk pipeline's per-chunk flip. INVITED stays INVITED.
+  if (voter.status === "PENDING") {
+    await prisma.voter.updateMany({
+      where: { id: voter.id },
+      data: { status: "INVITED" },
+    });
+  }
 }
