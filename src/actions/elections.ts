@@ -172,6 +172,29 @@ export async function resendInvitations(
   }
 }
 
+// Close early (election-overview-phase-1) — ACTIVE → CLOSED right now.
+// Same atomic guard as startElection: the status lives in the WHERE clause, so
+// a double-click, a cross-org id, or a race with the deadline sweep all match
+// 0 rows and no-op instead of re-closing an already-closed election.
+export async function closeElection(id: string): Promise<ActionResult> {
+  if (!id) return { success: false, error: "invalid" };
+
+  try {
+    const { organizationId } = await requireSession();
+    const { count } = await prisma.election.updateMany({
+      where: { id, organizationId, status: "ACTIVE" },
+      // endsAt = now so the window reads as genuinely over everywhere it is
+      // rendered (turnout bars, "time left", voter-flow state) — the mirror of
+      // startElection setting startsAt at the click.
+      data: { status: "CLOSED", endsAt: new Date() },
+    });
+    if (count === 0) return { success: false, error: "invalidStatus" };
+    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
 // Delete — permanent. Vote and Archive have no onDelete cascade (anonymity /
 // integrity are deliberate), so clear them first, then let the election cascade
 // remove voters, tokens and options. All-or-nothing in one transaction.

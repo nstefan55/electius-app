@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { resendInvitations, startElection } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import { formatVotingDateTime } from "@/lib/elections-view";
 
 // Manual-start screen for a DRAFT election (election-manual-start-spec, design:
 // Election Start.dc.html). Two client states: the review card, and — after the
@@ -26,27 +27,6 @@ interface StartElectionCardProps {
   voters: number;
   opens: string; // ISO, from DashboardElection
   closes: string;
-}
-
-const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
-
-// "9. srp 2026. · 18:00" / "Jul 9, 2026 · 6:00 PM" — UTC like formatVotingDate,
-// so output is deterministic across server/browser timezones.
-function formatCloseDate(iso: string, locale: string) {
-  const d = new Date(iso);
-  const l = DATE_LOCALE[locale] ?? locale;
-  const date = new Intl.DateTimeFormat(l, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(d);
-  const time = new Intl.DateTimeFormat(l, {
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "UTC",
-  }).format(d);
-  return `${date} · ${time}`;
 }
 
 function ReviewRow({
@@ -92,7 +72,7 @@ export function StartElectionCard({
 
   // Unscheduled manual drafts carry endsAt === startsAt (wizard placeholder rule)
   const closeLabel =
-    closes === opens ? t("notScheduled") : formatCloseDate(closes, locale);
+    closes === opens ? t("notScheduled") : formatVotingDateTime(closes, locale);
 
   const handleStart = () =>
     startTransition(async () => {

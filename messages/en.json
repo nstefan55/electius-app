@@ -655,6 +655,38 @@
         "results": "Results",
         "voters": "Voters"
       },
+      "topbar": {
+        "subtitle": "Election Overview",
+        "edit": "Edit",
+        "preview": "Preview ballot",
+        "close": "Close election",
+        "remove": "Remove election",
+        "exit": "Exit",
+        "editSoon": "Editing an election is coming soon.",
+        "notScheduled": "Not scheduled",
+        "closeTitle": "Close election early?",
+        "closeBody": "Voting will close immediately instead of {date}. Once closed, no more ballots can be cast. This action is irreversible.",
+        "closeConfirm": "Close election",
+        "closeDone": "Election closed.",
+        "removeTitle": "Remove this election?",
+        "removeBody": "This election and all its settings will be permanently removed. This action cannot be undone.",
+        "removeConfirm": "Remove",
+        "removeDone": "Election removed.",
+        "cancel": "Cancel",
+        "errors": {
+          "notActive": "Only an active election can be closed.",
+          "failed": "That action failed. Please try again."
+        },
+        "previewModal": {
+          "badge": "Preview",
+          "promptSingle": "Select one candidate below.",
+          "promptMulti": "Select one or more options below.",
+          "noOptions": "This election has no candidates yet.",
+          "submit": "Submit vote",
+          "trust": "Your vote is anonymous and cannot be linked back to you.",
+          "close": "Close preview"
+        }
+      },
       "start": {
         "pageTitle": "Start election",
         "title": "Ready to start voting?",

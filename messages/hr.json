@@ -655,6 +655,38 @@
         "results": "Rezultati",
         "voters": "Glasači"
       },
+      "topbar": {
+        "subtitle": "Pregled izbora",
+        "edit": "Uredi",
+        "preview": "Pregled listića",
+        "close": "Zatvori izbore",
+        "remove": "Ukloni izbore",
+        "exit": "Izlaz",
+        "editSoon": "Uređivanje izbora uskoro stiže.",
+        "notScheduled": "Nije zakazano",
+        "closeTitle": "Zatvoriti izbore ranije?",
+        "closeBody": "Glasanje će se odmah zatvoriti umjesto {date}. Nakon zatvaranja glasovi se više ne mogu predati. Ova radnja je nepovratna.",
+        "closeConfirm": "Zatvori izbore",
+        "closeDone": "Izbori su zatvoreni.",
+        "removeTitle": "Ukloniti ove izbore?",
+        "removeBody": "Ovi izbori i sve njihove postavke bit će trajno uklonjeni. Ova radnja se ne može poništiti.",
+        "removeConfirm": "Ukloni",
+        "removeDone": "Izbori su uklonjeni.",
+        "cancel": "Odustani",
+        "errors": {
+          "notActive": "Zatvoriti se mogu samo aktivni izbori.",
+          "failed": "Radnja nije uspjela. Pokušajte ponovno."
+        },
+        "previewModal": {
+          "badge": "Pregled",
+          "promptSingle": "Odaberite jednog kandidata u nastavku.",
+          "promptMulti": "Odaberite jednu ili više opcija u nastavku.",
+          "noOptions": "Ovi izbori još nemaju kandidata.",
+          "submit": "Predaj glas",
+          "trust": "Vaš glas je anoniman i ne može se povezati s vama.",
+          "close": "Zatvori pregled"
+        }
+      },
       "start": {
         "pageTitle": "Pokreni izbore",
         "title": "Spremni pokrenuti glasanje?",
