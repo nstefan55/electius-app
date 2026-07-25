@@ -106,3 +106,23 @@ export const formatVotingDate = (iso: string, locale: string) =>
     month: "short",
     timeZone: "UTC",
   }).format(new Date(iso));
+
+// Full window instant: "9. srp 2026. · 18:00" / "Jul 9, 2026 · 6:00 PM".
+// Used where a bare day+month would be ambiguous — the start screen's review
+// row and the close-early confirmation. Same UTC determinism as above.
+export const formatVotingDateTime = (iso: string, locale: string) => {
+  const l = DATE_LOCALE[locale] ?? locale;
+  const d = new Date(iso);
+  const date = new Intl.DateTimeFormat(l, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(d);
+  const time = new Intl.DateTimeFormat(l, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: "UTC",
+  }).format(d);
+  return `${date} · ${time}`;
+};

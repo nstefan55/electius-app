@@ -21,7 +21,7 @@ const { requireSession } = await import("@/lib/auth/require-session");
 const { publishElection } = await import(
   "@/lib/services/publication.service"
 );
-const { startElection, resendInvitations } = await import(
+const { startElection, resendInvitations, closeElection } = await import(
   "@/actions/elections"
 );
 
@@ -103,6 +103,49 @@ describe("startElection", () => {
     vi.mocked(prisma.election.updateMany).mockRejectedValue(new Error("db down"));
 
     const result = await startElection("el_1");
+    expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+describe("closeElection", () => {
+  it("rejects an empty id without touching the session or DB", async () => {
+    const result = await closeElection("");
+    expect(result).toEqual({ success: false, error: "invalid" });
+    expect(requireSession).not.toHaveBeenCalled();
+  });
+
+  it("flips ACTIVE → CLOSED atomically, org-scoped, with endsAt = now", async () => {
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
+
+    const before = Date.now();
+    const result = await closeElection("el_1");
+    const after = Date.now();
+
+    expect(result).toEqual({ success: true });
+    const arg = vi.mocked(prisma.election.updateMany).mock.calls[0][0];
+    // Status guard in the WHERE clause — a second click matches 0 rows.
+    expect(arg.where).toEqual({
+      id: "el_1",
+      organizationId: "org_1",
+      status: "ACTIVE",
+    });
+    expect(arg.data).toMatchObject({ status: "CLOSED" });
+    const endsAt = (arg.data as { endsAt: Date }).endsAt.getTime();
+    expect(endsAt).toBeGreaterThanOrEqual(before);
+    expect(endsAt).toBeLessThanOrEqual(after);
+  });
+
+  it("returns invalidStatus when no ACTIVE row matches (already closed, cross-org, or missing)", async () => {
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 0 });
+
+    const result = await closeElection("el_draft");
+    expect(result).toEqual({ success: false, error: "invalidStatus" });
+  });
+
+  it("reports failure without leaking the DB error", async () => {
+    vi.mocked(prisma.election.updateMany).mockRejectedValue(new Error("db down"));
+
+    const result = await closeElection("el_1");
     expect(result).toEqual({ success: false, error: "failed" });
   });
 });

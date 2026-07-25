@@ -121,6 +121,25 @@ export const getElectionStartInfo = cache(
   },
 );
 
+// Ballot options for the top bar's "Preview ballot" modal (election-overview-
+// phase-1) — what the voter would see, read from the same rows the real ballot
+// renders. cache()-wrapped for consistency with the other [id] reads.
+export const getBallotPreview = cache(
+  async (id: string, organizationId: string) => {
+    const e = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: {
+        votingType: true,
+        options: {
+          orderBy: { orderIndex: "asc" },
+          select: { id: true, text: true, description: true },
+        },
+      },
+    });
+    return e ? { votingType: e.votingType, options: e.options } : null;
+  },
+);
+
 function computeStats(els: DashboardElection[]): DashboardStats {
   const withVoters = els.filter((e) => e.voters > 0);
   const avgTurnout = withVoters.length
