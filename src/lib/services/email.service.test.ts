@@ -2,20 +2,48 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the Resend SDK itself — the service builds payloads, the SDK ships them.
 const batchSend = vi.hoisted(() => vi.fn());
+const emailSend = vi.hoisted(() => vi.fn());
 vi.mock("resend", () => ({
   Resend: class {
     batch = { send: batchSend };
-    emails = { send: vi.fn() };
+    emails = { send: emailSend };
   },
 }));
 
-const { sendInvitationEmails } = await import("@/lib/services/email.service");
+const { sendInvitationEmails, sendOtpEmail } = await import(
+  "@/lib/services/email.service"
+);
 
 const election = { title: "Studentski izbori", organizationName: "VVG" };
 
 beforeEach(() => {
   batchSend.mockReset();
   batchSend.mockResolvedValue({ data: [], error: null });
+  emailSend.mockReset();
+  emailSend.mockResolvedValue({ data: { id: "email" }, error: null });
+});
+
+describe("sendOtpEmail", () => {
+  it("renders the code in both bodies with no link anywhere", async () => {
+    await sendOtpEmail("a@example.com", "483920");
+
+    const [payload] = emailSend.mock.calls[0];
+    expect(payload.to).toBe("a@example.com");
+    expect(payload.text).toContain("483920");
+    expect(payload.html).toContain("483920");
+    // The whole point is typing a code — no CTA button, no fallback link.
+    expect(payload.html).not.toContain("<a ");
+    expect(payload.html).not.toContain("http");
+    expect(payload.text).not.toContain("http");
+  });
+
+  it("throws on a Resend error so a failed send fails loudly", async () => {
+    emailSend.mockResolvedValue({ data: null, error: { message: "boom" } });
+
+    await expect(sendOtpEmail("a@example.com", "111111")).rejects.toThrow(
+      "resend: boom",
+    );
+  });
 });
 
 describe("sendInvitationEmails", () => {

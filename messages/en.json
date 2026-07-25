@@ -30,13 +30,12 @@
       "privacy": "Privacy policy",
       "terms": "Terms of service"
     },
-    "verifyEmail": {
-      "subject": "Verify your email address",
-      "heading": "Welcome to Electius!",
-      "body": "Thanks for creating an Electius account. Click the button below to verify your email address and finish setting up your account.",
-      "cta": "Verify email address",
-      "fallback": "If the button doesn't work, copy this link into your browser:",
-      "expiry": "The link is valid for 24 hours. If you didn't create an Electius account, you can safely ignore this message."
+    "otpEmail": {
+      "subject": "Your verification code",
+      "heading": "Verify your email address",
+      "body": "Thanks for creating an Electius account. Enter this code in the app to verify your email address:",
+      "expiry": "The code is valid for 10 minutes and stops working after 5 wrong attempts.",
+      "ignore": "If you didn't request this code, you can safely ignore this message."
     },
     "resetEmail": {
       "subject": "Reset your password",
@@ -82,7 +81,6 @@
         "errors": {
           "email": "Enter a valid email address.",
           "password": "Enter your password.",
-          "unverified": "Verify your email address — we've just sent you a new verification link.",
           "rateLimited": "Too many attempts. Please try again in a few minutes."
         }
       }
@@ -168,10 +166,23 @@
         "confirmPasswordPlaceholder": "Repeat your password",
         "terms": "I agree to the <terms>Terms of service</terms> and <privacy>Privacy policy</privacy>.",
         "submit": "Create account",
-        "verify": {
-          "title": "Check your email",
-          "body": "We've sent a verification link to <email></email>. Click it to activate your account.",
-          "hint": "Don't see the message? Check your spam folder, or try signing in and we'll send you a new link."
+        "otp": {
+          "title": "Enter your verification code",
+          "body": "We've sent a 6-digit code to <email></email>. Enter it below to activate your account.",
+          "hint": "Don't see the message? Check your spam folder.",
+          "inputLabel": "Verification code",
+          "verify": "Verify",
+          "resend": "Send a new code",
+          "resendIn": "New code in {seconds} s",
+          "resent": "A new code has been sent.",
+          "success": "Email address verified!",
+          "errors": {
+            "invalid": "That code isn't valid. Try again.",
+            "expired": "The code has expired. Request a new one.",
+            "tooMany": "Too many wrong attempts — the code is no longer valid. Request a new one.",
+            "generic": "Verification failed. Try again.",
+            "rateLimited": "Too many attempts. Please try again in a few minutes."
+          }
         },
         "errors": {
           "name": "Enter your full name.",

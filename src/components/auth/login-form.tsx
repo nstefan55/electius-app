@@ -8,10 +8,13 @@ import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/auth/google-icon";
+import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
 // Sign-in form (auth-phase-4 UI over the phase-1 BetterAuth wiring): Google
 // OAuth + email/password, zod-validated, errors/success via toast. Invalid
-// fields get the design-system error border through aria-invalid.
+// fields get the design-system error border through aria-invalid. An
+// unverified account (403) swaps the form for the OTP entry panel — the
+// blocked attempt already re-sent a fresh code (sendOnSignIn).
 type Field = "email" | "password";
 
 const inputClass =
@@ -25,6 +28,8 @@ export function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Partial<Record<Field, boolean>>>({});
+  // Non-null once a sign-in hit 403 EMAIL_NOT_VERIFIED — swaps in the OTP panel.
+  const [otpEmail, setOtpEmail] = useState<string | null>(null);
 
   // Localized root — the proxy rewrites "/{locale}" → the dashboard overview.
   const home = `/${locale}`;
@@ -54,22 +59,25 @@ export function LoginForm() {
       rememberMe,
     });
     if (error) {
-      // 403 = EMAIL_NOT_VERIFIED — the attempt itself re-sent a fresh
-      // verification link (sendOnSignIn), so the toast points at the inbox.
+      // 403 = EMAIL_NOT_VERIFIED — the attempt itself re-sent a fresh OTP
+      // (sendOnSignIn), so swap to the entry panel instead of toasting.
       // 429 = rate limited (5 attempts / 15 min per IP+email).
-      toast.error(
-        error.status === 429
-          ? t("errors.rateLimited")
-          : error.status === 403
-            ? t("errors.unverified")
-            : t("error"),
-      );
+      if (error.status === 403) {
+        setOtpEmail(parsed.data.email);
+        setPending(false);
+        return;
+      }
+      toast.error(error.status === 429 ? t("errors.rateLimited") : t("error"));
       setPending(false);
       return;
     }
     toast.success(t("success"));
     // Full navigation (not client nav) so the proxy re-runs with the new cookie.
     window.location.assign(home);
+  }
+
+  if (otpEmail) {
+    return <OtpVerifyPanel email={otpEmail} redirectTo={home} />;
   }
 
   return (
