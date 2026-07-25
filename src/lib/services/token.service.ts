@@ -32,6 +32,49 @@ export function tokenExpiry(startsAt: Date, endsAt: Date, now: Date = new Date()
   return endsAt;
 }
 
+// Re-mint a single voter's token (voter-flow spec: QR entry / "request a new
+// link"). Unlike the bulk PENDING minter below, this serves INVITED voters too
+// — status is the caller's concern. Delete + re-mint revokes the previously
+// emailed link. Returns null for an unknown voter.
+export async function mintTokenForVoter(
+  voterId: string,
+): Promise<MintedToken | null> {
+  const voter = await prisma.voter.findUnique({
+    where: { id: voterId },
+    select: {
+      id: true,
+      email: true,
+      firstName: true,
+      electionId: true,
+      election: { select: { startsAt: true, endsAt: true } },
+    },
+  });
+  if (!voter) return null;
+
+  const minted: MintedToken = {
+    voterId: voter.id,
+    email: voter.email,
+    firstName: voter.firstName,
+    rawToken: randomBytes(32).toString("base64url"),
+  };
+
+  await prisma.$transaction([
+    prisma.voterToken.deleteMany({ where: { voterId: voter.id } }),
+    prisma.voterToken.createMany({
+      data: [
+        {
+          hash: hashToken(minted.rawToken),
+          voterId: voter.id,
+          electionId: voter.electionId,
+          expiresAt: tokenExpiry(voter.election.startsAt, voter.election.endsAt),
+        },
+      ],
+    }),
+  ]);
+
+  return minted;
+}
+
 // Mint a fresh token for every PENDING voter of the election. A PENDING voter
 // with a leftover token row (previous failed send) gets delete + re-mint: the
 // raw token is unrecoverable by design, so resend must re-mint — which also

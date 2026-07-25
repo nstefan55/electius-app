@@ -25,10 +25,8 @@ export const marketingHomeUrl = () => `${APEX}/`;
 // Voter magic link AND the QR payload — one identical apex URL, no token variant (decision D).
 export const voteUrl = (token: string) => `${APEX}/vote/${token}`;
 
-// Wizard-confirmation QR payload — election-level ballot entry (prototype-faithful).
-// ponytail: no election-level landing route exists yet (voter flow is per-token magic
-// links); this 404s until that route ships, but the printed QR stays stable. One place
-// to change when it lands.
+// Wizard-confirmation QR payload — election-level ballot entry. Lands on the
+// /vote/[segment] QR branch (voter-flow spec §4): email in → personal magic link out.
 export const electionVoteUrl = (electionId: string) => `${APEX}/vote/${electionId}`;
 
 // "Share public results" — apex public results page (resultsVisible-gated).

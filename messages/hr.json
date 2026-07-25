@@ -812,9 +812,121 @@
       "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
       "expiry": "Poveznica je jednokratna, osobna i vrijedi do zatvaranja izbora. Ako niste očekivali ovu poruku, slobodno je zanemarite."
     },
-    "ballot": {
-      "title": "Glasački listić",
-      "subtitle": "Predložak (/vote/[token]). Tijek glasovanja dolazi u zasebnoj specifikaciji."
+    "flow": {
+      "stepLabel": "Korak {step} od 5",
+      "invite": {
+        "title": "Pozvani ste na glasovanje",
+        "sub": "{org} — {title}",
+        "cta": "Započni glasovanje",
+        "anon": "Vaš glas je anoniman i ne može se povezati s vama."
+      },
+      "details": {
+        "badgeSingle": "Jednostruki odabir",
+        "badgeMulti": "Višestruki odabir",
+        "candLabel": "Kandidati",
+        "closesLabel": "Zatvara se",
+        "closesOpenEnded": "Nije određeno",
+        "methodLabel": "Način glasovanja",
+        "methodSingle": "Jedan glas",
+        "methodMulti": "Više glasova",
+        "cta": "Nastavi"
+      },
+      "cast": {
+        "title": "Dajte svoj glas",
+        "subSingle": "Odaberite jednog kandidata.",
+        "subMulti": "Odaberite jednu ili više opcija.",
+        "counter": "Odabrano: {count}",
+        "cta": "Nastavi"
+      },
+      "review": {
+        "title": "Pregledajte svoj odabir",
+        "votingFor": "Glasujete za",
+        "votingForMulti": "{count, plural, one {Glasujete za # opciju} few {Glasujete za # opcije} other {Glasujete za # opcija}}",
+        "final": "Nakon predaje glas je konačan i ne može se promijeniti.",
+        "cta": "Potvrdi i predaj glas",
+        "back": "Natrag"
+      },
+      "confirmed": {
+        "title": "Vaš glas je zabilježen",
+        "sub": "Hvala na glasovanju. Sačuvajte ovaj kôd kako biste mogli potvrditi da je vaš glas prebrojen.",
+        "hashLabel": "Vaš verifikacijski kôd",
+        "copyHash": "Kopiraj kôd",
+        "download": "Preuzmi potvrdu",
+        "close": "Ovu stranicu možete slobodno zatvoriti."
+      },
+      "receipt": {
+        "heading": "Electius — potvrda glasovanja",
+        "election": "Izbori: {title}",
+        "org": "Organizacija: {org}",
+        "time": "Vrijeme: {time}",
+        "hash": "Verifikacijski kôd: {hash}",
+        "note": "Ovaj kôd potvrđuje da je vaš glas zabilježen. Glas je anoniman i ne može se povezati s vama."
+      },
+      "invalid": {
+        "title": "Ova poveznica ne vrijedi",
+        "sub": "Poveznica je netočna ili nepotpuna. Otvorite cijelu poveznicu iz e-maila ili ponovno skenirajte QR kôd."
+      },
+      "expired": {
+        "title": "Poveznica je istekla",
+        "sub": "Iz sigurnosnih razloga poveznice za glasovanje vrijede ograničeno vrijeme.",
+        "openUntil": "Glasovanje je i dalje otvoreno do {closes}.",
+        "openStill": "Glasovanje je i dalje otvoreno.",
+        "cta": "Zatraži novu poveznicu"
+      },
+      "used": {
+        "title": "Već ste glasovali",
+        "sub": "Ova je poveznica iskorištena, a svaki birač može glasovati samo jednom.",
+        "alertTitle": "Vaš glas je zabilježen",
+        "alertBody": "Glas je siguran i anoniman — ne može se povezati s vama. Hvala na sudjelovanju."
+      },
+      "notStarted": {
+        "title": "Glasovanje još nije otvoreno",
+        "sub": "Vaša poveznica vrijedi, ali glasovanje još nije počelo.",
+        "subGeneric": "Glasovanje još nije počelo.",
+        "opensLabel": "Otvara se",
+        "closesLabel": "Zatvara se",
+        "keep": "Sačuvajte ovu poveznicu — trebat će vam za glasovanje."
+      },
+      "closed": {
+        "title": "Glasovanje je završilo",
+        "sub": "Izbori su zatvoreni {closes}.",
+        "subNoDate": "Izbori su zatvoreni.",
+        "notUsedNote": "Vaša poveznica nije iskorištena.",
+        "votedNote": "Vaš glas je zabilježen u ovim izborima.",
+        "resultsCta": "Pogledaj rezultate",
+        "noResults": "Rezultate objavljuje organizator izbora.",
+        "anon": "Svi su glasovi anonimni i kriptografski zaštićeni."
+      },
+      "qr": {
+        "overline": "Glasovanje",
+        "sub": "Unesite e-mail adresu na koju ste primili pozivnicu i poslat ćemo vam osobnu poveznicu za glasovanje.",
+        "emailLabel": "E-mail adresa",
+        "emailPlaceholder": "ime.prezime@organizacija.hr",
+        "emailHelper": "Adresa na koju ste primili pozivnicu za glasovanje.",
+        "emailError": "Unesite ispravnu e-mail adresu.",
+        "cta": "Pošalji mi poveznicu",
+        "privacy": "Poveznica je jednokratna i osobna — ne dijelite je.",
+        "rateTitle": "Previše pokušaja",
+        "rateBody": "Iz sigurnosnih razloga pokušajte ponovno za 15 minuta.",
+        "sentTitle": "Provjerite svoj e-mail",
+        "sentSub": "Ako je {email} na popisu birača, poslali smo poveznicu za glasovanje. Provjerite i neželjenu poštu.",
+        "sentBack": "Unesi drugu adresu",
+        "failed": "Slanje nije uspjelo. Pokušajte ponovno."
+      },
+      "fail": {
+        "title": "Glas nije predan",
+        "sub": "Došlo je do pogreške pri slanju i vaš glas nije zabilježen. Provjerite internetsku vezu i pokušajte ponovno.",
+        "retry": "Pokušaj ponovno",
+        "back": "Natrag na pregled"
+      },
+      "race": {
+        "title": "Poveznica je upravo iskorištena",
+        "sub": "Ova je poveznica iskorištena na drugom uređaju prije nego što je vaš glas predan. Novi glas nije zabilježen."
+      },
+      "help": {
+        "title": "Mislite da je ovo pogreška?",
+        "body": "Obratite se organizatoru izbora koji vam je poslao pozivnicu."
+      }
     },
     "results": {
       "subtitle": "Predložak (/results/[id]). Prikaz rezultata dolazi u zasebnoj specifikaciji."

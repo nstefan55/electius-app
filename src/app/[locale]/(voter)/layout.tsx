@@ -9,15 +9,18 @@ export default function VoterLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <div className="min-h-screen bg-neutral-50">
-      <header className="flex h-14 items-center justify-center border-b border-neutral-200 bg-white">
+      <header className="flex h-14 items-center justify-center gap-2 border-b border-neutral-200 bg-white">
         <Image
-          src="/logo/logo-mark.png"
+          src="/logo/logo-mark-light.png"
           alt="Electius"
-          width={28}
-          height={28}
+          width={26}
+          height={26}
           className="object-contain"
           priority
         />
+        <span className="font-heading text-[19px] font-bold tracking-tight text-brand-900">
+          Electius
+        </span>
       </header>
       <main className="mx-auto w-full max-w-voter px-6 py-8">{children}</main>
     </div>
