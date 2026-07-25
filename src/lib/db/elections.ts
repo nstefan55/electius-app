@@ -121,6 +121,44 @@ export const getElectionStartInfo = cache(
   },
 );
 
+// Everything the overview BODY needs beyond getElectionDetail (election-overview-
+// phase-2): the raw config enums (the detail mapper flattens votingType into an
+// English label, unusable for i18n) plus three derived counts. Filtered `_count`
+// selects keep all three in the SAME round trip as the config read.
+// cache()-wrapped like its siblings so a re-render can't double-query.
+export const getElectionOverview = cache(
+  async (id: string, organizationId: string) => {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const e = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: {
+        electionType: true,
+        votingType: true,
+        quorumThreshold: true,
+        voterReminder24h: true,
+        _count: {
+          select: {
+            options: true,
+            voters: { where: { status: "PENDING" } },
+            votes: { where: { createdAt: { gte: since } } },
+          },
+        },
+      },
+    });
+    if (!e) return null;
+    return {
+      electionType: e.electionType,
+      votingType: e.votingType,
+      quorumThreshold: e.quorumThreshold,
+      voterReminder24h: e.voterReminder24h,
+      candidates: e._count.options,
+      // PENDING voters were never emailed, so "invitations sent" = voters - this.
+      notInvited: e._count.voters,
+      voted24h: e._count.votes,
+    };
+  },
+);
+
 // Ballot options for the top bar's "Preview ballot" modal (election-overview-
 // phase-1) — what the voter would see, read from the same rows the real ballot
 // renders. cache()-wrapped for consistency with the other [id] reads.

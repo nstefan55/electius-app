@@ -95,6 +95,30 @@ export const windowYears = (els: DashboardElection[]) =>
     .sort((a, b) => b - a)
     .map(String);
 
+// ───────── Overview body maths (election-overview-phase-2) ─────────
+// Turnout denominator is the FULL voter list, not "invitations sent" — same rule
+// as the dashboard, and the only reading that matches "quorum = % of eligible
+// voters". A partially-published election therefore reports a lower turnout than
+// invited/voted alone would suggest, which is the honest number.
+export const turnoutPct = (voted: number, voters: number) =>
+  voters > 0 ? Math.round((voted / voters) * 100) : 0;
+
+// Voters needed to clear the quorum bar. Ceil — 49.2 voters is not enough.
+export const quorumRequiredVoters = (voters: number, pct: number) =>
+  Math.ceil((voters * pct) / 100);
+
+// Countdown split for the "Time left" stat card. Returns parts (not a label) so
+// the unit suffixes stay in the i18n catalogs. Clamped at zero: a target in the
+// past reads 0h 0m rather than counting up.
+export const timeLeftParts = (targetIso: string, nowMs: number) => {
+  let ms = Math.max(0, new Date(targetIso).getTime() - nowMs);
+  const days = Math.floor(ms / 86_400_000);
+  ms -= days * 86_400_000;
+  const hours = Math.floor(ms / 3_600_000);
+  ms -= hours * 3_600_000;
+  return { days, hours, minutes: Math.floor(ms / 60_000) };
+};
+
 // Voting-window date, locale-aware: en "Jun 18" · hr "18. lip". Takes the ISO
 // string from DashboardElection.opens/closes. timeZone UTC keeps output
 // deterministic across server/browser timezones (prod serverless runs UTC).

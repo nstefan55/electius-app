@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   formatVotingDate,
+  quorumRequiredVoters,
+  timeLeftParts,
+  turnoutPct,
   matchesTurnout,
   matchesWindow,
   sortRecent,
@@ -126,5 +129,55 @@ describe("formatVotingDate", () => {
     // 23:30 UTC must not roll into the next day on a CET/CEST server.
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "en")).toBe("May 4");
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "hr")).toBe("4. svi");
+  });
+});
+describe("turnoutPct", () => {
+  it("rounds to a whole percent", () => {
+    expect(turnoutPct(282, 412)).toBe(68);
+    expect(turnoutPct(1, 3)).toBe(33);
+  });
+
+  it("is 0 for an empty voter list instead of NaN", () => {
+    expect(turnoutPct(0, 0)).toBe(0);
+  });
+});
+
+describe("quorumRequiredVoters", () => {
+  it("ceils a fractional requirement — 49.2 voters is not enough", () => {
+    expect(quorumRequiredVoters(412, 50)).toBe(206);
+    expect(quorumRequiredVoters(41, 60)).toBe(25); // 24.6 → 25
+  });
+
+  it("needs nobody at 0% and everybody at 100%", () => {
+    expect(quorumRequiredVoters(412, 0)).toBe(0);
+    expect(quorumRequiredVoters(412, 100)).toBe(412);
+  });
+});
+
+describe("timeLeftParts", () => {
+  const now = Date.parse("2026-07-05T12:00:00.000Z");
+
+  it("splits a multi-day span into days + leftover hours", () => {
+    expect(timeLeftParts("2026-07-09T18:00:00.000Z", now)).toEqual({
+      days: 4,
+      hours: 6,
+      minutes: 0,
+    });
+  });
+
+  it("drops to hours + minutes inside a day", () => {
+    expect(timeLeftParts("2026-07-05T15:45:00.000Z", now)).toEqual({
+      days: 0,
+      hours: 3,
+      minutes: 45,
+    });
+  });
+
+  it("clamps a past target to zero instead of counting up", () => {
+    expect(timeLeftParts("2026-07-01T00:00:00.000Z", now)).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 0,
+    });
   });
 });

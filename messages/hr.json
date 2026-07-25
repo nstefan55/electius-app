@@ -721,18 +721,75 @@
         }
       },
       "overview": {
-        "scaffoldTag": "Skica sadržaja",
-        "draft": {
-          "heading": "Sažetak postavljanja",
-          "note": "Ovdje će biti sažetak konfiguracije i uređivanje izbora u pripremi. Sadržaj slijedi."
+        "stats": {
+          "invited": "Pozvani birači",
+          "invitedSub": "Ukupno poslano pozivnica",
+          "voted": "Glasalo",
+          "votedSub": "{pct}% izlaznosti",
+          "pending": "Na čekanju",
+          "pendingSub": "Još nisu glasali",
+          "timeLeft": "Preostalo vrijeme",
+          "timeLeftDays": "{days}d {hours}h",
+          "timeLeftHours": "{hours}h {minutes}m",
+          "timeLeftOpenSub": "do zatvaranja glasanja",
+          "timeLeftScheduledSub": "do otvaranja glasanja",
+          "timeLeftClosedSub": "Glasanje je zatvoreno"
         },
-        "active": {
-          "heading": "Uživo izlaznost i upravljanje",
-          "note": "Ovdje će biti izlaznost uživo te radnje (podsjetnik, rani završetak). Sadržaj slijedi."
+        "turnout": {
+          "badgeLive": "Uživo — glasanje traje",
+          "badgeAuto": "Ažurira se automatski",
+          "badgeScheduled": "Glasanje još nije počelo",
+          "badgeFinal": "Konačna izlaznost",
+          "caption": "izlaznost",
+          "progress": "od {voters, number} birača je glasalo",
+          "quorumLabel": "Prag kvoruma",
+          "quorumReq": "{pct}% · {voters, plural, one {# birač} few {# birača} other {# birača}}",
+          "met": "Ispunjen",
+          "notMet": "Nije ispunjen"
         },
-        "closed": {
-          "heading": "Zapečaćeni sažetak",
-          "note": "Izbori su zatvoreni ili arhivirani — rezultati su u kartici Rezultati. Sadržaj slijedi."
+        "config": {
+          "title": "Konfiguracija izbora",
+          "type": "Vrsta",
+          "window": "Razdoblje glasanja",
+          "voters": "Popis birača",
+          "candidates": "Kandidati",
+          "results": "Rezultati",
+          "reminder": "Automatski podsjetnik",
+          "quorum": "Kvorum",
+          "resultsSealed": "Zapečaćeni",
+          "resultsLive": "Uživo",
+          "votersCount": "{count, plural, one {# birač} few {# birača} other {# birača}}",
+          "candidatesCount": "{count, plural, one {# kandidat} few {# kandidata} other {# kandidata}}",
+          "reminderActive": "Aktivan · 24 h prije roka",
+          "reminderScheduled": "Zakazan · 24 h prije roka",
+          "reminderOff": "Isključen",
+          "quorumValue": "{pct}% ({voters, plural, one {# birač} few {# birača} other {# birača}})"
+        },
+        "actions": {
+          "title": "Radnje",
+          "sendReminder": "Pošalji podsjetnik",
+          "voterList": "Popis birača",
+          "exportCsv": "Izvezi CSV",
+          "showQr": "Prikaži QR kod",
+          "reminderSoon": "Slanje podsjetnika slijedi u sljedećoj fazi.",
+          "exportSoon": "Izvoz podataka slijedi."
+        },
+        "qr": {
+          "title": "QR kod za glasanje",
+          "body": "Birači skeniraju ovaj kod za trenutačni pristup listiću.",
+          "copy": "Kopiraj",
+          "copied": "Poveznica kopirana",
+          "copyFailed": "Kopiranje nije uspjelo",
+          "note": "Kod vrijedi samo za birače koji su prethodno dodani na popis birača.",
+          "close": "Zatvori"
+        },
+        "activity": {
+          "title": "Aktivnost",
+          "published": "Izbori objavljeni",
+          "publishes": "Objava izbora",
+          "votes24h": "{count, plural, =0 {Nema glasova u zadnjih 24 h} one {# glas u zadnjih 24 h} few {# glasa u zadnjih 24 h} other {# glasova u zadnjih 24 h}}",
+          "votes24hSub": "Novi glasovi u proteklom danu",
+          "ends": "Glasanje završava"
         }
       },
       "resultsFacet": {
