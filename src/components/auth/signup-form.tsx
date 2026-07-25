@@ -3,17 +3,17 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
-import { MailCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
 import { GoogleIcon } from "@/components/auth/google-icon";
+import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
 // Sign-up form (auth-phase-4 UI over the phase-3 registration wiring): posts to
 // /api/auth/register (BetterAuth signUpEmail — scrypt hash), zod-validated,
 // errors via toast. With requireEmailVerification a successful signup opens no
-// session — the form swaps to a "check your inbox" panel; clicking the emailed
-// link verifies, auto-signs-in and lands on /{locale}/setup.
+// session — the form swaps to the OTP entry panel; typing the emailed 6-digit
+// code verifies, auto-signs-in and lands on /{locale}/setup.
 type Field = "name" | "email" | "password" | "confirmPassword" | "terms";
 
 type SignupError = "mismatch" | "exists" | "tooShort" | "rateLimited" | "generic";
@@ -98,8 +98,8 @@ export function SignupForm() {
         window.location.assign(`/${locale}/setup`);
         return;
       }
-      // No session cookie until the emailed link is clicked — stay here and
-      // point at the inbox instead of navigating into the (gated) funnel.
+      // No session cookie until the emailed code is verified — swap to the
+      // OTP panel instead of navigating into the (gated) funnel.
       setSentTo(parsed.data.email);
     } catch {
       toast.error(t("errors.generic"));
@@ -108,24 +108,7 @@ export function SignupForm() {
   }
 
   if (sentTo) {
-    return (
-      <div className="flex w-full flex-col items-center gap-4 text-center">
-        <span className="flex size-14 items-center justify-center rounded-full bg-brand-50">
-          <MailCheck className="size-7 text-brand-700" aria-hidden />
-        </span>
-        <h2 className="font-heading text-xl font-semibold text-neutral-800">
-          {t("verify.title")}
-        </h2>
-        <p className="text-base leading-relaxed text-neutral-600">
-          {t.rich("verify.body", {
-            email: () => (
-              <span className="font-medium text-neutral-950">{sentTo}</span>
-            ),
-          })}
-        </p>
-        <p className="text-sm text-neutral-600">{t("verify.hint")}</p>
-      </div>
-    );
+    return <OtpVerifyPanel email={sentTo} redirectTo={`/${locale}/setup`} />;
   }
 
   return (

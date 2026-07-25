@@ -5,12 +5,12 @@ import { voteUrl } from "@/lib/urls";
 import hr from "../../../messages/hr.json";
 import en from "../../../messages/en.json";
 
-// Email transport (project-overview §Service Layer). First real sender:
-// the BetterAuth verification email. Copy lives in the i18n catalogs
-// (auth.verifyEmail) — emails run outside next-intl's request context, so the
-// service reads the catalogs directly instead of useTranslations.
-// ponytail: locale defaults to hr (MVP) — BetterAuth's sendVerificationEmail
-// hook doesn't know the UI locale; thread it through when en ships.
+// Email transport (project-overview §Service Layer): verification OTP,
+// password reset, voter invitations. Copy lives in the i18n catalogs
+// (auth.otpEmail etc.) — emails run outside next-intl's request context, so
+// the service reads the catalogs directly instead of useTranslations.
+// ponytail: locale defaults to hr (MVP) — BetterAuth's send hooks don't know
+// the UI locale; thread it through when en ships.
 
 const CATALOGS = { hr, en } as const;
 type Locale = keyof typeof CATALOGS;
@@ -83,12 +83,48 @@ async function sendActionEmail(to: string, url: string, t: ActionEmailCopy) {
   }
 }
 
-export async function sendVerificationEmail(
+// ───────── Verification OTP (otp-implementation-auth-spec §3) ─────────
+
+// The code IS the content — no link, no CTA button (the whole point is typing
+// it). Plugin-generated digits only, so no HTML escaping needed.
+interface OtpEmailCopy {
+  subject: string;
+  heading: string;
+  body: string;
+  expiry: string;
+  ignore: string;
+}
+
+function otpEmailHtml(otp: string, t: OtpEmailCopy): string {
+  return `
+      <div style="font-family:'Noto Sans',system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#0A0A0A">
+        <h1 style="font-size:20px;color:#1F2937;margin:0 0 16px">${t.heading}</h1>
+        <p style="font-size:16px;line-height:1.6;margin:0 0 24px">${t.body}</p>
+        <p style="font-family:'Roboto Mono',ui-monospace,monospace;font-size:32px;letter-spacing:8px;font-weight:600;background:#F3F4F6;border-radius:8px;padding:16px 24px;text-align:center;margin:0 0 24px">${otp}</p>
+        <p style="font-size:14px;line-height:1.5;color:#4B5563;margin:0 0 8px">${t.expiry}</p>
+        <p style="font-size:12px;line-height:1.5;color:#4B5563;margin:0">${t.ignore}</p>
+      </div>`;
+}
+
+export async function sendOtpEmail(
   to: string,
-  url: string,
+  otp: string,
   locale: Locale = "hr",
 ) {
-  await sendActionEmail(to, url, CATALOGS[locale].auth.verifyEmail);
+  const t = CATALOGS[locale].auth.otpEmail;
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to,
+    subject: t.subject,
+    text: `${t.body}\n\n${otp}\n\n${t.expiry}\n${t.ignore}`,
+    html: otpEmailHtml(otp, t),
+  });
+
+  if (error) {
+    // Same fail-loudly policy as every sender — a silently unsent code
+    // strands an unverifiable account.
+    throw new Error(`resend: ${error.message}`);
+  }
 }
 
 export async function sendResetPasswordEmail(

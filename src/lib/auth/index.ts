@@ -5,43 +5,15 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
-import { oAuthProxy } from "better-auth/plugins";
+import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { RATE_LIMIT_RULES } from "@/lib/auth/rate-limit-rules";
+import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import {
-  checkRateLimit,
-  clientIp,
-  retryAfterSeconds,
-  type RateLimitAction,
-} from "@/lib/rate-limit";
-import {
+  sendOtpEmail,
   sendResetPasswordEmail,
-  sendVerificationEmail,
 } from "@/lib/services/email.service";
-
-// Rate-limited BetterAuth paths (rate-limiting-spec). These endpoints live
-// inside the /api/auth/[...all] catch-all, so the limiter runs as a `before`
-// hook keyed on ctx.path. `withEmail` folds the target email into the key —
-// tighter per-account limits, and one shared IP (campus NAT) can't exhaust
-// everyone's attempts. /sign-up/email is listed even though registration
-// normally goes through our own /api/auth/register route (which rate-limits
-// itself — its server-side signUpEmail call carries no client IP for this
-// hook to read): the native path is directly POST-able under the catch-all,
-// so without its own rule a scripted client bypasses the 3/h register limit
-// entirely (2026-07-21 audit, HIGH). /change-password shares the
-// resetPassword window — session-gated, but throttles wrong-current-password
-// guessing on a hijacked session (audit, LOW).
-const RATE_LIMIT_RULES: Record<
-  string,
-  { action: RateLimitAction; withEmail?: boolean }
-> = {
-  "/sign-in/email": { action: "login", withEmail: true },
-  "/sign-up/email": { action: "register" },
-  "/request-password-reset": { action: "forgotPassword" },
-  "/reset-password": { action: "resetPassword" },
-  "/change-password": { action: "resetPassword" },
-  "/send-verification-email": { action: "resendVerification", withEmail: true },
-};
 
 // Kill switch for the whole email-verification-on-register flow. Default ON
 // (prod-safe); only the literal "false" disables it — for dev/testing when the
@@ -63,22 +35,20 @@ export const auth = betterAuth({
   ].filter((origin): origin is string => Boolean(origin)),
   // Our Prisma model is `VerificationToken`; BetterAuth's default is `verification`.
   verification: { modelName: "verificationToken" },
-  // Email/password accounts must click the Resend-delivered link before they
-  // can sign in (requireEmailVerification below). Google arrives pre-verified,
-  // so sendOnSignUp skips OAuth users. Clicking the link opens the session
-  // (autoSignInAfterVerification) and lands on the callbackURL from signup.
-  // The whole flow is gated on emailVerificationEnabled (see above) — when off,
-  // no emails send and signup reverts to autoSignIn → /setup.
+  // Email/password accounts must verify before they can sign in
+  // (requireEmailVerification below); Google arrives pre-verified, so nothing
+  // ever fires for OAuth users. This block decides WHEN verification happens
+  // (sendOnSignUp; a blocked sign-in re-sends a fresh code via sendOnSignIn —
+  // the "resend" UX with zero extra UI). WHAT gets sent is the emailOTP
+  // plugin's 6-digit code (overrideDefaultEmailVerification in plugins below)
+  // — no link, no sendVerificationEmail callback, exactly one send path.
+  // Verifying opens the session (autoSignInAfterVerification). The whole flow
+  // is gated on emailVerificationEnabled (see above) — when off, no emails
+  // send and signup reverts to autoSignIn → /setup.
   emailVerification: {
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendVerificationEmail(user.email, url);
-    },
     sendOnSignUp: emailVerificationEnabled,
-    // A blocked sign-in attempt re-sends a fresh link — the "resend" UX with
-    // zero extra UI.
     sendOnSignIn: emailVerificationEnabled,
     autoSignInAfterVerification: true,
-    expiresIn: 60 * 60 * 24, // 24h, not the 1h default — signup emails get opened late
   },
   emailAndPassword: {
     enabled: true,
@@ -151,6 +121,24 @@ export const auth = betterAuth({
     oAuthProxy({
       productionURL: process.env.BETTER_AUTH_URL,
       currentURL: process.env.NEXT_PUBLIC_APP_URL,
+    }),
+    // Swaps the default verification link for a 6-digit emailed code
+    // (otp-implementation-auth-spec). Codes persist in the existing
+    // `verifications` model (verificationToken mapping above), hashed at rest.
+    emailOTP({
+      overrideDefaultEmailVerification: true,
+      otpLength: 6,
+      expiresIn: 600, // 10 min (plugin default 5) — headroom for delivery lag
+      allowedAttempts: 5, // code dies after 5 wrong guesses → must resend
+      storeOTP: "hashed",
+      async sendVerificationOTP({ email, otp, type }) {
+        // Only email verification is enabled; "sign-in" / "forget-password"
+        // OTP types are deliberately dead branches (spec §Security) — a
+        // leaked verification code can never log anyone in by itself.
+        if (type === "email-verification") {
+          await sendOtpEmail(email, otp);
+        }
+      },
     }),
     // Keep last — lets Server Actions calling the auth API set cookies.
     nextCookies(),

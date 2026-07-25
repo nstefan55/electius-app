@@ -30,13 +30,12 @@
       "privacy": "Pravila privatnosti",
       "terms": "Uvjeti korištenja"
     },
-    "verifyEmail": {
-      "subject": "Potvrdite svoju e-mail adresu",
-      "heading": "Dobrodošli u Electius!",
-      "body": "Hvala što ste otvorili Electius račun. Kliknite gumb u nastavku kako biste potvrdili svoju e-mail adresu i dovršili registraciju.",
-      "cta": "Potvrdi e-mail adresu",
-      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
-      "expiry": "Poveznica vrijedi 24 sata. Ako niste otvorili račun na Electiusu, slobodno zanemarite ovu poruku."
+    "otpEmail": {
+      "subject": "Vaš kod za potvrdu",
+      "heading": "Potvrdite svoju e-mail adresu",
+      "body": "Hvala što ste otvorili Electius račun. Unesite ovaj kod u aplikaciju kako biste potvrdili svoju e-mail adresu:",
+      "expiry": "Kod vrijedi 10 minuta i prestaje vrijediti nakon 5 pogrešnih pokušaja.",
+      "ignore": "Ako niste zatražili ovaj kod, slobodno zanemarite ovu poruku."
     },
     "resetEmail": {
       "subject": "Ponovno postavljanje lozinke",
@@ -82,7 +81,6 @@
         "errors": {
           "email": "Unesite ispravnu e-mail adresu.",
           "password": "Unesite lozinku.",
-          "unverified": "Potvrdite svoju e-mail adresu — upravo smo vam poslali novu poveznicu za potvrdu.",
           "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
         }
       }
@@ -168,10 +166,23 @@
         "confirmPasswordPlaceholder": "Ponovite lozinku",
         "terms": "Slažem se s <terms>Uvjetima korištenja</terms> i <privacy>Pravilima privatnosti</privacy>.",
         "submit": "Otvori račun",
-        "verify": {
-          "title": "Provjerite svoju e-poštu",
-          "body": "Poslali smo poveznicu za potvrdu na <email></email>. Kliknite je kako biste aktivirali svoj račun.",
-          "hint": "Ne vidite poruku? Provjerite mapu neželjene pošte ili se pokušajte prijaviti kako bismo vam poslali novu poveznicu."
+        "otp": {
+          "title": "Unesite kod za potvrdu",
+          "body": "Poslali smo 6-znamenkasti kod na <email></email>. Unesite ga u nastavku kako biste aktivirali svoj račun.",
+          "hint": "Ne vidite poruku? Provjerite mapu neželjene pošte.",
+          "inputLabel": "Kod za potvrdu",
+          "verify": "Potvrdi",
+          "resend": "Pošaljite novi kod",
+          "resendIn": "Novi kod za {seconds} s",
+          "resent": "Novi kod je poslan.",
+          "success": "E-mail adresa je potvrđena!",
+          "errors": {
+            "invalid": "Kod nije ispravan. Pokušajte ponovno.",
+            "expired": "Kod je istekao. Zatražite novi kod.",
+            "tooMany": "Previše pogrešnih pokušaja — kod više ne vrijedi. Zatražite novi.",
+            "generic": "Provjera nije uspjela. Pokušajte ponovno.",
+            "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
+          }
         },
         "errors": {
           "name": "Unesite ime i prezime.",

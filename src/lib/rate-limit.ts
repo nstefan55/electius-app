@@ -39,6 +39,10 @@ const limiters = (() => {
     forgotPassword: make(redis, "forgot-password", 3, "1 h"),
     resetPassword: make(redis, "reset-password", 5, "15 m"),
     resendVerification: make(redis, "resend-verification", 3, "15 m"),
+    // OTP code-guessing guard (otp-implementation-auth-spec §6) — the rate
+    // layer above the emailOTP plugin's per-code allowedAttempts; keyed
+    // IP+email like the send limit.
+    verifyOtp: make(redis, "verify-otp", 10, "15 m"),
     // Voter flow (voter-flow-spec): these deter junk load, not brute force —
     // tokens are 256-bit and single-use. The vote limit is per IP and must
     // survive a campus-NAT voting session (many voters, one public IP), hence
