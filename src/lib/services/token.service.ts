@@ -1,6 +1,7 @@
 import "server-only";
 
 import { createHash, randomBytes } from "crypto";
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 // Voter token minting (election-publication-spec §1). Stage 1 of the security
@@ -75,13 +76,13 @@ export async function mintTokenForVoter(
   return minted;
 }
 
-// Mint a fresh token for every PENDING voter of the election. A PENDING voter
-// with a leftover token row (previous failed send) gets delete + re-mint: the
-// raw token is unrecoverable by design, so resend must re-mint — which also
-// revokes the previously emailed link (security feature, not workaround).
-// INVITED / VOTED voters are never touched.
-export async function mintTokensForPendingVoters(
+// Bulk mint, shared by every send path. A voter with a leftover token row gets
+// delete + re-mint: the raw token is unrecoverable by design, so any resend must
+// re-mint — which also revokes the previously emailed link (security feature,
+// not workaround).
+async function mintTokensFor(
   electionId: string,
+  where: Prisma.VoterWhereInput,
 ): Promise<MintedToken[]> {
   const election = await prisma.election.findUnique({
     where: { id: electionId },
@@ -90,7 +91,7 @@ export async function mintTokensForPendingVoters(
   if (!election) return [];
 
   const voters = await prisma.voter.findMany({
-    where: { electionId, status: "PENDING" },
+    where,
     select: { id: true, email: true, firstName: true },
   });
   if (voters.length === 0) return [];
@@ -119,4 +120,23 @@ export async function mintTokensForPendingVoters(
   ]);
 
   return minted;
+}
+
+// Publication path: PENDING voters only. INVITED / VOTED are never touched —
+// that is what makes publishElection idempotent (retry + scheduled sweep).
+export async function mintTokensForPendingVoters(
+  electionId: string,
+): Promise<MintedToken[]> {
+  return mintTokensFor(electionId, { electionId, status: "PENDING" });
+}
+
+// Reminder path: an explicit voter set the caller has already filtered.
+// electionId stays in the WHERE so a foreign voter id can never be minted into
+// this election's token set.
+export async function mintTokensForVoters(
+  electionId: string,
+  voterIds: string[],
+): Promise<MintedToken[]> {
+  if (voterIds.length === 0) return [];
+  return mintTokensFor(electionId, { electionId, id: { in: voterIds } });
 }

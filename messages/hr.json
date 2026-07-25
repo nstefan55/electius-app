@@ -771,8 +771,26 @@
           "voterList": "Popis birača",
           "exportCsv": "Izvezi CSV",
           "showQr": "Prikaži QR kod",
-          "reminderSoon": "Slanje podsjetnika slijedi u sljedećoj fazi.",
           "exportSoon": "Izvoz podataka slijedi."
+        },
+        "reminder": {
+          "title": "Pošalji podsjetnik",
+          "body": "Pozivnica se šalje svim biračima s važećom magičnom poveznicom koji još nisu glasali.",
+          "recipients": "Primatelji",
+          "skipVoted": "Preskočeno (već glasali)",
+          "skipExpired": "Preskočeno (istekla poveznica)",
+          "voterCount": "{count, plural, one {# birač} few {# birača} other {# birača}}",
+          "note": "Birači koji su već glasali ili imaju isteklu poveznicu neće primiti podsjetnik. Podsjetnik sadrži novu poveznicu, pa prethodno poslana prestaje vrijediti.",
+          "cancel": "Odustani",
+          "confirm": "Pošalji za {count}",
+          "sending": "Slanje…",
+          "loading": "Učitavanje…",
+          "loadFailed": "Primatelje nije moguće učitati. Zatvorite i pokušajte ponovno.",
+          "sendFailed": "Slanje podsjetnika nije uspjelo. Pokušajte ponovno.",
+          "partial": "Nije poslano: {count, plural, one {# podsjetnik} few {# podsjetnika} other {# podsjetnika}}.",
+          "sentTitle": "Podsjetnici poslani",
+          "sentBody": "{count, plural, one {Podsjetnik je poslan za # birača koji još nije glasao.} few {Podsjetnik je poslan za # birača koji još nisu glasali.} other {Podsjetnik je poslan za # birača koji još nisu glasali.}}",
+          "done": "Gotovo"
         },
         "qr": {
           "title": "QR kod za glasanje",

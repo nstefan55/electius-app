@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { fetchTurnout } from "@/actions/dashboard";
+import { SendReminderDialog } from "@/components/elections/send-reminder-dialog";
 import { electionVoteUrl } from "@/lib/urls";
 import {
   formatVotingDateTime,
@@ -157,7 +158,7 @@ export function ElectionOverview({
             voters={total}
             quorumThreshold={quorumThreshold}
           />
-          <ActionsCard id={id} />
+          <ActionsCard id={id} status={status} />
         </div>
         <div className="flex flex-col gap-5">
           <ConfigCard
@@ -425,9 +426,10 @@ function ConfigCard({
   );
 }
 
-function ActionsCard({ id }: { id: string }) {
+function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
   const t = useTranslations("dashboard.election.overview.actions");
   const [qrOpen, setQrOpen] = useState(false);
+  const [reminderOpen, setReminderOpen] = useState(false);
 
   return (
     <section className={`${CARD} overflow-hidden`}>
@@ -435,9 +437,11 @@ function ActionsCard({ id }: { id: string }) {
       <div className="flex flex-col gap-3 px-6 py-4.5">
         <button
           type="button"
-          // ponytail: the reminder modal is phase 3 — this only wires the entry point.
-          onClick={() => toast(t("reminderSoon"))}
-          className="flex h-12 cursor-pointer items-center gap-3 rounded-md bg-brand-700 px-4.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+          onClick={() => setReminderOpen(true)}
+          // Only an open election can be reminded about — the action itself
+          // enforces ACTIVE, this just stops the dead click.
+          disabled={status !== "ACTIVE"}
+          className="flex h-12 cursor-pointer items-center gap-3 rounded-md bg-brand-700 px-4.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Mail className="size-4.75" aria-hidden />
           {t("sendReminder")}
@@ -476,6 +480,11 @@ function ActionsCard({ id }: { id: string }) {
       </div>
 
       <QrDialog id={id} open={qrOpen} onOpenChange={setQrOpen} />
+      <SendReminderDialog
+        id={id}
+        open={reminderOpen}
+        onOpenChange={setReminderOpen}
+      />
     </section>
   );
 }

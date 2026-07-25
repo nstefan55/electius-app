@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
-import { publishElection } from "@/lib/services/publication.service";
+import {
+  getReminderTargets,
+  publishElection,
+  sendReminders,
+} from "@/lib/services/publication.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
 // Each action verifies the target election belongs to the session's org before
@@ -19,6 +23,19 @@ async function assertOwned(
 ): Promise<boolean> {
   const owned = await prisma.election.findFirst({
     where: { id, organizationId },
+    select: { id: true },
+  });
+  return owned !== null;
+}
+
+// Same check, narrowed to an open election — anything that emails voters is
+// only meaningful (and only allowed) while voting is running.
+async function assertOwnedActive(
+  id: string,
+  organizationId: string,
+): Promise<boolean> {
+  const owned = await prisma.election.findFirst({
+    where: { id, organizationId, status: "ACTIVE" },
     select: { id: true },
   });
   return owned !== null;
@@ -166,6 +183,62 @@ export async function resendInvitations(
     if (!owned) return { success: false, error: "invalidStatus" };
 
     const result = await publishElection(id);
+    return { success: true, ...result };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
+// ───────── Send reminder (election-overview-phase-3) ─────────
+
+export type ReminderPreviewResult = ActionResult & {
+  recipients?: number;
+  alreadyVoted?: number;
+  expired?: number;
+};
+
+// Counts for the confirm modal. Fetched when the dialog opens rather than
+// rendered into the page, so the numbers are current at the moment the admin
+// is about to send — turnout moves while the overview sits open.
+export async function reminderPreview(
+  id: string,
+): Promise<ReminderPreviewResult> {
+  if (!id) return { success: false, error: "invalid" };
+
+  try {
+    const { organizationId } = await requireSession();
+    if (!(await assertOwnedActive(id, organizationId))) {
+      return { success: false, error: "invalidStatus" };
+    }
+
+    const { recipients, alreadyVoted, expired } = await getReminderTargets(id);
+    return {
+      success: true,
+      recipients: recipients.length,
+      alreadyVoted,
+      expired,
+    };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
+// The send itself. Re-derives its own recipient list (never trusts a count the
+// client round-tripped) via the same getReminderTargets rule the preview used.
+// ponytail: no cooldown between sends — the action is session-gated and
+// org-scoped; add a per-election window if admins start spamming voters.
+export async function sendElectionReminders(
+  id: string,
+): Promise<PublishActionResult> {
+  if (!id) return { success: false, error: "invalid" };
+
+  try {
+    const { organizationId } = await requireSession();
+    if (!(await assertOwnedActive(id, organizationId))) {
+      return { success: false, error: "invalidStatus" };
+    }
+
+    const result = await sendReminders(id);
     return { success: true, ...result };
   } catch {
     return { success: false, error: "failed" };

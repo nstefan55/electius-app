@@ -14,16 +14,22 @@ vi.mock("@/lib/auth/require-session", () => ({
 }));
 vi.mock("@/lib/services/publication.service", () => ({
   publishElection: vi.fn(),
+  getReminderTargets: vi.fn(),
+  sendReminders: vi.fn(),
 }));
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
-const { publishElection } = await import(
+const { publishElection, getReminderTargets, sendReminders } = await import(
   "@/lib/services/publication.service"
 );
-const { startElection, resendInvitations, closeElection } = await import(
-  "@/actions/elections"
-);
+const {
+  startElection,
+  resendInvitations,
+  closeElection,
+  reminderPreview,
+  sendElectionReminders,
+} = await import("@/actions/elections");
 
 const session = {
   user: { email: "admin@example.com", name: "A", organization: "Org", isPro: false },
@@ -38,6 +44,14 @@ beforeEach(() => {
   vi.mocked(prisma.voter.count).mockReset();
   vi.mocked(publishElection).mockReset();
   vi.mocked(publishElection).mockResolvedValue({ sent: 0, failed: 0 });
+  vi.mocked(getReminderTargets).mockReset();
+  vi.mocked(getReminderTargets).mockResolvedValue({
+    recipients: [],
+    alreadyVoted: 0,
+    expired: 0,
+  });
+  vi.mocked(sendReminders).mockReset();
+  vi.mocked(sendReminders).mockResolvedValue({ sent: 0, failed: 0 });
 });
 
 describe("startElection", () => {
@@ -185,6 +199,89 @@ describe("resendInvitations", () => {
     vi.mocked(publishElection).mockRejectedValue(new Error("boom"));
 
     const result = await resendInvitations("el_1");
+    expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+describe("reminderPreview", () => {
+  it("rejects an empty id without touching the session or DB", async () => {
+    const result = await reminderPreview("");
+    expect(result).toEqual({ success: false, error: "invalid" });
+    expect(requireSession).not.toHaveBeenCalled();
+  });
+
+  it("guards on org ownership AND ACTIVE status before counting", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(null);
+
+    const result = await reminderPreview("el_closed");
+
+    expect(result).toEqual({ success: false, error: "invalidStatus" });
+    expect(prisma.election.findFirst).toHaveBeenCalledWith({
+      where: { id: "el_closed", organizationId: "org_1", status: "ACTIVE" },
+      select: { id: true },
+    });
+    expect(getReminderTargets).not.toHaveBeenCalled();
+  });
+
+  it("returns the counts the modal renders", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(getReminderTargets).mockResolvedValue({
+      recipients: ["a", "b", "c"],
+      alreadyVoted: 7,
+      expired: 2,
+    });
+
+    const result = await reminderPreview("el_1");
+
+    // Count, never the ids — voter identities don't belong in a client payload.
+    expect(result).toEqual({
+      success: true,
+      recipients: 3,
+      alreadyVoted: 7,
+      expired: 2,
+    });
+  });
+
+  it("reports failure without leaking the DB error", async () => {
+    vi.mocked(prisma.election.findFirst).mockRejectedValue(new Error("db down"));
+
+    const result = await reminderPreview("el_1");
+    expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+describe("sendElectionReminders", () => {
+  it("rejects an empty id without touching the session or DB", async () => {
+    const result = await sendElectionReminders("");
+    expect(result).toEqual({ success: false, error: "invalid" });
+    expect(requireSession).not.toHaveBeenCalled();
+  });
+
+  it("guards on org ownership AND ACTIVE status before sending", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(null);
+
+    const result = await sendElectionReminders("el_other_org");
+
+    expect(result).toEqual({ success: false, error: "invalidStatus" });
+    expect(sendReminders).not.toHaveBeenCalled();
+  });
+
+  it("sends and reports the real numbers", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(sendReminders).mockResolvedValue({ sent: 12, failed: 1 });
+
+    const result = await sendElectionReminders("el_1");
+
+    // The action re-derives its own recipients — it takes no count from the client.
+    expect(sendReminders).toHaveBeenCalledWith("el_1");
+    expect(result).toEqual({ success: true, sent: 12, failed: 1 });
+  });
+
+  it("reports failure when the pipeline throws", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(sendReminders).mockRejectedValue(new Error("boom"));
+
+    const result = await sendElectionReminders("el_1");
     expect(result).toEqual({ success: false, error: "failed" });
   });
 });
