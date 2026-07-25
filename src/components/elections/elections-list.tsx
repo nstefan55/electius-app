@@ -350,7 +350,15 @@ export function ElectionsList({
                       ) : (
                         <>
                           <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
-                            {e.name}
+                            {/* Stretched link — after:inset-0 makes the whole row (the
+                                relative <li>) navigate; positioned siblings (⋯ menu)
+                                stack above it, and rename mode never renders it. */}
+                            <Link
+                              href={`/elections/${e.id}`}
+                              className="after:absolute after:inset-0"
+                            >
+                              {e.name}
+                            </Link>
                           </div>
                           <div className="mt-0.5 text-[13px] text-muted-foreground">
                             {e.type}
@@ -405,8 +413,9 @@ export function ElectionsList({
                         : `${formatVotingDate(e.opens, locale)} – ${formatVotingDate(e.closes, locale)}`}
                     </div>
 
-                    {/* Row actions — absolute top-right on mobile, last cell on desktop */}
-                    <div className="absolute top-3 right-3 md:static md:justify-self-end">
+                    {/* Row actions — absolute top-right on mobile, last cell on desktop.
+                        md:relative (not static) so the menu stacks above the stretched link */}
+                    <div className="absolute top-3 right-3 md:relative md:justify-self-end">
                       <Menu.Root>
                         <Menu.Trigger
                           aria-label={tp("actions.menuLabel")}
