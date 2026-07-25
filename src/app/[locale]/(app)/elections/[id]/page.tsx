@@ -1,12 +1,15 @@
-import { useTranslations } from "next-intl";
-import { getElectionDetail, getElectionStartInfo } from "@/lib/db/elections";
+import {
+  getElectionDetail,
+  getElectionOverview,
+  getElectionStartInfo,
+} from "@/lib/db/elections";
 import { requireSession } from "@/lib/auth/require-session";
 import { StartElectionCard } from "@/components/elections/start-election-card";
-import type { ElectionStatus } from "@/lib/elections-view";
+import { ElectionOverview } from "@/components/elections/election-overview";
 
-// Overview facet (default tab) — status-adaptive SHELL. DRAFT renders the
-// manual-start screen (election-manual-start-spec); the other branches are
-// labelled scaffolds owned by election-overview-phase-* specs.
+// Overview facet (default tab). DRAFT renders the manual-start screen
+// (election-manual-start-spec); every other status renders the overview body
+// (election-overview-phase-2-spec).
 // Reads the same cache()-wrapped election as the layout (no extra query / authz):
 // same (id, organizationId) key → single DB round trip per request.
 export default async function ElectionOverviewPage({
@@ -35,34 +38,28 @@ export default async function ElectionOverviewPage({
     );
   }
 
-  // SCHEDULED → setup shell · ACTIVE → live/management shell · CLOSED/ARCHIVED → sealed shell
-  const variant: "draft" | "active" | "closed" =
-    election.status === "ACTIVE"
-      ? "active"
-      : election.status === "CLOSED" || election.status === "ARCHIVED"
-        ? "closed"
-        : "draft";
+  const overview = await getElectionOverview(id, organizationId);
+  if (!overview) return null;
 
-  return <OverviewShell variant={variant} status={election.status} />;
-}
-
-function OverviewShell({
-  variant,
-  status,
-}: {
-  variant: "draft" | "active" | "closed";
-  status: ElectionStatus;
-}) {
-  const t = useTranslations("dashboard.election.overview");
   return (
-    <section className="rounded-lg border border-dashed border-border bg-neutral-50 p-6">
-      <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-        {t("scaffoldTag")} · {status}
-      </p>
-      <h2 className="mt-1 font-heading text-lg font-semibold text-neutral-800">
-        {t(`${variant}.heading`)}
-      </h2>
-      <p className="mt-1 text-sm text-neutral-600">{t(`${variant}.note`)}</p>
-    </section>
+    <ElectionOverview
+      id={id}
+      status={election.status}
+      opens={election.opens}
+      closes={election.closes}
+      voters={election.voters}
+      voted={election.voted}
+      resultsMode={election.resultsMode}
+      electionType={overview.electionType}
+      votingType={overview.votingType}
+      quorumThreshold={overview.quorumThreshold}
+      voterReminder24h={overview.voterReminder24h}
+      candidates={overview.candidates}
+      notInvited={overview.notInvited}
+      voted24h={overview.voted24h}
+      // Server render time — the countdown's first paint must match the server's
+      // (see ElectionOverview: deriving Date.now() at hydration would mismatch).
+      nowMs={Date.now()}
+    />
   );
 }

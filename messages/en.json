@@ -721,18 +721,75 @@
         }
       },
       "overview": {
-        "scaffoldTag": "Content scaffold",
-        "draft": {
-          "heading": "Setup summary",
-          "note": "Setup summary + edit for an election in preparation goes here. Content to follow."
+        "stats": {
+          "invited": "Invited voters",
+          "invitedSub": "Total invitations sent",
+          "voted": "Voted",
+          "votedSub": "{pct}% turnout",
+          "pending": "Pending",
+          "pendingSub": "Haven't voted yet",
+          "timeLeft": "Time left",
+          "timeLeftDays": "{days}d {hours}h",
+          "timeLeftHours": "{hours}h {minutes}m",
+          "timeLeftOpenSub": "until voting closes",
+          "timeLeftScheduledSub": "until voting opens",
+          "timeLeftClosedSub": "Voting has closed"
         },
-        "active": {
-          "heading": "Live turnout & management",
-          "note": "Live turnout + actions (send reminder, close early) go here. Content to follow."
+        "turnout": {
+          "badgeLive": "Live — voting now",
+          "badgeAuto": "Updates automatically",
+          "badgeScheduled": "Voting hasn't started",
+          "badgeFinal": "Final turnout",
+          "caption": "turnout",
+          "progress": "{voters, plural, one {of # voter has cast their ballot} other {of # voters have cast their ballot}}",
+          "quorumLabel": "Quorum threshold",
+          "quorumReq": "{pct}% · {voters, plural, one {# voter} other {# voters}}",
+          "met": "Met",
+          "notMet": "Not met"
         },
-        "closed": {
-          "heading": "Sealed summary",
-          "note": "Election is closed or archived — results live in the Results tab. Content to follow."
+        "config": {
+          "title": "Election configuration",
+          "type": "Type",
+          "window": "Voting window",
+          "voters": "Voter list",
+          "candidates": "Candidates",
+          "results": "Results",
+          "reminder": "Auto reminder",
+          "quorum": "Quorum",
+          "resultsSealed": "Sealed",
+          "resultsLive": "Live",
+          "votersCount": "{count, plural, one {# voter} other {# voters}}",
+          "candidatesCount": "{count, plural, one {# candidate} other {# candidates}}",
+          "reminderActive": "Active · 24h before deadline",
+          "reminderScheduled": "Scheduled · 24h before deadline",
+          "reminderOff": "Off",
+          "quorumValue": "{pct}% ({voters, plural, one {# voter} other {# voters}})"
+        },
+        "actions": {
+          "title": "Actions",
+          "sendReminder": "Send reminder",
+          "voterList": "Voter list",
+          "exportCsv": "Export CSV",
+          "showQr": "Show QR code",
+          "reminderSoon": "Sending reminders lands in the next phase.",
+          "exportSoon": "Data export is coming."
+        },
+        "qr": {
+          "title": "Voting QR code",
+          "body": "Voters scan this code to open their ballot instantly.",
+          "copy": "Copy",
+          "copied": "Link copied",
+          "copyFailed": "Couldn't copy the link",
+          "note": "The code is only valid for voters who were previously added to the voter list.",
+          "close": "Close"
+        },
+        "activity": {
+          "title": "Activity",
+          "published": "Election published",
+          "publishes": "Election publishes",
+          "votes24h": "{count, plural, =0 {No votes in the last 24h} one {# vote in the last 24h} other {# votes in the last 24h}}",
+          "votes24hSub": "New ballots in the past day",
+          "ends": "Voting ends"
         }
       },
       "resultsFacet": {
