@@ -1,8 +1,18 @@
 import "server-only";
 
+import type { VoterStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { mintTokenForVoter, mintTokensForPendingVoters } from "./token.service";
-import { sendInvitationEmails } from "./email.service";
+import {
+  mintTokenForVoter,
+  mintTokensForPendingVoters,
+  mintTokensForVoters,
+  tokenExpiry,
+  type MintedToken,
+} from "./token.service";
+import {
+  sendInvitationEmails,
+  type InvitationElection,
+} from "./email.service";
 
 // Publication pipeline (election-publication-spec §2): tokens → chunked Resend
 // batch sends → per-voter INVITED tracking. Runs synchronously in-request
@@ -26,6 +36,32 @@ export interface PublishResult {
   failed: number;
 }
 
+// Sequential, not parallel — respects Resend's 2 req/s rate limit. Failure
+// granularity is per chunk (a batch call succeeds/fails whole); a failed chunk
+// leaves its voters PENDING → retryable via resendInvitations.
+async function sendInChunks(
+  minted: MintedToken[],
+  invitation: InvitationElection,
+): Promise<PublishResult> {
+  let sent = 0;
+  let failed = 0;
+
+  for (const batch of chunk(minted)) {
+    try {
+      await sendInvitationEmails(batch, invitation);
+      await prisma.voter.updateMany({
+        where: { id: { in: batch.map((m) => m.voterId) } },
+        data: { status: "INVITED" },
+      });
+      sent += batch.length;
+    } catch {
+      failed += batch.length;
+    }
+  }
+
+  return { sent, failed };
+}
+
 // Idempotent: only PENDING voters get tokens + emails, so calling this on an
 // already-published election is a no-op — which is exactly what the Retry
 // button and the scheduled sweep rely on.
@@ -41,31 +77,10 @@ export async function publishElection(
   const minted = await mintTokensForPendingVoters(electionId);
   if (minted.length === 0) return { sent: 0, failed: 0 };
 
-  const invitation = {
+  return sendInChunks(minted, {
     title: election.title,
     organizationName: election.organization.name,
-  };
-
-  let sent = 0;
-  let failed = 0;
-
-  // Sequential, not parallel — respects Resend's 2 req/s rate limit. Failure
-  // granularity is per chunk (a batch call succeeds/fails whole); a failed
-  // chunk leaves its voters PENDING → retryable via resendInvitations.
-  for (const batch of chunk(minted)) {
-    try {
-      await sendInvitationEmails(batch, invitation);
-      await prisma.voter.updateMany({
-        where: { id: { in: batch.map((m) => m.voterId) } },
-        data: { status: "INVITED" },
-      });
-      sent += batch.length;
-    } catch {
-      failed += batch.length;
-    }
-  }
-
-  return { sent, failed };
+  });
 }
 
 // Voter-initiated resend (voter-flow spec §4: QR entry + the expired-link CTA).
@@ -113,4 +128,99 @@ export async function resendVoterLink(
       data: { status: "INVITED" },
     });
   }
+}
+
+// ───────── Reminders (election-overview-phase-3-spec) ─────────
+
+export interface ReminderTargets {
+  recipients: string[]; // voter ids
+  alreadyVoted: number;
+  expired: number;
+}
+
+interface ReminderVoter {
+  id: string;
+  status: VoterStatus;
+  token: { expiresAt: Date } | null;
+}
+
+// The one rule that decides who gets a reminder — the modal's preview counts and
+// the actual send both go through it, so the button cannot promise "Send to 42"
+// and deliver 39.
+//
+// `windowOver` means a freshly minted token would be born expired (expiry is
+// derived from the election, not the voter), so nobody is reachable at all.
+export function partitionReminderTargets(
+  voters: ReminderVoter[],
+  now: Date,
+  windowOver: boolean,
+): ReminderTargets {
+  const recipients: string[] = [];
+  let alreadyVoted = 0;
+  let expired = 0;
+
+  for (const voter of voters) {
+    if (voter.status === "VOTED") {
+      alreadyVoted++;
+    } else if (windowOver || (voter.token != null && voter.token.expiresAt <= now)) {
+      // An expired link can't be revived by re-minting — the replacement
+      // inherits the same election-derived expiry.
+      expired++;
+    } else {
+      // PENDING (never successfully emailed) and INVITED (emailed, hasn't
+      // voted) both qualify — decision 2026-07-25.
+      recipients.push(voter.id);
+    }
+  }
+
+  return { recipients, alreadyVoted, expired };
+}
+
+export async function getReminderTargets(
+  electionId: string,
+): Promise<ReminderTargets> {
+  const empty: ReminderTargets = { recipients: [], alreadyVoted: 0, expired: 0 };
+
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { startsAt: true, endsAt: true },
+  });
+  if (!election) return empty;
+
+  const now = new Date();
+  const voters = await prisma.voter.findMany({
+    where: { electionId },
+    select: { id: true, status: true, token: { select: { expiresAt: true } } },
+  });
+
+  return partitionReminderTargets(
+    voters,
+    now,
+    tokenExpiry(election.startsAt, election.endsAt, now) <= now,
+  );
+}
+
+// Re-mints on the way out: the raw token is unrecoverable by design, so a
+// reminder necessarily carries a NEW link and the original invitation's link
+// stops working. A voter who clicks the older email lands on the voter-flow's
+// invalid-link screen, which offers them a fresh one.
+// ponytail: reuses the invitation email verbatim (spec: "sends invite") — add
+// dedicated reminder copy if the wording ever needs to differ.
+export async function sendReminders(
+  electionId: string,
+): Promise<PublishResult> {
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { title: true, organization: { select: { name: true } } },
+  });
+  if (!election) return { sent: 0, failed: 0 };
+
+  const { recipients } = await getReminderTargets(electionId);
+  const minted = await mintTokensForVoters(electionId, recipients);
+  if (minted.length === 0) return { sent: 0, failed: 0 };
+
+  return sendInChunks(minted, {
+    title: election.title,
+    organizationName: election.organization.name,
+  });
 }

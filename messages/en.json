@@ -771,8 +771,26 @@
           "voterList": "Voter list",
           "exportCsv": "Export CSV",
           "showQr": "Show QR code",
-          "reminderSoon": "Sending reminders lands in the next phase.",
           "exportSoon": "Data export is coming."
+        },
+        "reminder": {
+          "title": "Send reminder",
+          "body": "An invitation is sent to every voter with a valid magic link who has not voted yet.",
+          "recipients": "Recipients",
+          "skipVoted": "Skipped (already voted)",
+          "skipExpired": "Skipped (expired link)",
+          "voterCount": "{count, plural, one {# voter} other {# voters}}",
+          "note": "Voters who already voted or have an expired link will not receive a reminder. The reminder carries a new link, so the previously sent one stops working.",
+          "cancel": "Cancel",
+          "confirm": "Send to {count}",
+          "sending": "Sending…",
+          "loading": "Loading…",
+          "loadFailed": "Recipients could not be loaded. Close and try again.",
+          "sendFailed": "Sending reminders failed. Please try again.",
+          "partial": "Not sent: {count, plural, one {# reminder} other {# reminders}}.",
+          "sentTitle": "Reminders sent",
+          "sentBody": "{count, plural, one {A reminder was sent to # voter who hasn't voted yet.} other {A reminder was sent to # voters who haven't voted yet.}}",
+          "done": "Done"
         },
         "qr": {
           "title": "Voting QR code",
