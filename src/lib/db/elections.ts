@@ -178,6 +178,34 @@ export const getBallotPreview = cache(
   },
 );
 
+// Popis birača za CSV izvoz. `select` je granica anonimnosti: nema tokena ni
+// hasha, ništa spojivo s glasačkim listićem.
+// Nije cache() — route handler čita jednom, nema layout→page dijeljenja.
+// ponytail: findMany bez limita. Dovoljno za MVP (Free 50/izbor, seed max 285)
+// — stranicaj ili streamaj ako Pro popisi narastu na tisuće.
+export async function getVoterRosterForExport(
+  id: string,
+  organizationId: string,
+) {
+  return prisma.election.findFirst({
+    where: { id, organizationId },
+    select: {
+      title: true, // samo za ime datoteke
+      voters: {
+        // Stabilan redoslijed; Postgres stavlja NULL na kraj kod ASC.
+        orderBy: [{ lastName: "asc" }, { firstName: "asc" }, { email: "asc" }],
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          status: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+}
+
 function computeStats(els: DashboardElection[]): DashboardStats {
   const withVoters = els.filter((e) => e.voters > 0);
   const avgTurnout = withVoters.length

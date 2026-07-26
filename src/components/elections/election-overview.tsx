@@ -428,6 +428,7 @@ function ConfigCard({
 
 function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
   const t = useTranslations("dashboard.election.overview.actions");
+  const locale = useLocale();
   const [qrOpen, setQrOpen] = useState(false);
   const [reminderOpen, setReminderOpen] = useState(false);
 
@@ -447,8 +448,7 @@ function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
           {t("sendReminder")}
         </button>
         <div className="grid gap-3 sm:grid-cols-2">
-          {/* ponytail: both exports wait on the CSV-export spec (column contract +
-              which voter PII a download may carry) — button, not payload, here. */}
+          {/* ponytail: popis birača čeka voter-management spec — gumb, bez odredišta. */}
           <button
             type="button"
             onClick={() => toast(t("exportSoon"))}
@@ -457,9 +457,9 @@ function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
             <List className="size-4.5 shrink-0 text-neutral-600" aria-hidden />
             {t("voterList")}
           </button>
-          <button
-            type="button"
-            onClick={() => toast(t("exportSoon"))}
+          {/* Obično sidro: Content-Disposition pokreće preuzimanje bez navigacije. */}
+          <a
+            href={`/api/elections/${id}/voters/export?locale=${locale}`}
             className={ACTION_BTN}
           >
             <Download
@@ -467,7 +467,7 @@ function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
               aria-hidden
             />
             {t("exportCsv")}
-          </button>
+          </a>
         </div>
         <button
           type="button"

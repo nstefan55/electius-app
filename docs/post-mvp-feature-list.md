@@ -27,6 +27,23 @@ Add a `voter.reminderEmail` namespace (hr + en) with reminder-flavoured copy ("Y
 
 Worth pairing with the deadline: the reminder body is the natural place to say *when* voting closes, which the invitation does not currently state.
 
+## Exports
+
+### XLSX Export
+
+Both CSV exports (voter roster, shipped `v0.9.5`; results tally, spec'd) carry a `sep=;` first line so Excel splits into columns regardless of the reader's Windows list separator — Excel splits on the *reader's* OS setting, not on what the file contains, so a locale-keyed delimiter alone puts the whole export in column A on a mismatched machine.
+
+That line is an Excel/LibreOffice directive. **Google Sheets and pandas do not implement it and show `sep=;` as a data row.** A real `.xlsx` is the clean fix: a spreadsheet has genuine columns, so there is no delimiter to guess and no preamble to strip.
+
+Worth doing when either happens: an admin pipes an export into Sheets or a script and hits the junk row, or the results export wants formatting the PDF report already has (bold headers, column widths, a merged organization row — none of which CSV can express, which is why `election-results-csv-export-spec` had to drop that language).
+
+Shape:
+- One package, user-approved before install — `write-excel-file` (~40 KB, no native deps) or `exceljs` if styling gets serious.
+- `src/lib/csv.ts` stays as-is. Add a sibling `xlsx.ts` with the same `rows → buffer` signature; the builders in `voter-export.ts` already return plain string rows, so they feed either writer unchanged.
+- Route handlers take a `?format=csv|xlsx` param, or gain a second button. Decide whether XLSX **replaces** CSV for the roster or sits beside it — two buttons in an Actions card that already has five is a real UI cost.
+
+Once XLSX exists, the `sep=` line can be reconsidered: keep it for CSV consumers on Excel, or drop it and point Excel users at the XLSX download instead.
+
 ## Dashboard
 
 ### Dynamic Footer Hint Generator
