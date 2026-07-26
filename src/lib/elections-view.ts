@@ -107,6 +107,25 @@ export const turnoutPct = (voted: number, voters: number) =>
 export const quorumRequiredVoters = (voters: number, pct: number) =>
   Math.ceil((voters * pct) / 100);
 
+// Jedina derivacija brojki o biračima — dijele je pregled izbora i popis birača,
+// da ista dva zaslona nikad ne prijave različite brojeve.
+// `voted` su prebrojani listići (Vote), ne status birača; `notInvited` je broj
+// birača sa statusom PENDING (uvezeni, e-pošta im nikad nije uspješno poslana).
+export const voterCounts = ({
+  total,
+  notInvited,
+  voted,
+}: {
+  total: number;
+  notInvited: number;
+  voted: number;
+}) => ({
+  total,
+  invited: Math.max(0, total - notInvited),
+  voted,
+  pending: Math.max(0, total - voted),
+});
+
 // Countdown split for the "Time left" stat card. Returns parts (not a label) so
 // the unit suffixes stay in the i18n catalogs. Clamped at zero: a target in the
 // past reads 0h 0m rather than counting up.

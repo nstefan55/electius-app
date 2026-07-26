@@ -7,6 +7,7 @@ import {
   matchesTurnout,
   matchesWindow,
   sortRecent,
+  voterCounts,
   windowYears,
   type DashboardElection,
 } from "@/lib/elections-view";
@@ -178,6 +179,51 @@ describe("timeLeftParts", () => {
       days: 0,
       hours: 0,
       minutes: 0,
+    });
+  });
+});
+
+describe("voterCounts", () => {
+  it("derives invited from PENDING and pending from ballots cast", () => {
+    // 100 birača, 10 nikad pozvano, 40 glasalo
+    expect(voterCounts({ total: 100, notInvited: 10, voted: 40 })).toEqual({
+      total: 100,
+      invited: 90,
+      voted: 40,
+      pending: 60,
+    });
+  });
+
+  it("reconciles a fully published election", () => {
+    const c = voterCounts({ total: 50, notInvited: 0, voted: 20 });
+    expect(c.invited).toBe(50);
+    expect(c.voted + c.pending).toBe(c.total);
+  });
+
+  it("exposes the gap on a partially published election", () => {
+    // Neuspjeli komad slanja: 30 još PENDING, pa je "nije glasalo" veće od
+    // razlike pozvanih i glasalih — brojka koja se ne skriva.
+    const c = voterCounts({ total: 100, notInvited: 30, voted: 10 });
+    expect(c.invited).toBe(70);
+    expect(c.pending).toBe(90);
+    expect(c.pending).toBeGreaterThan(c.invited - c.voted);
+  });
+
+  it("never goes negative when counts disagree", () => {
+    expect(voterCounts({ total: 5, notInvited: 9, voted: 9 })).toEqual({
+      total: 5,
+      invited: 0,
+      voted: 9,
+      pending: 0,
+    });
+  });
+
+  it("is zero-safe on an empty roster", () => {
+    expect(voterCounts({ total: 0, notInvited: 0, voted: 0 })).toEqual({
+      total: 0,
+      invited: 0,
+      voted: 0,
+      pending: 0,
     });
   });
 });

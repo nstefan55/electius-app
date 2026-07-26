@@ -770,8 +770,7 @@
           "sendReminder": "Send reminder",
           "voterList": "Voter list",
           "exportCsv": "Export voter list",
-          "showQr": "Show QR code",
-          "exportSoon": "Data export is coming."
+          "showQr": "Show QR code"
         },
         "reminder": {
           "title": "Send reminder",
@@ -814,10 +813,6 @@
         "heading": "Election results",
         "note": "Results dashboard (charts, winner, PDF/CSV export) goes here. Content to follow."
       },
-      "votersFacet": {
-        "heading": "Voter management",
-        "note": "Voter list and invitation management go here. Content to follow."
-      },
       "lists": {
         "results": {
           "title": "Results",
@@ -858,6 +853,105 @@
         "status": "Status",
         "added": "Added",
         "fileSuffix": "voters"
+      },
+      "summary": {
+        "total": "Total voters",
+        "invited": "Invited",
+        "voted": "Voted",
+        "pending": "Not voted"
+      },
+      "filters": {
+        "search": "Search",
+        "searchPlaceholder": "Name or email address",
+        "status": "Status",
+        "allStatuses": "All statuses",
+        "clear": "Clear",
+        "showing": "Showing {shown} of {total}",
+        "count": "{total, plural, one {# voter} other {# voters}}"
+      },
+      "columns": {
+        "name": "Name",
+        "email": "Email",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "noName": "No name",
+      "empty": {
+        "title": "The voter list is empty",
+        "body": "Add voters so you can send them voting invitations.",
+        "noMatchTitle": "No results",
+        "noMatchBody": "No voter matches your search or the selected status."
+      },
+      "pagination": {
+        "page": "Page {page} of {pages}",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "actions": {
+        "menuLabel": "Voter actions",
+        "resend": "Resend voting link",
+        "edit": "Edit name",
+        "remove": "Remove voter",
+        "cancel": "Cancel",
+        "resendTitle": "Send a new link?",
+        "resendBody": "{email} will receive a new voting link. The previously sent link stops working.",
+        "resendConfirm": "Send link",
+        "removeTitle": "Remove this voter?",
+        "removeBody": "{email} will be deleted from the list along with their voting link. This cannot be undone.",
+        "removeConfirm": "Remove voter"
+      },
+      "toast": {
+        "renamed": "Voter name saved.",
+        "resent": "A new link has been sent.",
+        "removed": "Voter removed.",
+        "notAllowed": "That action is not available for the election's current state.",
+        "failed": "Something went wrong. Please try again."
+      },
+      "edit": {
+        "title": "Edit voter name",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "emailNote": "The email address cannot be changed — it is the voter's identity and it ties their voting link.",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "add": {
+        "button": "Add voters",
+        "title": "Add voters",
+        "sub": "Enter voters manually or import a CSV file.",
+        "close": "Close",
+        "manual": "Manual entry",
+        "csv": "CSV import",
+        "fullName": "Full name",
+        "namePlaceholder": "Ana Horvat",
+        "email": "Email address",
+        "emailPlaceholder": "ana.horvat@example.com",
+        "addRow": "Add",
+        "dropTitle": "Drag a CSV file here or click to browse",
+        "dropHintPrefix": "Expected columns:",
+        "csvNotCsv": "The file must be in .csv format.",
+        "csvTooLarge": "The file is larger than 1 MB.",
+        "csvEmpty": "The file contains no new voters.",
+        "csvImported": "{count, plural, one {# voter imported} other {# voters imported}}",
+        "csvImportedSkipped": "{count, plural, one {# voter imported} other {# voters imported}} · {skipped, plural, one {# row skipped} other {# rows skipped}}",
+        "staged": "{count, plural, =0 {To add} one {# voter to add} other {# voters to add}}",
+        "stagedEmpty": "You have not added any voters yet.",
+        "clearAll": "Clear all",
+        "removeRow": "Remove from list",
+        "activeWarnTitle": "Voting is in progress",
+        "activeWarnBody": "New voters are invited immediately and count towards turnout, which lowers the percentage and can affect quorum. While voting is open, added voters can no longer be removed.",
+        "cancel": "Cancel",
+        "submit": "{count, plural, one {Add # voter} other {Add # voters}}",
+        "submitInvite": "{count, plural, one {Add and invite # voter} other {Add and invite # voters}}",
+        "added": "{count, plural, one {# voter added} other {# voters added}}",
+        "addedInvited": "{count, plural, one {# voter added and invited} other {# voters added and invited}}",
+        "addedPartial": "{count, plural, one {# voter added} other {# voters added}}, but {failed, plural, one {# invitation could not be sent} other {# invitations could not be sent}}.",
+        "allDuplicates": "Every voter you entered is already on the list.",
+        "closed": "The voter list can no longer be changed.",
+        "failed": "Could not add the voters. Please try again.",
+        "nameRequired": "Enter a full name.",
+        "emailInvalid": "Enter a valid email address.",
+        "emailDuplicate": "That email address is already on the list."
       }
     },
     "settings": {

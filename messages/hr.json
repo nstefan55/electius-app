@@ -770,8 +770,7 @@
           "sendReminder": "Pošalji podsjetnik",
           "voterList": "Popis birača",
           "exportCsv": "Izvezi popis birača",
-          "showQr": "Prikaži QR kod",
-          "exportSoon": "Izvoz podataka slijedi."
+          "showQr": "Prikaži QR kod"
         },
         "reminder": {
           "title": "Pošalji podsjetnik",
@@ -814,10 +813,6 @@
         "heading": "Rezultati izbora",
         "note": "Ovdje će biti nadzorna ploča rezultata (grafovi, pobjednik, izvoz PDF/CSV). Sadržaj slijedi."
       },
-      "votersFacet": {
-        "heading": "Upravljanje glasačima",
-        "note": "Ovdje će biti popis glasača i upravljanje pozivnicama. Sadržaj slijedi."
-      },
       "lists": {
         "results": {
           "title": "Rezultati",
@@ -858,6 +853,105 @@
         "status": "Status",
         "added": "Dodano",
         "fileSuffix": "biraci"
+      },
+      "summary": {
+        "total": "Ukupno birača",
+        "invited": "Pozvano",
+        "voted": "Glasalo",
+        "pending": "Nije glasalo"
+      },
+      "filters": {
+        "search": "Pretraga",
+        "searchPlaceholder": "Ime ili e-mail adresa",
+        "status": "Status",
+        "allStatuses": "Svi statusi",
+        "clear": "Očisti",
+        "showing": "Prikazano {shown} od {total}",
+        "count": "{total, plural, one {# birač} few {# birača} other {# birača}}"
+      },
+      "columns": {
+        "name": "Ime i prezime",
+        "email": "E-mail",
+        "status": "Status",
+        "actions": "Radnje"
+      },
+      "noName": "Bez imena",
+      "empty": {
+        "title": "Popis birača je prazan",
+        "body": "Dodajte birače kako biste im mogli poslati pozivnice za glasanje.",
+        "noMatchTitle": "Nema rezultata",
+        "noMatchBody": "Nijedan birač ne odgovara pretrazi ili odabranom statusu."
+      },
+      "pagination": {
+        "page": "Stranica {page} od {pages}",
+        "prev": "Prethodna",
+        "next": "Sljedeća"
+      },
+      "actions": {
+        "menuLabel": "Radnje za birača",
+        "resend": "Pošalji poveznicu ponovno",
+        "edit": "Uredi ime",
+        "remove": "Ukloni birača",
+        "cancel": "Odustani",
+        "resendTitle": "Poslati novu poveznicu?",
+        "resendBody": "Biraču {email} šaljemo novu poveznicu za glasanje. Prethodno poslana poveznica time prestaje vrijediti.",
+        "resendConfirm": "Pošalji poveznicu",
+        "removeTitle": "Ukloniti birača?",
+        "removeBody": "{email} se briše s popisa zajedno sa svojom poveznicom za glasanje. Radnja je trajna.",
+        "removeConfirm": "Ukloni birača"
+      },
+      "toast": {
+        "renamed": "Ime birača je spremljeno.",
+        "resent": "Nova poveznica je poslana.",
+        "removed": "Birač je uklonjen.",
+        "notAllowed": "Ova radnja nije moguća u trenutačnom stanju izbora.",
+        "failed": "Nešto je pošlo po zlu. Pokušajte ponovno."
+      },
+      "edit": {
+        "title": "Uredi ime birača",
+        "firstName": "Ime",
+        "lastName": "Prezime",
+        "emailNote": "E-mail adresa se ne može mijenjati — ona je identitet birača i veže njegovu poveznicu za glasanje.",
+        "cancel": "Odustani",
+        "save": "Spremi"
+      },
+      "add": {
+        "button": "Dodaj birače",
+        "title": "Dodavanje birača",
+        "sub": "Unesite birače ručno ili uvezite CSV datoteku.",
+        "close": "Zatvori",
+        "manual": "Ručni unos",
+        "csv": "CSV uvoz",
+        "fullName": "Ime i prezime",
+        "namePlaceholder": "Ana Horvat",
+        "email": "E-mail adresa",
+        "emailPlaceholder": "ana.horvat@primjer.hr",
+        "addRow": "Dodaj",
+        "dropTitle": "Povucite CSV datoteku ili kliknite za odabir",
+        "dropHintPrefix": "Očekivani stupci:",
+        "csvNotCsv": "Datoteka mora biti u .csv formatu.",
+        "csvTooLarge": "Datoteka je veća od 1 MB.",
+        "csvEmpty": "U datoteci nema novih birača.",
+        "csvImported": "{count, plural, one {Uvezen # birač} few {Uvezena # birača} other {Uvezeno # birača}}",
+        "csvImportedSkipped": "{count, plural, one {Uvezen # birač} few {Uvezena # birača} other {Uvezeno # birača}} · {skipped, plural, one {# redak preskočen} few {# retka preskočena} other {# redaka preskočeno}}",
+        "staged": "{count, plural, =0 {Za dodavanje} one {# birač za dodavanje} few {# birača za dodavanje} other {# birača za dodavanje}}",
+        "stagedEmpty": "Još niste dodali nijednog birača.",
+        "clearAll": "Očisti sve",
+        "removeRow": "Ukloni iz popisa",
+        "activeWarnTitle": "Glasanje je u tijeku",
+        "activeWarnBody": "Novi birači odmah dobivaju pozivnicu i ulaze u izlaznost, što snižava postotak i može utjecati na kvorum. Dok glasanje traje, dodane birače više nije moguće ukloniti.",
+        "cancel": "Odustani",
+        "submit": "{count, plural, one {Dodaj # birača} few {Dodaj # birača} other {Dodaj # birača}}",
+        "submitInvite": "{count, plural, one {Dodaj i pozovi # birača} few {Dodaj i pozovi # birača} other {Dodaj i pozovi # birača}}",
+        "added": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}",
+        "addedInvited": "{count, plural, one {Dodan # birač i poslana mu je pozivnica} few {Dodana # birača i poslane su im pozivnice} other {Dodano # birača i poslane su im pozivnice}}",
+        "addedPartial": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}, ali {failed, plural, one {# pozivnica nije poslana} few {# pozivnice nisu poslane} other {# pozivnica nije poslano}}.",
+        "allDuplicates": "Svi uneseni birači već su na popisu.",
+        "closed": "Popis birača se više ne može mijenjati.",
+        "failed": "Dodavanje nije uspjelo. Pokušajte ponovno.",
+        "nameRequired": "Unesite ime i prezime.",
+        "emailInvalid": "Unesite ispravnu e-mail adresu.",
+        "emailDuplicate": "Ta e-mail adresa je već na popisu."
       }
     },
     "settings": {
