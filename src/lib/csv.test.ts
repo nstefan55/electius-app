@@ -6,7 +6,11 @@ import {
   csvPreamble,
   csvResponse,
   delimiterFor,
+  detectDelimiter,
+  parseCsv,
+  readCsv,
   slugify,
+  stripBom,
   toCsv,
 } from "./csv";
 
@@ -130,6 +134,124 @@ describe("csvFilename", () => {
     expect(csvFilename("///", "biraci", date)).toBe(
       "export-biraci-2026-07-25.csv",
     );
+  });
+});
+
+describe("stripBom", () => {
+  it("makne BOM samo s početka", () => {
+    expect(stripBom(`${CSV_BOM}Ime`)).toBe("Ime");
+    expect(stripBom("Ime")).toBe("Ime");
+    expect(stripBom(`Ime${CSV_BOM}`)).toBe(`Ime${CSV_BOM}`);
+  });
+});
+
+describe("detectDelimiter", () => {
+  it("bira onaj kojeg u prvom retku ima više", () => {
+    expect(detectDelimiter("Ime;Prezime;E-mail")).toBe(";");
+    expect(detectDelimiter("name,email")).toBe(",");
+  });
+
+  it("ne broji razdjelnike unutar navodnika", () => {
+    expect(detectDelimiter('"Horvat; Ana; ml.",a@b.hr')).toBe(",");
+  });
+
+  it("jedan stupac ili neriješeno pada na zarez", () => {
+    expect(detectDelimiter("Ime")).toBe(",");
+    expect(detectDelimiter("a;b,c")).toBe(",");
+  });
+
+  it("preskače prazne retke na početku", () => {
+    expect(detectDelimiter("\n\nIme;E-mail")).toBe(";");
+  });
+});
+
+describe("parseCsv", () => {
+  it("dijeli obična polja i retke", () => {
+    expect(parseCsv("a,b\nc,d", ",")).toEqual([
+      ["a", "b"],
+      ["c", "d"],
+    ]);
+  });
+
+  it("navedeno polje smije sadržavati razdjelnik", () => {
+    expect(parseCsv('"Kovačević, Ana",ana@unizg.hr', ",")).toEqual([
+      ["Kovačević, Ana", "ana@unizg.hr"],
+    ]);
+  });
+
+  it("udvostručeni navodnik je jedan doslovni znak", () => {
+    expect(parseCsv('"Ana ""Anči"" Horvat",x', ",")).toEqual([
+      ['Ana "Anči" Horvat', "x"],
+    ]);
+  });
+
+  it("navedeno polje smije sadržavati novi red", () => {
+    expect(parseCsv('"prvi\ndrugi",x\nAna,y', ",")).toEqual([
+      ["prvi\ndrugi", "x"],
+      ["Ana", "y"],
+    ]);
+  });
+
+  it("navodnik usred teksta je slovo, ne otvaranje polja", () => {
+    expect(parseCsv('Ivo "Ivica,i@b.hr', ",")).toEqual([
+      ['Ivo "Ivica', "i@b.hr"],
+    ]);
+  });
+
+  it("nezatvoren navodnik ruši samo svoj red, ostatak prolazi", () => {
+    expect(parseCsv('Ana,a@b.hr\n"Ivo,i@b.hr\nMara,m@b.hr', ",")).toEqual([
+      ["Ana", "a@b.hr"],
+      ["Ivo,i@b.hr"],
+      ["Mara", "m@b.hr"],
+    ]);
+  });
+
+  it("prazna polja i CRLF ostaju ispravni", () => {
+    expect(parseCsv('a,,c\r\n"",x', ",")).toEqual([
+      ["a", "", "c"],
+      ["", "x"],
+    ]);
+  });
+
+  it("prazni retci otpadaju", () => {
+    expect(parseCsv("a,b\n\n\nc,d\n", ",")).toEqual([
+      ["a", "b"],
+      ["c", "d"],
+    ]);
+  });
+
+  it("radi jednako s točkazarezom", () => {
+    expect(parseCsv('"Horvat; Ana";a@b.hr', ";")).toEqual([
+      ["Horvat; Ana", "a@b.hr"],
+    ]);
+  });
+});
+
+describe("readCsv", () => {
+  it("pojede BOM i sep= redak i uzme taj razdjelnik", () => {
+    expect(readCsv(`${CSV_BOM}sep=;\r\nIme;E-mail\r\nAna;a@b.hr`)).toEqual([
+      ["Ime", "E-mail"],
+      ["Ana", "a@b.hr"],
+    ]);
+  });
+
+  it("bez sep= retka sam otkrije razdjelnik", () => {
+    expect(readCsv("Ime;E-mail\nAna;a@b.hr")).toEqual([
+      ["Ime", "E-mail"],
+      ["Ana", "a@b.hr"],
+    ]);
+  });
+
+  // Najvažniji test u datoteci: zapisivač i čitač moraju biti inverzi.
+  it("vraća točno ono što je toCsv zapisao", () => {
+    const rows = [
+      ["Ime", "Prezime", "E-mail"],
+      ["Kovačević, Ana", 'Ana ""', "ana@unizg.hr"],
+      ["prvi\ndrugi", "", "b@c.hr"],
+    ];
+    for (const d of [";", ","]) {
+      expect(readCsv(toCsv(rows, d))).toEqual(rows);
+    }
   });
 });
 

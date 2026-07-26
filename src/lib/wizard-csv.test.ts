@@ -81,3 +81,85 @@ describe("parseVotersCsv", () => {
     expect(rows).toHaveLength(2);
   });
 });
+
+// ─── fix/wizard-csv-quoted-cells ───────────────────────────────────────────
+
+describe("navedene ćelije", () => {
+  it("kandidat sa zarezom u imenu se ne kvari", () => {
+    // Prije: ime '"Kovačević', uloga 'Ana"', skipped 0 — tiha korupcija.
+    expect(parseCandidatesCsv('"Kovačević, Ana",Predsjednica')).toEqual({
+      rows: [{ name: "Kovačević, Ana", role: "Predsjednica" }],
+      skipped: 0,
+    });
+  });
+
+  it("birač sa zarezom u imenu se ne gubi", () => {
+    expect(parseVotersCsv('"Kovačević, Ana",ana@unizg.hr')).toEqual({
+      rows: [{ name: "Kovačević, Ana", email: "ana@unizg.hr" }],
+      skipped: 0,
+    });
+  });
+
+  it("nadimak u navodnicima ostaje u imenu", () => {
+    const { rows } = parseCandidatesCsv('"Ana ""Anči"" Horvat",Studentica');
+    expect(rows[0].name).toBe('Ana "Anči" Horvat');
+  });
+
+  it("nezatvoren navodnik preskoči svoj red, ostali prolaze", () => {
+    const { rows, skipped } = parseVotersCsv(
+      'Ana,a@b.hr\n"Ivo,i@b.hr\nMara,m@b.hr',
+    );
+    expect(rows.map((r) => r.email)).toEqual(["a@b.hr", "m@b.hr"]);
+    expect(skipped).toBe(1);
+  });
+});
+
+describe("razdjelnik i zaglavlje", () => {
+  it("čita datoteku s točkazarezom", () => {
+    const { rows } = parseVotersCsv("Ime;E-mail\nAna Kovačević;ana@unizg.hr");
+    expect(rows).toEqual([{ name: "Ana Kovačević", email: "ana@unizg.hr" }]);
+  });
+
+  it("prvi birač s gmail adresom nije zaglavlje", () => {
+    // Prije: HEADER_EMAIL je pogodio "mail" u adresi i pojeo redak.
+    const { rows } = parseVotersCsv("Ana,ana@gmail.com\nIvo,i@b.hr");
+    expect(rows.map((r) => r.email)).toEqual(["ana@gmail.com", "i@b.hr"]);
+  });
+
+  it("BOM ne obori prepoznavanje zaglavlja", () => {
+    const { rows, skipped } = parseVotersCsv(
+      "﻿full_name,email\nAna,a@b.hr",
+    );
+    expect(rows).toEqual([{ name: "Ana", email: "a@b.hr" }]);
+    expect(skipped).toBe(0);
+  });
+});
+
+// Izvoz popisa birača (5 stupaca) mora se moći uvesti natrag.
+describe("kružni tok s izvozom", () => {
+  const hrExport =
+    "﻿sep=;\r\nIme;Prezime;E-mail;Status;Dodano\r\n" +
+    "Ana;Kovačević;ana@unizg.hr;Glas predan;2026-07-01\r\n" +
+    "Ivo;;ivo@unizg.hr;Na čekanju;2026-07-02";
+
+  const enExport =
+    "﻿sep=,\r\nFirst name,Last name,Email,Status,Added\r\n" +
+    "Ana,Kovačević,ana@unizg.hr,Voted,2026-07-01";
+
+  it("hr izvoz: ime i prezime se spoje, e-mail se nađe po zaglavlju", () => {
+    expect(parseVotersCsv(hrExport)).toEqual({
+      rows: [
+        { name: "Ana Kovačević", email: "ana@unizg.hr" },
+        { name: "Ivo", email: "ivo@unizg.hr" },
+      ],
+      skipped: 0,
+    });
+  });
+
+  it("en izvoz prolazi jednako", () => {
+    expect(parseVotersCsv(enExport)).toEqual({
+      rows: [{ name: "Ana Kovačević", email: "ana@unizg.hr" }],
+      skipped: 0,
+    });
+  });
+});

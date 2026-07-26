@@ -1,9 +1,10 @@
 import { z } from "zod";
+import { readCsv } from "./csv";
 
 // CSV import for the election creation wizard (steps 2 + 3). Pure text-in /
 // rows-out so it unit-tests without a browser; the client components own the
-// FileReader plumbing. ponytail: naive comma split, no quoted-cell support —
-// swap in a real CSV parser if users hit quoted commas.
+// FileReader plumbing. Tokenizer + delimiter detection live in lib/csv.ts,
+// beside the writer they invert.
 
 export const CSV_MAX_BYTES = 1024 * 1024; // 1 MB — a voter list is text, not a video
 
@@ -43,23 +44,21 @@ export type VoterRow = z.infer<typeof voterRowSchema>;
 
 export type CsvParseResult<T> = { rows: T[]; skipped: number };
 
-function splitLines(text: string): string[] {
-  return text
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+function toRows(text: string): string[][] {
+  return readCsv(text).map((cols) => cols.map((c) => c.trim()));
 }
 
 const HEADER_NAME = /^(full[\s_-]?)?name$|^ime/i; // "name", "full name", "ime i prezime"
-const HEADER_EMAIL = /mail|pošta/i;
+// Ćelija s @ je adresa, ne zaglavlje — inače prvi birač s gmail adresom
+// nestane kao "zaglavlje".
+const HEADER_EMAIL = (c: string) => /mail|pošta/i.test(c) && !c.includes("@");
 
 // Step 2 — one candidate per row: `name, role` (role optional).
 export function parseCandidatesCsv(text: string): CsvParseResult<CandidateRow> {
   const rows: CandidateRow[] = [];
   let skipped = 0;
-  splitLines(text).forEach((line, i) => {
-    const cols = line.split(",").map((c) => c.trim());
-    if (i === 0 && HEADER_NAME.test(cols[0])) return; // header row
+  toRows(text).forEach((cols, i) => {
+    if (i === 0 && HEADER_NAME.test(cols[0] ?? "")) return; // header row
     const parsed = candidateRowSchema.safeParse({
       name: cols[0],
       role: cols[1] || undefined,
@@ -70,16 +69,22 @@ export function parseCandidatesCsv(text: string): CsvParseResult<CandidateRow> {
   return { rows, skipped };
 }
 
-// Step 3 — one voter per row: `full_name, email` (both required).
+// Step 3 — one voter per row. Ručna datoteka ima `full_name, email`; izvoz
+// popisa birača ima pet stupaca. Zaglavlje kaže gdje je e-mail, ime je sve
+// prije njega — isto pravilo pokriva oba oblika.
 export function parseVotersCsv(text: string): CsvParseResult<VoterRow> {
+  const all = toRows(text);
+  const emailAt = (all[0] ?? []).findIndex(HEADER_EMAIL);
+  const hasHeader = emailAt >= 0 || HEADER_NAME.test(all[0]?.[0] ?? "");
+  const emailCol = emailAt >= 0 ? emailAt : 1;
+
   const rows: VoterRow[] = [];
   let skipped = 0;
-  splitLines(text).forEach((line, i) => {
-    const cols = line.split(",").map((c) => c.trim());
-    if (i === 0 && (HEADER_NAME.test(cols[0]) || HEADER_EMAIL.test(cols[1] ?? ""))) {
-      return; // header row
-    }
-    const parsed = voterRowSchema.safeParse({ name: cols[0], email: cols[1] });
+  (hasHeader ? all.slice(1) : all).forEach((cols) => {
+    const parsed = voterRowSchema.safeParse({
+      name: cols.slice(0, emailCol).filter(Boolean).join(" "),
+      email: cols[emailCol],
+    });
     if (parsed.success) rows.push(parsed.data);
     else skipped++;
   });
