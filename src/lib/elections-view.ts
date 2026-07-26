@@ -126,6 +126,49 @@ export const voterCounts = ({
   pending: Math.max(0, total - voted),
 });
 
+// ───────── Popis rezultata (election-results-overview-phase-2) ─────────
+// Način prikaza rezultata; izvodi se iz statusa i konfiguracije, nikad se ne
+// pohranjuje. `null` znači da izbori uopće ne pripadaju na /results.
+//
+// `sealed` skriva zbroj i od administratora, ne samo od birača — inače obećanje
+// "rezultati skriveni do kraja glasanja" nije istinito. Izlaznost time nije
+// pogođena; zapečaćen je zbroj po kandidatu, ne broj glasova.
+export type ResultsAccess = "live" | "sealed" | "closed";
+
+export const resultsAccess = (
+  e: Pick<DashboardElection, "status" | "resultsMode">,
+): ResultsAccess | null => {
+  if (e.status === "CLOSED") return "closed";
+  // DRAFT/SCHEDULED nemaju listića; ARCHIVED pripada /archive.
+  if (e.status !== "ACTIVE") return null;
+  return e.resultsMode === "LIVE" ? "live" : "sealed";
+};
+
+export interface ResultsRow extends DashboardElection {
+  access: ResultsAccess;
+}
+
+// Redoslijed redaka: aktivni izbori prije zatvorenih, unutar skupine ostaje
+// redoslijed iz upita (createdAt desc). Odluka o UX-u, ne o podacima — vidi
+// bilješku u current-feature.md ako treba drugačije.
+const ACCESS_ORDER: Record<ResultsAccess, number> = {
+  live: 0,
+  sealed: 1,
+  closed: 2,
+};
+
+// Redci za /results.
+// ponytail: filtrira u JS-u nad svim izborima organizacije umjesto da stavi
+// status u WHERE — isto pravilo (resultsAccess) tako odlučuje i uključivanje i
+// prikaz, pa se upit i UI ne mogu razići. Prebaci u WHERE ako popisi narastu.
+export const resultsRows = (els: DashboardElection[]): ResultsRow[] =>
+  els
+    .flatMap((e) => {
+      const access = resultsAccess(e);
+      return access ? [{ ...e, access }] : [];
+    })
+    .sort((a, b) => ACCESS_ORDER[a.access] - ACCESS_ORDER[b.access]);
+
 // Countdown split for the "Time left" stat card. Returns parts (not a label) so
 // the unit suffixes stay in the i18n catalogs. Clamped at zero: a target in the
 // past reads 0h 0m rather than counting up.

@@ -424,6 +424,31 @@
         "emptyBody": "Pokušajte prilagoditi ili očistiti filtre."
       }
     },
+    "resultsPage": {
+      "title": "Rezultati",
+      "summary": "{count, plural, one {# izbor s dostupnim rezultatima} few {# izbora s dostupnim rezultatima} other {# izbora s dostupnim rezultatima}}",
+      "layout": "Prikaz",
+      "cards": "Kartice",
+      "rows": "Redci",
+      "resultsOf": "Rezultati",
+      "status": {
+        "live": "Uživo",
+        "sealed": "Zapečaćeno",
+        "closed": "Zatvoreno"
+      },
+      "lineLive": "Izbori su trenutačno uživo",
+      "lineSealed": "Rezultati zapečaćeni do zatvaranja izbora",
+      "lineClosed": "Izbori zatvoreni {date}",
+      "pdf": "PDF izvještaj",
+      "csv": "CSV",
+      "viewResults": "Prikaži rezultate",
+      "comingSoon": "{action} — uskoro.",
+      "empty": "Još nema izbora s dostupnim rezultatima.",
+      "sealedTitle": "Rezultati su zapečaćeni",
+      "sealedBody": "Rezultati za „{title}” bit će dostupni tek nakon zatvaranja izbora. Konfiguracija ovih izbora skriva rezultate do kraja glasanja.",
+      "close": "U redu",
+      "footnote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom."
+    },
     "wizard": {
       "title": "Izrada izbora",
       "stepLabel": "Korak {n} od 5 · {name}",
@@ -814,11 +839,6 @@
         "note": "Ovdje će biti nadzorna ploča rezultata (grafovi, pobjednik, izvoz PDF/CSV). Sadržaj slijedi."
       },
       "lists": {
-        "results": {
-          "title": "Rezultati",
-          "subtitle": "Zatvoreni izbori — odaberite izbor za prikaz rezultata.",
-          "empty": "Još nema zatvorenih izbora."
-        },
         "archive": {
           "title": "Arhiva",
           "subtitle": "Arhivirani izbori — zapečaćeni i pohranjeni.",

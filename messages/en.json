@@ -424,6 +424,31 @@
         "emptyBody": "Try adjusting or clearing your filters."
       }
     },
+    "resultsPage": {
+      "title": "Results",
+      "summary": "{count, plural, one {# election with results available} other {# elections with results available}}",
+      "layout": "View",
+      "cards": "Cards",
+      "rows": "Rows",
+      "resultsOf": "Results",
+      "status": {
+        "live": "Live",
+        "sealed": "Sealed",
+        "closed": "Closed"
+      },
+      "lineLive": "Election is currently live",
+      "lineSealed": "Results sealed until the election closes",
+      "lineClosed": "Election closed {date}",
+      "pdf": "PDF report",
+      "csv": "CSV",
+      "viewResults": "View results",
+      "comingSoon": "{action} — coming soon.",
+      "empty": "No elections with results available yet.",
+      "sealedTitle": "Results are sealed",
+      "sealedBody": "Results for “{title}” will be available once the election closes. This election is configured to hide results until voting ends.",
+      "close": "Got it",
+      "footnote": "Voters authenticate via one-time magic links. The system never links a voter to their vote."
+    },
     "wizard": {
       "title": "Create election",
       "stepLabel": "Step {n} of 5 · {name}",
@@ -814,11 +839,6 @@
         "note": "Results dashboard (charts, winner, PDF/CSV export) goes here. Content to follow."
       },
       "lists": {
-        "results": {
-          "title": "Results",
-          "subtitle": "Closed elections — pick one to view its results.",
-          "empty": "No closed elections yet."
-        },
         "archive": {
           "title": "Archive",
           "subtitle": "Archived elections — sealed and stored.",
