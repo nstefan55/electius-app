@@ -769,7 +769,7 @@
           "title": "Actions",
           "sendReminder": "Send reminder",
           "voterList": "Voter list",
-          "exportCsv": "Export CSV",
+          "exportCsv": "Export voter list",
           "showQr": "Show QR code",
           "exportSoon": "Data export is coming."
         },
@@ -843,6 +843,21 @@
           "subtitle": "Pick an election to manage its voters.",
           "empty": "No elections yet."
         }
+      }
+    },
+    "voters": {
+      "status": {
+        "PENDING": "Pending",
+        "INVITED": "Invited",
+        "VOTED": "Voted"
+      },
+      "export": {
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "status": "Status",
+        "added": "Added",
+        "fileSuffix": "voters"
       }
     },
     "settings": {

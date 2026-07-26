@@ -769,7 +769,7 @@
           "title": "Radnje",
           "sendReminder": "Pošalji podsjetnik",
           "voterList": "Popis birača",
-          "exportCsv": "Izvezi CSV",
+          "exportCsv": "Izvezi popis birača",
           "showQr": "Prikaži QR kod",
           "exportSoon": "Izvoz podataka slijedi."
         },
@@ -843,6 +843,21 @@
           "subtitle": "Odaberite izbor za upravljanje njegovim glasačima.",
           "empty": "Još nema izbora."
         }
+      }
+    },
+    "voters": {
+      "status": {
+        "PENDING": "Na čekanju",
+        "INVITED": "Pozivnica poslana",
+        "VOTED": "Glas predan"
+      },
+      "export": {
+        "firstName": "Ime",
+        "lastName": "Prezime",
+        "email": "E-mail",
+        "status": "Status",
+        "added": "Dodano",
+        "fileSuffix": "biraci"
       }
     },
     "settings": {
