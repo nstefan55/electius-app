@@ -83,11 +83,34 @@ export async function publishElection(
   });
 }
 
+// Jedan birač, jedna poveznica — dijele je resend iz glasačkog toka i redak u
+// popisu birača. Re-mint poništava prethodno poslanu poveznicu.
+// Baca ako slanje padne; pozivatelj odlučuje što s tim.
+export async function inviteVoter(
+  voterId: string,
+  currentStatus: VoterStatus,
+  invitation: InvitationElection,
+): Promise<boolean> {
+  const minted = await mintTokenForVoter(voterId);
+  if (!minted) return false;
+
+  await sendInvitationEmails([minted], invitation);
+
+  // PENDING birač je sad stvarno dobio e-poštu — ista semantika kao skupni
+  // prijelaz po komadu. INVITED ostaje INVITED.
+  if (currentStatus === "PENDING") {
+    await prisma.voter.updateMany({
+      where: { id: voterId },
+      data: { status: "INVITED" },
+    });
+  }
+  return true;
+}
+
 // Voter-initiated resend (voter-flow spec §4: QR entry + the expired-link CTA).
 // Serves PENDING and INVITED voters of an ACTIVE election; anything else —
 // unknown email, already voted, wrong election status — is a silent no-op so
 // the caller can return an identical enumeration-safe response either way.
-// Re-mint revokes any previously emailed link for this voter.
 export async function resendVoterLink(
   electionId: string,
   email: string,
@@ -112,22 +135,10 @@ export async function resendVoterLink(
   });
   if (!voter) return;
 
-  const minted = await mintTokenForVoter(voter.id);
-  if (!minted) return;
-
-  await sendInvitationEmails([minted], {
+  await inviteVoter(voter.id, voter.status, {
     title: election.title,
     organizationName: election.organization.name,
   });
-
-  // A PENDING voter has now genuinely been emailed — same semantics as the
-  // bulk pipeline's per-chunk flip. INVITED stays INVITED.
-  if (voter.status === "PENDING") {
-    await prisma.voter.updateMany({
-      where: { id: voter.id },
-      data: { status: "INVITED" },
-    });
-  }
 }
 
 // ───────── Reminders (election-overview-phase-3-spec) ─────────

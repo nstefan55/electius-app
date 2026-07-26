@@ -21,12 +21,14 @@ import {
 } from "lucide-react";
 import { fetchTurnout } from "@/actions/dashboard";
 import { SendReminderDialog } from "@/components/elections/send-reminder-dialog";
+import { Link } from "@/i18n/navigation";
 import { electionVoteUrl } from "@/lib/urls";
 import {
   formatVotingDateTime,
   quorumRequiredVoters,
   timeLeftParts,
   turnoutPct,
+  voterCounts,
   type ElectionStatus,
   type ResultsMode,
 } from "@/lib/elections-view";
@@ -108,11 +110,13 @@ export function ElectionOverview({
     return () => clearInterval(timer);
   }, [status]);
 
-  const total = live.voters;
-  const voted = live.voted;
+  // Dijeljena derivacija — popis birača prikazuje iste brojke (voterCounts).
+  const { total, invited, voted, pending } = voterCounts({
+    total: live.voters,
+    notInvited,
+    voted: live.voted,
+  });
   const pct = turnoutPct(voted, total);
-  const invited = Math.max(0, total - notInvited);
-  const pending = Math.max(0, total - voted);
   const num = (n: number) => n.toLocaleString(locale === "hr" ? "hr-HR" : "en-US");
 
   return (
@@ -448,15 +452,10 @@ function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
           {t("sendReminder")}
         </button>
         <div className="grid gap-3 sm:grid-cols-2">
-          {/* ponytail: popis birača čeka voter-management spec — gumb, bez odredišta. */}
-          <button
-            type="button"
-            onClick={() => toast(t("exportSoon"))}
-            className={ACTION_BTN}
-          >
+          <Link href={`/elections/${id}/voters`} className={ACTION_BTN}>
             <List className="size-4.5 shrink-0 text-neutral-600" aria-hidden />
             {t("voterList")}
-          </button>
+          </Link>
           {/* Obično sidro: Content-Disposition pokreće preuzimanje bez navigacije. */}
           <a
             href={`/api/elections/${id}/voters/export?locale=${locale}`}
