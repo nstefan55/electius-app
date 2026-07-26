@@ -6,6 +6,8 @@ import {
   turnoutPct,
   matchesTurnout,
   matchesWindow,
+  resultsAccess,
+  resultsRows,
   sortRecent,
   voterCounts,
   windowYears,
@@ -225,5 +227,61 @@ describe("voterCounts", () => {
       voted: 0,
       pending: 0,
     });
+  });
+});
+
+describe("resultsAccess", () => {
+  it("shows a running election live only when configured LIVE", () => {
+    expect(resultsAccess(election({ status: "ACTIVE", resultsMode: "LIVE" }))).toBe("live");
+  });
+
+  it("seals a running AFTER_CLOSE election from the admin too", () => {
+    expect(
+      resultsAccess(election({ status: "ACTIVE", resultsMode: "AFTER_CLOSE" })),
+    ).toBe("sealed");
+  });
+
+  it("unseals once closed, whatever the mode was", () => {
+    expect(resultsAccess(election({ status: "CLOSED", resultsMode: "AFTER_CLOSE" }))).toBe("closed");
+    expect(resultsAccess(election({ status: "CLOSED", resultsMode: "LIVE" }))).toBe("closed");
+  });
+
+  it("excludes statuses that do not belong on /results", () => {
+    // DRAFT/SCHEDULED have no ballots; ARCHIVED belongs to /archive.
+    for (const status of ["DRAFT", "SCHEDULED", "ARCHIVED"] as const) {
+      expect(resultsAccess(election({ status }))).toBeNull();
+    }
+  });
+});
+
+describe("resultsRows", () => {
+  it("keeps only elections with results and tags each with its access", () => {
+    const rows = resultsRows([
+      election({ id: "draft", status: "DRAFT" }),
+      election({ id: "archived", status: "ARCHIVED" }),
+      election({ id: "closed", status: "CLOSED" }),
+      election({ id: "scheduled", status: "SCHEDULED" }),
+      election({ id: "sealed", status: "ACTIVE", resultsMode: "AFTER_CLOSE" }),
+      election({ id: "live", status: "ACTIVE", resultsMode: "LIVE" }),
+    ]);
+
+    expect(rows.map((r) => [r.id, r.access])).toEqual([
+      ["live", "live"],
+      ["sealed", "sealed"],
+      ["closed", "closed"],
+    ]);
+  });
+
+  it("preserves query order within one access group", () => {
+    const rows = resultsRows([
+      election({ id: "closed-a", status: "CLOSED" }),
+      election({ id: "closed-b", status: "CLOSED" }),
+    ]);
+
+    expect(rows.map((r) => r.id)).toEqual(["closed-a", "closed-b"]);
+  });
+
+  it("is empty when nothing has results yet", () => {
+    expect(resultsRows([election({ status: "DRAFT" })])).toEqual([]);
   });
 });
