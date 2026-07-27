@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link"
 import {
   formatVotingDate,
   sortRecent,
@@ -88,14 +89,14 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
               {t("live.turnoutLabel")}
             </div>
           </div>
-          {/* ponytail: no-op until /results/[id] lands. */}
-          <button
-            type="button"
+          <Link
+            href={`/elections/${hero.id}/results`}
+            type="submit"
             className="inline-flex h-10 items-center rounded-md bg-white px-4.5 sm:py-10 lg:py-6 text-[15px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
             {t("live.viewResults")}
             <ChevronRight className="sm:size-10 lg:size-5" />
-          </button>
+          </Link>
         </div>
       </div>
     </div>
