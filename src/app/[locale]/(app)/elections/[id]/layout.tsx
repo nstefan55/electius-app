@@ -39,6 +39,7 @@ export default async function ElectionLayout({
         id={id}
         title={election.name}
         status={election.status}
+        resultsMode={election.resultsMode}
         opens={election.opens}
         closes={election.closes}
         orgName={user.organization}

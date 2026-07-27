@@ -7,6 +7,7 @@ import {
   matchesTurnout,
   matchesWindow,
   resultsAccess,
+  resultsDetailAccess,
   resultsRows,
   sortRecent,
   voterCounts,
@@ -251,6 +252,34 @@ describe("resultsAccess", () => {
     for (const status of ["DRAFT", "SCHEDULED", "ARCHIVED"] as const) {
       expect(resultsAccess(election({ status }))).toBeNull();
     }
+  });
+});
+
+describe("resultsDetailAccess", () => {
+  it("renders archived elections, unlike the list", () => {
+    // The only divergence from resultsAccess: /archive links here, so the page
+    // must show the tally even though the row does not belong on /results.
+    expect(resultsDetailAccess(election({ status: "ARCHIVED" }))).toBe("closed");
+    expect(resultsAccess(election({ status: "ARCHIVED" }))).toBeNull();
+  });
+
+  it("agrees with the list rule on every other status", () => {
+    const cases = [
+      election({ status: "ACTIVE", resultsMode: "LIVE" }),
+      election({ status: "ACTIVE", resultsMode: "AFTER_CLOSE" }),
+      election({ status: "CLOSED" }),
+      election({ status: "DRAFT" }),
+      election({ status: "SCHEDULED" }),
+    ];
+
+    for (const e of cases) {
+      expect(resultsDetailAccess(e)).toBe(resultsAccess(e));
+    }
+  });
+
+  it("returns null for statuses the page 404s on", () => {
+    expect(resultsDetailAccess(election({ status: "DRAFT" }))).toBeNull();
+    expect(resultsDetailAccess(election({ status: "SCHEDULED" }))).toBeNull();
   });
 });
 

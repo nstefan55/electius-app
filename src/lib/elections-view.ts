@@ -144,6 +144,15 @@ export const resultsAccess = (
   return e.resultsMode === "LIVE" ? "live" : "sealed";
 };
 
+// Pristup na detaljnoj stranici (/elections/[id]/results). Isto pravilo, uz
+// jednu razliku: arhivirani izbori se OVDJE prikazuju. Popis ih izostavlja jer
+// im redak pripada /archive, ali ta stranica upućuje upravo ovamo, pa zbroj
+// mora postojati. `null` → notFound(): nacrt i zakazani nemaju listića.
+export const resultsDetailAccess = (
+  e: Pick<DashboardElection, "status" | "resultsMode">,
+): ResultsAccess | null =>
+  e.status === "ARCHIVED" ? "closed" : resultsAccess(e);
+
 export interface ResultsRow extends DashboardElection {
   access: ResultsAccess;
 }

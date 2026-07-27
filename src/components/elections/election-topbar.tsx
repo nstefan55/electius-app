@@ -6,11 +6,24 @@ import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
-import { CirclePause, Eye, Pencil, Trash2, X } from "lucide-react";
+import {
+  CirclePause,
+  Download,
+  Eye,
+  FileText,
+  Pencil,
+  Trash2,
+  X,
+} from "lucide-react";
 import { closeElection, deleteElection } from "@/actions/elections";
-import { Link, useRouter } from "@/i18n/navigation";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
-import { formatVotingDateTime, type ElectionStatus } from "@/lib/elections-view";
+import {
+  formatVotingDateTime,
+  resultsDetailAccess,
+  type ElectionStatus,
+  type ResultsMode,
+} from "@/lib/elections-view";
 
 // Election top bar — the aggregate-root chrome for /elections/[id]
 // (election-overview-phase-1-spec, design: Election Overview.dc.html).
@@ -31,6 +44,7 @@ interface ElectionTopbarProps {
   id: string;
   title: string;
   status: ElectionStatus;
+  resultsMode: ResultsMode;
   opens: string; // ISO
   closes: string; // ISO
   orgName: string;
@@ -47,6 +61,7 @@ export function ElectionTopbar({
   id,
   title,
   status,
+  resultsMode,
   opens,
   closes,
   orgName,
@@ -54,8 +69,13 @@ export function ElectionTopbar({
   options,
 }: ElectionTopbarProps) {
   const t = useTranslations("dashboard.election.topbar");
+  // Namjerno posuđuje iz namespacea popisa: zapečaćeno objašnjenje i redak
+  // statusa moraju glasiti IDENTIČNO ovdje i u modalu na /results — dva
+  // prijevoda istog pravila razišla bi se prvom izmjenom.
+  const tr = useTranslations("dashboard.resultsPage");
   const locale = useLocale();
   const router = useRouter();
+  const pathname = usePathname(); // bez prefiksa lokalizacije — odgovara ravnim hrefovima
   const [preview, setPreview] = useState(false);
   const [confirm, setConfirm] = useState<"close" | "remove" | null>(null);
   const [pending, startTransition] = useTransition();
@@ -63,6 +83,18 @@ export function ElectionTopbar({
   const showEdit = status === "DRAFT" || status === "SCHEDULED";
   const showClose = status === "ACTIVE";
   const showRemove = status !== "ACTIVE";
+
+  // Kartica rezultata dobiva vlastiti podnaslov i gumbe za izvoz; ostale
+  // kartice ostaju nepromijenjene (election-results-id-phase-1-spec).
+  const onResults = pathname === `/elections/${id}/results`;
+  const access = onResults ? resultsDetailAccess({ status, resultsMode }) : null;
+  const subtitle = !access
+    ? t("subtitle")
+    : access === "closed"
+      ? tr("lineClosed", { date: formatVotingDateTime(closes, locale) })
+      : tr(access === "live" ? "lineLive" : "lineSealed");
+  // Izvoz prati stranicu: zapečaćeni izbori ne prikazuju zbroj, pa ni gumbe.
+  const showExports = access !== null && access !== "sealed";
   // Unscheduled drafts carry endsAt === startsAt (wizard placeholder rule).
   const closeLabel =
     closes === opens ? t("notScheduled") : formatVotingDateTime(closes, locale);
@@ -100,7 +132,7 @@ export function ElectionTopbar({
           <h1 className="truncate font-heading text-xl font-semibold text-neutral-800">
             {title}
           </h1>
-          <p className="mt-0.75 text-[13px] text-neutral-600">{t("subtitle")}</p>
+          <p className="mt-0.75 text-[13px] text-neutral-600">{subtitle}</p>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2.5">
@@ -149,6 +181,31 @@ export function ElectionTopbar({
               <Trash2 className="size-4" aria-hidden />
               {t("remove")}
             </button>
+          )}
+
+          {/* ponytail: izvoz još nema krajnju točku — vlastite specifikacije
+              (PDF izvještaj, CSV rezultata). Oznake i mjesto su konačni. */}
+          {showExports && (
+            <>
+              <button
+                type="button"
+                onClick={() => toast(tr("comingSoon", { action: tr("pdf") }))}
+                className={GHOST_BTN}
+              >
+                <FileText className="size-4" aria-hidden />
+                {tr("pdf")}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  toast(tr("comingSoon", { action: t("exportCsv") }))
+                }
+                className={GHOST_BTN}
+              >
+                <Download className="size-4" aria-hidden />
+                {t("exportCsv")}
+              </button>
+            </>
           )}
 
           <Link

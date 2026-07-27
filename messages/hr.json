@@ -687,6 +687,7 @@
         "close": "Zatvori izbore",
         "remove": "Ukloni izbore",
         "exit": "Izlaz",
+        "exportCsv": "Izvoz rezultata",
         "editSoon": "Uređivanje izbora uskoro stiže.",
         "notScheduled": "Nije zakazano",
         "closeTitle": "Zatvoriti izbore ranije?",
@@ -836,7 +837,7 @@
       },
       "resultsFacet": {
         "heading": "Rezultati izbora",
-        "note": "Ovdje će biti nadzorna ploča rezultata (grafovi, pobjednik, izvoz PDF/CSV). Sadržaj slijedi."
+        "note": "Ovdje dolaze zbroj glasova, pobjednik i revizijski zapis. Sadržaj slijedi."
       },
       "lists": {
         "archive": {
