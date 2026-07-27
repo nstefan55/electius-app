@@ -90,9 +90,7 @@ export function SidebarNav({
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
           const active =
-            href === "/"
-              ? pathname === href
-              : pathname.startsWith(href);
+            href === "/" ? pathname === href : pathname.startsWith(href);
           const label = t(`nav.${key}`);
           return (
             <Link
@@ -160,11 +158,11 @@ export function SidebarNav({
                 <Menu.Item
                   className={cn(
                     MENU_ITEM,
-                    "text-error-700 data-highlighted:bg-error-50",
+                    "text-error-700 data-highlighted:bg-error-50 cursor-pointer",
                   )}
                   onClick={signOut}
                 >
-                  <LogOut className="size-4" />
+                  <LogOut className="size-4 cursor-pointer" />
                   {t("account.logout")}
                 </Menu.Item>
               </Menu.Popup>
