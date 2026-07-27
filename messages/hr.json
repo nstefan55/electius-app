@@ -835,9 +835,42 @@
           "ends": "Glasanje završava"
         }
       },
-      "resultsFacet": {
-        "heading": "Rezultati izbora",
-        "note": "Ovdje dolaze zbroj glasova, pobjednik i revizijski zapis. Sadržaj slijedi."
+      "results": {
+        "statTotalVoters": "Ukupno birača",
+        "statVotesCast": "Predano glasova",
+        "statTurnout": "Konačna izlaznost",
+        "statQuorum": "Kvorum",
+        "quorumMet": "Ispunjen",
+        "quorumNotMet": "Nije ispunjen",
+        "quorumDetail": "Postignuto {achieved}% · potrebno {required}%",
+        "quorumRow": "{state} · {achievedPct}% ({achieved}) / {requiredPct}% ({required})",
+        "winner": "Pobjednik",
+        "winnerTie": "Izjednačeno",
+        "winnerNone": "Nema pobjednika",
+        "winnerNoneBody": "Za ove izbore nije zabilježen nijedan glas.",
+        "winnerShare": "{pct}% od ukupno birača",
+        "distribution": "Raspodjela glasova",
+        "candidatesCount": "{count, plural, one {# kandidat} few {# kandidata} other {# kandidata}}",
+        "winnerTag": "Pobjednik",
+        "votesN": "{count, plural, one {# glas} few {# glasa} other {# glasova}}",
+        "noCandidates": "Za ove izbore nisu uneseni kandidati.",
+        "dayChart": "Glasovi po danu",
+        "dayLegend": "Predani glasovi",
+        "noVotes": "Još nema predanih glasova.",
+        "donut": "Predano glasova",
+        "donutCast": "Glasovalo",
+        "donutRemain": "Nije glasovalo",
+        "details": "Podaci o izborima",
+        "dOrg": "Organizacija",
+        "dType": "Vrsta",
+        "dPeriod": "Razdoblje",
+        "dQuorum": "Kvorum",
+        "auditTitle": "Integritet zapisa",
+        "auditPending": "Zapečaćivanje još nije dostupno",
+        "auditPendingBody": "Merkle stablo i potvrda integriteta nastaju pri arhiviranju izbora. Ta je značajka u pripremi.",
+        "merkleRoot": "Merkle korijen",
+        "merkleUnavailable": "— dostupno nakon arhiviranja",
+        "footnote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom."
       },
       "lists": {
         "archive": {

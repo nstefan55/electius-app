@@ -835,9 +835,42 @@
           "ends": "Voting ends"
         }
       },
-      "resultsFacet": {
-        "heading": "Election results",
-        "note": "Vote tally, winner and audit record go here. Content to follow."
+      "results": {
+        "statTotalVoters": "Total voters",
+        "statVotesCast": "Votes cast",
+        "statTurnout": "Final turnout",
+        "statQuorum": "Quorum",
+        "quorumMet": "Met",
+        "quorumNotMet": "Not met",
+        "quorumDetail": "Reached {achieved}% · required {required}%",
+        "quorumRow": "{state} · {achievedPct}% ({achieved}) / {requiredPct}% ({required})",
+        "winner": "Winner",
+        "winnerTie": "Tied",
+        "winnerNone": "No winner",
+        "winnerNoneBody": "No votes were recorded for this election.",
+        "winnerShare": "{pct}% of total voters",
+        "distribution": "Vote distribution",
+        "candidatesCount": "{count, plural, one {# candidate} other {# candidates}}",
+        "winnerTag": "Winner",
+        "votesN": "{count, plural, one {# vote} other {# votes}}",
+        "noCandidates": "No candidates were entered for this election.",
+        "dayChart": "Votes per day",
+        "dayLegend": "Votes cast",
+        "noVotes": "No votes have been cast yet.",
+        "donut": "Total votes cast",
+        "donutCast": "Voted",
+        "donutRemain": "Didn't vote",
+        "details": "Election details",
+        "dOrg": "Organization",
+        "dType": "Type",
+        "dPeriod": "Period",
+        "dQuorum": "Quorum",
+        "auditTitle": "Record integrity",
+        "auditPending": "Sealing not available yet",
+        "auditPendingBody": "The Merkle tree and integrity proof are created when the election is archived. That feature is in preparation.",
+        "merkleRoot": "Merkle root",
+        "merkleUnavailable": "— available after archiving",
+        "footnote": "Voters authenticate via one-time magic links. The system never links a voter to their vote."
       },
       "lists": {
         "archive": {
