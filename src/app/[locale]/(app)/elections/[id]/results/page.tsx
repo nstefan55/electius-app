@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Lock } from "lucide-react";
 import { requireSession } from "@/lib/auth/require-session";
-import { getElectionDetail } from "@/lib/db/elections";
+import { getElectionDetail, getElectionResults } from "@/lib/db/elections";
 import { resultsDetailAccess } from "@/lib/elections-view";
-import { FacetScaffold } from "@/components/elections/facet-scaffold";
+import { ElectionResults } from "@/components/elections/election-results";
 
 // Kanonska stranica rezultata — odredište redaka s /results i akcija s /archive.
 // Čita isti cache()-omotani upit kao layout, pa dodatnog dohvaćanja nema; autorizaciju
@@ -21,7 +21,7 @@ export default async function ElectionResultsPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { organizationId } = await requireSession();
+  const { user, organizationId } = await requireSession();
   const election = await getElectionDetail(id, organizationId);
   if (!election) notFound();
 
@@ -29,9 +29,25 @@ export default async function ElectionResultsPage({
   if (!access) notFound();
   if (access === "sealed") return <SealedNotice title={election.name} />;
 
-  // Zbroj, pobjednik i revizija dolaze u fazi 2.
-  const t = await getTranslations("dashboard.election.resultsFacet");
-  return <FacetScaffold heading={t("heading")} note={t("note")} />;
+  // Drugi org-scoped upit uz getElectionDetail; oba su cache()-omotana.
+  const results = await getElectionResults(id, organizationId);
+  if (!results) notFound();
+
+  return (
+    <ElectionResults
+      orgName={user.organization}
+      electionType={results.electionType}
+      votingType={results.votingType}
+      quorumThreshold={results.quorumThreshold}
+      opens={results.opens}
+      closes={results.closes}
+      voters={results.voters}
+      votesCast={results.votesCast}
+      options={results.options}
+      days={results.days}
+      locale={await getLocale()}
+    />
+  );
 }
 
 // Isti ključevi kao modal na /results — jedno objašnjenje, dva mjesta prikaza.

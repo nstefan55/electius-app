@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
+import { bucketVotesByDay } from "@/lib/results-view";
 
 // Schema only has SINGLE_CHOICE / MULTI_CHOICE; render as readable labels.
 const VOTING_TYPE_LABEL: Record<string, string> = {
@@ -223,6 +224,59 @@ function computeStats(els: DashboardElection[]): DashboardStats {
     archived: els.filter((e) => e.status === "ARCHIVED").length,
   };
 }
+
+// Sve što zbroj glasova treba uz getElectionDetail (election-results-id-phase-2),
+// u JEDNOM upitu. cache()-omotan kao i susjedi, pa ponovni render ne udvaja upit.
+//
+// Anonimnost: iz `votes` se čita ISKLJUČIVO createdAt — bez id-a, batchOrdera i
+// veze na opciju — i odmah se svede na dnevni zbroj, pa pojedinačni listić nikad
+// ne napusti ovaj sloj. Broj glasova po kandidatu dolazi iz `_count` na spojnoj
+// tablici, ne iz čitanja listića.
+export const getElectionResults = cache(
+  async (id: string, organizationId: string) => {
+    const e = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: {
+        electionType: true,
+        votingType: true,
+        quorumThreshold: true,
+        startsAt: true,
+        endsAt: true,
+        options: {
+          orderBy: { orderIndex: "asc" },
+          select: {
+            id: true,
+            text: true,
+            description: true,
+            _count: { select: { votes: true } },
+          },
+        },
+        // ponytail: čita createdAt svih listića i grupira u JS-u. Dovoljno na MVP
+        // mjerilu (Free: 50 birača); za velike izbore prebaci na date_trunc upit.
+        votes: { select: { createdAt: true } },
+        _count: { select: { voters: true, votes: true } },
+      },
+    });
+    if (!e) return null;
+
+    return {
+      electionType: e.electionType,
+      votingType: e.votingType,
+      quorumThreshold: e.quorumThreshold,
+      opens: e.startsAt.toISOString(),
+      closes: e.endsAt.toISOString(),
+      voters: e._count.voters,
+      votesCast: e._count.votes,
+      options: e.options.map((o) => ({
+        id: o.id,
+        text: o.text,
+        description: o.description,
+        votes: o._count.votes,
+      })),
+      days: bucketVotesByDay(e.votes.map((v) => v.createdAt)),
+    };
+  },
+);
 
 // Public apex results page (/vote-host /results/[id]) — the resultsVisible gate + title only.
 // Null → notFound(); resultsVisible=false → notFound() too (never leak unpublished results).
