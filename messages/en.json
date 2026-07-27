@@ -687,6 +687,7 @@
         "close": "Close election",
         "remove": "Remove election",
         "exit": "Exit",
+        "exportCsv": "Export results",
         "editSoon": "Editing an election is coming soon.",
         "notScheduled": "Not scheduled",
         "closeTitle": "Close election early?",
@@ -836,7 +837,7 @@
       },
       "resultsFacet": {
         "heading": "Election results",
-        "note": "Results dashboard (charts, winner, PDF/CSV export) goes here. Content to follow."
+        "note": "Vote tally, winner and audit record go here. Content to follow."
       },
       "lists": {
         "archive": {
