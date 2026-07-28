@@ -872,6 +872,26 @@
         "merkleUnavailable": "— available after archiving",
         "footnote": "Voters authenticate via one-time magic links. The system never links a voter to their vote."
       },
+      "report": {
+        "title": "PDF report preview",
+        "back": "Back to results",
+        "download": "Download PDF",
+        "official": "Official election report",
+        "generated": "Generated {date}",
+        "electionId": "Election ID:",
+        "headingResults": "Results",
+        "headingTurnout": "Turnout",
+        "headingAudit": "Note on how votes are recorded",
+        "quorumPill": "Quorum: {state}",
+        "rowEligible": "Eligible voters",
+        "rowVotesCast": "Votes cast",
+        "rowTurnout": "Turnout",
+        "rowQuorum": "Quorum threshold",
+        "quorumValue": "{pct}% · {state}",
+        "auditBody": "This election was conducted on the Electius platform. Every vote was recorded anonymously — a ballot record carries no link to a voter — and each ballot carries its own cryptographic hash (SHA-256).",
+        "auditContact": "For any issues or questions please contact",
+        "footerBrand": "Electius — Secure electronic voting"
+      },
       "lists": {
         "archive": {
           "title": "Archive",

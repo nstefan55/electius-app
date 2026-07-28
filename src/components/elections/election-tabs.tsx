@@ -18,8 +18,15 @@ export function ElectionTabs({ id }: { id: string }) {
     { key: "voters", href: `${base}/voters` },
   ] as const;
 
+  // Pregled PDF izvještaja je cjelostranični podprikaz s vlastitom trakom —
+  // kartice bi ondje pokazivale aktivnu stranicu koju korisnik ne gleda.
+  if (pathname === `${base}/results/report`) return null;
+
   return (
-    <nav className="flex gap-1 border-b border-border" aria-label={t("label")}>
+    <nav
+      className="flex gap-1 border-b border-border print:hidden"
+      aria-label={t("label")}
+    >
       {tabs.map(({ key, href }) => {
         const active = pathname === href;
         return (

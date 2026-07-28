@@ -12,6 +12,7 @@ import {
   candidateInitials,
   quorumOutcome,
   rankCandidates,
+  voterSharePct,
   winnerOutcome,
   type DayBucket,
   type OptionTally,
@@ -299,7 +300,7 @@ async function WinnerCard({
 
   const tie = outcome.kind === "tie";
   const lead = outcome.candidates[0];
-  const share = voters > 0 ? Math.round((lead.votes / voters) * 100) : 0;
+  const share = voterSharePct(lead.votes, voters);
 
   return (
     <section className="flex flex-wrap items-center justify-between gap-7 rounded-xl bg-brand-900 px-7 py-6 shadow-md">

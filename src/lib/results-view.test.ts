@@ -5,6 +5,7 @@ import {
   quorumOutcome,
   rankCandidates,
   sharePct,
+  voterSharePct,
   winnerOutcome,
   type OptionTally,
 } from "./results-view";
@@ -31,6 +32,21 @@ describe("sharePct", () => {
   it("allows shares to exceed 100% in total on multi-choice", () => {
     // One ballot picking both options => each option is on 100% of ballots.
     expect(sharePct(1, 1) + sharePct(1, 1)).toBe(200);
+  });
+});
+
+// Dva postotka, dva nazivnika. Oba se prikazuju na pobjedničkoj kartici — na
+// zaslonu i u PDF izvještaju — pa zamjena jednog drugim mora pasti ovdje, a ne
+// na službenom dokumentu koji organizacija čuva.
+describe("voterSharePct vs sharePct", () => {
+  it("dijeli s ukupnim brojem birača, ne s brojem listića", () => {
+    // 84 glasa · 200 predanih listića · 235 birača s pravom glasa
+    expect(voterSharePct(84, 235)).toBe(36);
+    expect(sharePct(84, 200)).toBe(42);
+  });
+
+  it("bez birača je 0, ne NaN", () => {
+    expect(voterSharePct(0, 0)).toBe(0);
   });
 });
 

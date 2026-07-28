@@ -60,11 +60,11 @@ export function DashboardShell({
   const crumbKey = crumbLabelKey(usePathname());
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible">
       {/* Desktop sidebar*/}
       <aside
         className={cn(
-          "hidden shrink-0 bg-sidebar transition-[width] duration-200 ease-in-out md:block",
+          "hidden shrink-0 bg-sidebar transition-[width] duration-200 ease-in-out md:block print:hidden",
           collapsed ? "w-16" : "w-60",
         )}
       >
@@ -84,8 +84,8 @@ export function DashboardShell({
       </Sheet>
 
       {/* Right column: fixed top bar + scrollable content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 md:px-8">
+      <div className="flex flex-1 flex-col overflow-hidden print:overflow-visible">
+        <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 md:px-8 print:hidden">
           <div className="flex items-center gap-3">
             {/* Mobile: open drawer */}
             <button
@@ -152,8 +152,8 @@ export function DashboardShell({
         </header>
 
         {/* Main Area */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-content p-8">{children}</div>
+        <main className="flex-1 overflow-y-auto print:overflow-visible">
+          <div className="mx-auto w-full max-w-content p-8 print:max-w-none print:p-0">{children}</div>
         </main>
       </div>
 
