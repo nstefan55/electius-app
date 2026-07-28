@@ -442,7 +442,6 @@
       "pdf": "PDF report",
       "csv": "CSV",
       "viewResults": "View results",
-      "comingSoon": "{action} — coming soon.",
       "empty": "No elections with results available yet.",
       "sealedTitle": "Results are sealed",
       "sealedBody": "Results for “{title}” will be available once the election closes. This election is configured to hide results until voting ends.",
@@ -870,7 +869,22 @@
         "auditPendingBody": "The Merkle tree and integrity proof are created when the election is archived. That feature is in preparation.",
         "merkleRoot": "Merkle root",
         "merkleUnavailable": "— available after archiving",
-        "footnote": "Voters authenticate via one-time magic links. The system never links a voter to their vote."
+        "footnote": "Voters authenticate via one-time magic links. The system never links a voter to their vote.",
+        "export": {
+          "field": "Field",
+          "value": "Value",
+          "election": "Election",
+          "opens": "Opens",
+          "closes": "Closes",
+          "winnerTied": "Winner (tied)",
+          "quorumRequired": "Quorum (required)",
+          "quorumAchieved": "Quorum (achieved)",
+          "candidate": "Candidate",
+          "role": "Role",
+          "votes": "Votes",
+          "share": "Share",
+          "fileSuffix": "results"
+        }
       },
       "report": {
         "title": "PDF report preview",
