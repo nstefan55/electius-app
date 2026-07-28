@@ -142,3 +142,15 @@
     @apply font-sans;
   }
 }
+
+/* Ispis — PDF izvještaj se isporučuje ispisnim motorom preglednika.
+   Skrivanje ljuske rješavaju `print:` varijante u komponentama; ovdje ostaje
+   samo ono što Tailwind ne izražava: margine stranice i bijela podloga. */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  body {
+    background: #fff;
+  }
+}

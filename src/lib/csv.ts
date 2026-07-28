@@ -57,9 +57,20 @@ export function slugify(s: string): string {
   );
 }
 
-export function csvFilename(title: string, suffix: string, date: Date): string {
+// Ime datoteke BEZ nastavka. Dijele ga CSV izvoz i PDF izvještaj: kod ispisa u
+// PDF preglednik predlaže ime iz document.title, pa je naslov stranice jedina
+// poluga koju imamo nad imenom spremljene datoteke.
+export function exportFilename(
+  title: string,
+  suffix: string,
+  date: Date,
+): string {
   // Naslov od same interpunkcije daje prazan slug.
-  return `${slugify(title) || "export"}-${suffix}-${csvDate(date)}.csv`;
+  return `${slugify(title) || "export"}-${suffix}-${csvDate(date)}`;
+}
+
+export function csvFilename(title: string, suffix: string, date: Date): string {
+  return `${exportFilename(title, suffix, date)}.csv`;
 }
 
 // ───────────────────────────────────────────────────────────────────────────

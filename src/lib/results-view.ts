@@ -24,6 +24,13 @@ export interface RankedCandidate extends OptionTally {
 export const sharePct = (votes: number, votesCast: number) =>
   votesCast > 0 ? Math.round((votes / votesCast) * 100) : 0;
 
+// Udio u UKUPNOM biračkom tijelu — isti izračun kao izlaznost, ali odgovara na
+// drugo pitanje: "koliki dio svih birača je glasao za ovog kandidata".
+// Pobjednička kartica prikazuje ovaj broj i na zaslonu i u PDF izvještaju, pa
+// mora biti jedna funkcija: dva ista izraza na dva mjesta raziđu se prvom
+// izmjenom. Ne miješati sa sharePct — nazivnik je drugi.
+export const voterSharePct = turnoutPct;
+
 // Poredak za grafiku: po broju glasova silazno. CSV ostaje u redoslijedu s
 // listića (orderIndex) jer tablicu čitatelj ionako sortira sam.
 //

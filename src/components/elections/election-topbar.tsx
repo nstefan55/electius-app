@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
 import {
+  ArrowLeft,
   CirclePause,
   Download,
   Eye,
@@ -84,6 +85,14 @@ export function ElectionTopbar({
   const showClose = status === "ACTIVE";
   const showRemove = status !== "ACTIVE";
 
+  // Pregled PDF izvještaja je cjelostranični podprikaz: vlastita traka (natrag +
+  // ispis), bez statusa, kartica i akcija nad izborima. Izlazi se prije računanja
+  // stanja obične trake — ondje se ništa od toga ne prikazuje.
+  const reportHref = `/elections/${id}/results/report`;
+  if (pathname === reportHref) {
+    return <ReportTopbar backHref={`/elections/${id}/results`} title={title} />;
+  }
+
   // Kartica rezultata dobiva vlastiti podnaslov i gumbe za izvoz; ostale
   // kartice ostaju nepromijenjene (election-results-id-phase-1-spec).
   const onResults = pathname === `/elections/${id}/results`;
@@ -127,7 +136,7 @@ export function ElectionTopbar({
 
   return (
     <>
-      <header className="-mx-8 -mt-8 mb-6 flex min-h-19 flex-wrap items-center justify-between gap-5 border-b border-border bg-neutral-50 px-8 py-3.5">
+      <header className="-mx-8 -mt-8 mb-6 flex min-h-19 flex-wrap items-center justify-between gap-5 border-b border-border bg-neutral-50 px-8 py-3.5 print:hidden">
         <div className="min-w-0">
           <h1 className="truncate font-heading text-xl font-semibold text-neutral-800">
             {title}
@@ -183,18 +192,14 @@ export function ElectionTopbar({
             </button>
           )}
 
-          {/* ponytail: izvoz još nema krajnju točku — vlastite specifikacije
-              (PDF izvještaj, CSV rezultata). Oznake i mjesto su konačni. */}
+          {/* ponytail: CSV rezultata još nema krajnju točku — vlastita
+              specifikacija. Oznaka i mjesto su konačni. */}
           {showExports && (
             <>
-              <button
-                type="button"
-                onClick={() => toast(tr("comingSoon", { action: tr("pdf") }))}
-                className={GHOST_BTN}
-              >
+              <Link href={reportHref} className={GHOST_BTN}>
                 <FileText className="size-4" aria-hidden />
                 {tr("pdf")}
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() =>
@@ -244,6 +249,51 @@ export function ElectionTopbar({
         onConfirm={confirm === "remove" ? handleRemove : handleClose}
       />
     </>
+  );
+}
+
+// Traka pregleda PDF izvještaja. Jedan gumb, ne dva: pod isporukom preko ispisa
+// preglednika "Otvori cijeli PDF" i "Preuzmi PDF" otvaraju isti dijalog, a gumb
+// koji laže da radi nešto drugo gori je od nepostojećeg.
+function ReportTopbar({
+  backHref,
+  title,
+}: {
+  backHref: string;
+  title: string;
+}) {
+  const t = useTranslations("dashboard.election.report");
+
+  return (
+    <header className="-mx-8 -mt-8 mb-6 flex min-h-19 flex-wrap items-center justify-between gap-5 border-b border-border bg-neutral-50 px-8 py-3.5 print:hidden">
+      <div className="flex min-w-0 items-center gap-3.5">
+        <Link
+          href={backHref}
+          aria-label={t("back")}
+          title={t("back")}
+          className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-white text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+        >
+          <ArrowLeft className="size-4.5" aria-hidden />
+        </Link>
+        <div className="min-w-0">
+          <h1 className="font-heading text-xl font-semibold text-neutral-800">
+            {t("title")}
+          </h1>
+          <p className="mt-0.75 truncate text-[13px] text-neutral-600">
+            {title}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-4.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+      >
+        <Download className="size-4" aria-hidden />
+        {t("download")}
+      </button>
+    </header>
   );
 }
 

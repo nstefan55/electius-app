@@ -7,6 +7,7 @@ import {
   csvResponse,
   delimiterFor,
   detectDelimiter,
+  exportFilename,
   parseCsv,
   readCsv,
   slugify,
@@ -133,6 +134,25 @@ describe("csvFilename", () => {
   it("prazan slug pada na 'export' umjesto na vodeću crticu", () => {
     expect(csvFilename("///", "biraci", date)).toBe(
       "export-biraci-2026-07-25.csv",
+    );
+  });
+});
+
+// Ime bez nastavka koristi PDF izvještaj: preglednik ga preuzima iz naslova
+// stranice i predlaže kao ime pri spremanju u PDF.
+describe("exportFilename", () => {
+  const date = new Date("2026-07-25T10:00:00.000Z");
+
+  it("ne dodaje nastavak", () => {
+    expect(exportFilename("Izbori za Studentski zbor", "izvjestaj", date)).toBe(
+      "izbori-za-studentski-zbor-izvjestaj-2026-07-25",
+    );
+  });
+
+  it("csvFilename je isto ime + .csv — jedan slugifier, ne dva", () => {
+    const title = "Izbori 2026 — Đakovo / Osijek";
+    expect(csvFilename(title, "biraci", date)).toBe(
+      `${exportFilename(title, "biraci", date)}.csv`,
     );
   });
 });

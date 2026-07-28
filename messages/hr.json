@@ -872,6 +872,26 @@
         "merkleUnavailable": "— dostupno nakon arhiviranja",
         "footnote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom."
       },
+      "report": {
+        "title": "Pregled PDF izvještaja",
+        "back": "Natrag na rezultate",
+        "download": "Preuzmi PDF",
+        "official": "Službeni izvještaj o izborima",
+        "generated": "Generirano {date}",
+        "electionId": "ID izbora:",
+        "headingResults": "Rezultati",
+        "headingTurnout": "Izlaznost",
+        "headingAudit": "Napomena o zapisu glasova",
+        "quorumPill": "Kvorum: {state}",
+        "rowEligible": "Pravo glasa",
+        "rowVotesCast": "Predano glasova",
+        "rowTurnout": "Izlaznost",
+        "rowQuorum": "Prag kvoruma",
+        "quorumValue": "{pct}% · {state}",
+        "auditBody": "Ovi izbori provedeni su na platformi Electius. Svaki je glas zabilježen anonimno — zapis o glasu ne sadrži nikakvu poveznicu na birača — a svaki listić nosi vlastiti kriptografski kontrolni zapis (SHA-256).",
+        "auditContact": "Za sva pitanja ili probleme obratite se na",
+        "footerBrand": "Electius — Sigurno elektroničko glasanje"
+      },
       "lists": {
         "archive": {
           "title": "Arhiva",
