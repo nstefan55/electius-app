@@ -442,7 +442,6 @@
       "pdf": "PDF izvještaj",
       "csv": "CSV",
       "viewResults": "Prikaži rezultate",
-      "comingSoon": "{action} — uskoro.",
       "empty": "Još nema izbora s dostupnim rezultatima.",
       "sealedTitle": "Rezultati su zapečaćeni",
       "sealedBody": "Rezultati za „{title}” bit će dostupni tek nakon zatvaranja izbora. Konfiguracija ovih izbora skriva rezultate do kraja glasanja.",
@@ -870,7 +869,22 @@
         "auditPendingBody": "Merkle stablo i potvrda integriteta nastaju pri arhiviranju izbora. Ta je značajka u pripremi.",
         "merkleRoot": "Merkle korijen",
         "merkleUnavailable": "— dostupno nakon arhiviranja",
-        "footnote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom."
+        "footnote": "Birači se autenticiraju putem jednokratnih poveznica. Sustav nikada ne povezuje birača s njegovim glasom.",
+        "export": {
+          "field": "Polje",
+          "value": "Vrijednost",
+          "election": "Izbori",
+          "opens": "Otvoreno",
+          "closes": "Zatvoreno",
+          "winnerTied": "Pobjednik (izjednačeni)",
+          "quorumRequired": "Kvorum (potrebno)",
+          "quorumAchieved": "Kvorum (postignuto)",
+          "candidate": "Kandidat",
+          "role": "Uloga",
+          "votes": "Glasova",
+          "share": "Postotak",
+          "fileSuffix": "rezultati"
+        }
       },
       "report": {
         "title": "Pregled PDF izvještaja",

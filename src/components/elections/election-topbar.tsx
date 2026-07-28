@@ -192,24 +192,21 @@ export function ElectionTopbar({
             </button>
           )}
 
-          {/* ponytail: CSV rezultata još nema krajnju točku — vlastita
-              specifikacija. Oznaka i mjesto su konačni. */}
           {showExports && (
             <>
               <Link href={reportHref} className={GHOST_BTN}>
                 <FileText className="size-4" aria-hidden />
                 {tr("pdf")}
               </Link>
-              <button
-                type="button"
-                onClick={() =>
-                  toast(tr("comingSoon", { action: t("exportCsv") }))
-                }
+              {/* Obični <a>: Content-Disposition preuzima datoteku sam, pa ne
+                  treba fetch → blob → sintetički klik. */}
+              <a
+                href={`/api/elections/${id}/results/export?locale=${locale}`}
                 className={GHOST_BTN}
               >
                 <Download className="size-4" aria-hidden />
                 {t("exportCsv")}
-              </button>
+              </a>
             </>
           )}
 

@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
 import { Dialog } from "@base-ui/react/dialog";
 import {
   ChevronRight,
@@ -193,53 +192,58 @@ function StatusChip({
   );
 }
 
-// Izvoz još ne postoji — vlastite specifikacije (PDF izvještaj, CSV rezultata).
-// Gumbi se prikazuju kao u dizajnu, uključujući onemogućen stanje za zapečaćeno.
+// Prečaci u izvoze pojedinih izbora. Zapečaćeni redak ostaje onemogućen — isto
+// pravilo kao obje odredišne rute, koje za njega vraćaju 404.
+//
+// PDF vodi na pregled izvještaja (lokalizirani Link), CSV izravno na preuzimanje
+// (obični <a> — /api je izvan [locale] segmenta i Content-Disposition preuzima
+// datoteku sam). Onemogućen redak nema poveznicu, pa ostaje <button disabled>.
 function ExportButtons({ row }: { row: ResultsRow }) {
   const t = useTranslations("dashboard.resultsPage");
+  const locale = useLocale();
   const disabled = row.access === "sealed";
-
-  const stub = (action: string) => (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toast(t("comingSoon", { action }));
-  };
 
   // whitespace-nowrap: oznaka se nikad ne smije prelomiti — u uskoj kartici
   // "PDF izvještaj" bi inače pao u dva reda.
   const base =
     "relative z-10 inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 text-[13px] font-semibold whitespace-nowrap transition-colors";
+  const DISABLED = "cursor-not-allowed text-neutral-400 opacity-50";
+  const ENABLED =
+    "text-neutral-800 hover:border-[#C7D7EF] hover:bg-brand-50 hover:text-brand-700";
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <div className="relative z-10 flex items-center gap-2">
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={stub(t("pdf"))}
-        className={cn(
-          base,
-          disabled
-            ? "cursor-not-allowed text-neutral-400 opacity-50"
-            : "text-neutral-800 hover:border-[#C7D7EF] hover:bg-brand-50 hover:text-brand-700",
-        )}
-      >
-        <FileText className="size-[15px]" />
-        {t("pdf")}
-      </button>
-      <button
-        type="button"
-        disabled={disabled}
-        onClick={stub(t("csv"))}
-        className={cn(
-          base,
-          disabled
-            ? "cursor-not-allowed text-neutral-400 opacity-50"
-            : "text-neutral-800 hover:border-[#C7D7EF] hover:bg-brand-50 hover:text-brand-700",
-        )}
-      >
-        <Download className="size-[15px]" />
-        {t("csv")}
-      </button>
+      {disabled ? (
+        <button type="button" disabled className={cn(base, DISABLED)}>
+          <FileText className="size-[15px]" />
+          {t("pdf")}
+        </button>
+      ) : (
+        <Link
+          href={`/elections/${row.id}/results/report`}
+          onClick={stop}
+          className={cn(base, ENABLED)}
+        >
+          <FileText className="size-[15px]" />
+          {t("pdf")}
+        </Link>
+      )}
+      {disabled ? (
+        <button type="button" disabled className={cn(base, DISABLED)}>
+          <Download className="size-[15px]" />
+          {t("csv")}
+        </button>
+      ) : (
+        <a
+          href={`/api/elections/${row.id}/results/export?locale=${locale}`}
+          onClick={stop}
+          className={cn(base, ENABLED)}
+        >
+          <Download className="size-[15px]" />
+          {t("csv")}
+        </a>
+      )}
     </div>
   );
 }
