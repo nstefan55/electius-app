@@ -26,7 +26,6 @@ const wizardSchema = z.object({
   closeAt: z.string().max(30),
   sealedResults: z.boolean(),
   quorumThreshold: z.number().int().min(1).max(100).nullable(),
-  autoCloseOnDeadline: z.boolean(),
   adminTurnoutReminder: z.boolean(),
   voterReminder24h: z.boolean(),
 });
@@ -109,7 +108,6 @@ export async function createElection(
         sealedResults: w.sealedResults,
         allowAbstain: w.allowAbstain,
         quorumThreshold: w.quorumThreshold,
-        autoCloseOnDeadline: w.autoCloseOnDeadline,
         adminTurnoutReminder: w.adminTurnoutReminder,
         voterReminder24h: w.voterReminder24h,
         organizationId,

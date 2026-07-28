@@ -27,7 +27,6 @@ export type WizardData = {
   sealedResults: boolean;
   quorum: boolean;
   quorumPct: number;
-  autoCloseOnDeadline: boolean;
   adminTurnoutReminder: boolean;
   voterReminder24h: boolean;
 };
@@ -46,7 +45,6 @@ export const INITIAL_WIZARD_DATA: WizardData = {
   sealedResults: false,
   quorum: false,
   quorumPct: 50,
-  autoCloseOnDeadline: true,
   adminTurnoutReminder: false,
   voterReminder24h: false,
 };

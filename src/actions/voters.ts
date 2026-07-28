@@ -27,6 +27,8 @@ export type AddVotersResult = ActionResult & {
   skipped?: number;
   sent?: number;
   failed?: number;
+  // Birači su dodani, ali rok je istekao pa pozivnica nije poslana.
+  blocked?: "windowOver";
 };
 
 // Popis se smije mijenjati dok izbori nisu gotovi.
@@ -94,7 +96,9 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
     });
 
     // Glasanje već traje → pozovi odmah. publishElection cilja samo PENDING,
-    // dakle točno nove retke; postojeći birači se ne diraju.
+    // dakle točno nove retke; postojeći birači se ne diraju. Ako je rok
+    // istekao, birači SU dodani (pripadaju popisu) ali ništa ne odlazi —
+    // publishElection vraća blocked, koji ide ravno u dijalog.
     if (election.status === "ACTIVE") {
       const sent = await publishElection(electionId).catch(() => null);
       return { success: true, added: fresh.length, skipped, ...(sent ?? {}) };
@@ -171,16 +175,26 @@ export async function resendVoterInvite(
       select: {
         status: true,
         election: {
-          select: { title: true, organization: { select: { name: true } } },
+          select: {
+            title: true,
+            startsAt: true,
+            endsAt: true,
+            organization: { select: { name: true } },
+          },
         },
       },
     });
     if (!voter) return { success: false, error: "invalidStatus" };
 
-    await inviteVoter(voterId, voter.status, {
+    const result = await inviteVoter(voterId, voter.status, {
       title: voter.election.title,
       organizationName: voter.election.organization.name,
+      startsAt: voter.election.startsAt,
+      endsAt: voter.election.endsAt,
     });
+    if (result === "windowOver") {
+      return { success: false, error: "windowOver" };
+    }
     return { success: true };
   } catch {
     return { success: false, error: "failed" };

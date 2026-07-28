@@ -76,7 +76,6 @@ export function StepReview({
   const enabled = [
     data.sealedResults && t4("toggles.sealedResults.label"),
     data.quorum && t4("quorumChip", { pct: data.quorumPct }),
-    data.autoCloseOnDeadline && t4("toggles.autoCloseOnDeadline.label"),
     data.adminTurnoutReminder && t4("toggles.adminTurnoutReminder.label"),
     data.voterReminder24h && t4("toggles.voterReminder24h.label"),
   ].filter((x): x is string => Boolean(x));

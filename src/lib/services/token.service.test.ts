@@ -10,9 +10,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 const { prisma } = await import("@/lib/prisma");
-const { hashToken, tokenExpiry, mintTokensForPendingVoters } = await import(
-  "@/lib/services/token.service"
-);
+const { hashToken, tokenExpiry, windowOver, mintTokensForPendingVoters } =
+  await import("@/lib/services/token.service");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -50,6 +49,54 @@ describe("tokenExpiry", () => {
     expect(
       tokenExpiry(startsAt, new Date("2026-07-01T00:00:00Z"), now),
     ).toEqual(new Date(now.getTime() + 30 * DAY_MS));
+  });
+});
+
+describe("windowOver", () => {
+  const now = new Date("2026-07-24T12:00:00Z");
+  const startsAt = new Date("2026-07-20T00:00:00Z");
+
+  it("is true once endsAt has passed", () => {
+    expect(
+      windowOver({ startsAt, endsAt: new Date("2026-07-23T00:00:00Z") }, now),
+    ).toBe(true);
+  });
+
+  it("is false while the window is open", () => {
+    expect(
+      windowOver({ startsAt, endsAt: new Date("2026-07-30T00:00:00Z") }, now),
+    ).toBe(false);
+  });
+
+  it("is true at the exact endsAt boundary — a token minted now dies now", () => {
+    expect(windowOver({ startsAt, endsAt: now }, now)).toBe(true);
+  });
+
+  it("is false for the wizard placeholder (endsAt <= startsAt) — the 30-day ceiling applies", () => {
+    expect(windowOver({ startsAt, endsAt: startsAt }, now)).toBe(false);
+    // Ovo je grana koju `endsAt < now` tiho gubi: rok je u prošlosti, ali
+    // izbori nemaju zakazano zatvaranje pa tokeni žive 30 dana od kovanja.
+    // Ručno pokretanje stare skice upravo ovo napravi (startsAt = sada), pa
+    // čistač MORA odlučivati ovom funkcijom — inače zatvori izbore kojima je
+    // sekundu prije poslao žive poveznice.
+    expect(
+      windowOver({ startsAt, endsAt: new Date("2026-07-01T00:00:00Z") }, now),
+    ).toBe(false);
+  });
+
+  it("agrees with tokenExpiry on every input — one rule, not two", () => {
+    const cases = [
+      { startsAt, endsAt: new Date("2026-07-23T00:00:00Z") }, // prošao
+      { startsAt, endsAt: new Date("2026-07-30T00:00:00Z") }, // otvoren
+      { startsAt, endsAt: now }, // granica
+      { startsAt, endsAt: startsAt }, // rezervirani datum čarobnjaka
+      { startsAt, endsAt: new Date("2026-07-01T00:00:00Z") }, // rezervirani, obrnut
+    ];
+    for (const e of cases) {
+      expect(windowOver(e, now)).toBe(
+        tokenExpiry(e.startsAt, e.endsAt, now) <= now,
+      );
+    }
   });
 });
 

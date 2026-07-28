@@ -111,6 +111,7 @@ export function VoterRoster({
     startTransition(async () => {
       const res = await fn();
       if (res.success) toast.success(ok);
+      else if (res.error === "windowOver") toast.error(t("toast.windowOver"));
       else toast.error(t(res.error === "invalidStatus" ? "toast.notAllowed" : "toast.failed"));
       router.refresh();
     });

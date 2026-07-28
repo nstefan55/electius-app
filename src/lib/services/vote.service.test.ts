@@ -134,6 +134,59 @@ describe("getBallotState", () => {
     }
   });
 
+  // Petlja koju ovo zatvara: istekla poveznica → zaslon nudi "zatraži novu" →
+  // obrazac kuje token koji nasljeđuje isti mrtvi rok → opet istekla poveznica.
+  // Izbori s prošlim rokom čitaju se kao zatvoreni, pa ulaza u petlju nema.
+  describe("window over but still ACTIVE (before the sweep closes it)", () => {
+    // startsAt mora biti STVARNO prije endsAt — inače je to rezervirani datum
+    // čarobnjaka (endsAt <= startsAt) i rok uopće nije istekao.
+    const overRow = electionRow({
+      startsAt: new Date(Date.now() - 3 * 86400_000),
+      endsAt: PAST,
+    });
+
+    it("reads as closed for a live token, not expired", async () => {
+      vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(
+        tokenRow({ expiresAt: FUTURE }, overRow),
+      );
+
+      // Bez ovoga: state "expired" + CTA koji vodi na obrazac za novu poveznicu.
+      expect(await getBallotState("raw")).toMatchObject({
+        state: "closed",
+        voted: false,
+      });
+    });
+
+    it("reads as closed for an election-id segment, not qrEntry", async () => {
+      vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(null);
+      vi.mocked(prisma.election.findUnique).mockResolvedValue(overRow);
+
+      // Bez ovoga: obrazac "pošalji mi poveznicu" koji može roditi samo mrtvu.
+      expect(await getBallotState("el_1")).toMatchObject({
+        state: "closed",
+        voted: null,
+      });
+    });
+
+    it("still reads as the ballot while the window is open", async () => {
+      vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(tokenRow());
+      vi.mocked(prisma.voteOption.findMany).mockResolvedValue([]);
+
+      // Granica: promjena smije dirati SAMO izbore s prošlim rokom.
+      expect((await getBallotState("raw")).state).toBe("ballot");
+    });
+
+    it("keeps the wizard placeholder (endsAt <= startsAt) voting", async () => {
+      const placeholder = electionRow({ startsAt: PAST, endsAt: PAST });
+      vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(
+        tokenRow({}, placeholder),
+      );
+      vi.mocked(prisma.voteOption.findMany).mockResolvedValue([]);
+
+      expect((await getBallotState("raw")).state).toBe("ballot");
+    });
+  });
+
   it("returns the ballot with options in orderIndex order for a valid token", async () => {
     vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(tokenRow());
     vi.mocked(prisma.voteOption.findMany).mockResolvedValue([

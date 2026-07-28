@@ -7,6 +7,7 @@ import {
   publishElection,
   sendReminders,
 } from "@/lib/services/publication.service";
+import { windowOver } from "@/lib/services/token.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
 // Each action verifies the target election belongs to the session's org before
@@ -137,6 +138,9 @@ export async function archiveElection(id: string): Promise<ActionResult> {
 export type PublishActionResult = ActionResult & {
   sent?: number;
   failed?: number;
+  // Rok je istekao pa nitko nije dostupan — nije isto što i "nitko nije trebao
+  // pozivnicu". Prolazi ravno iz publishElement do zaslona.
+  blocked?: "windowOver";
 };
 
 export async function startElection(id: string): Promise<PublishActionResult> {
@@ -144,6 +148,19 @@ export async function startElection(id: string): Promise<PublishActionResult> {
 
   try {
     const { organizationId } = await requireSession();
+
+    // Rok zakazan pa prošao → odbij. Inače bi startsAt = sada pretvorio endsAt
+    // u rezervirani datum (endsAt <= startsAt) i glasanje bi tiho trajalo 30
+    // dana umjesto do datuma koji je admin postavio — tiho pretumačenje.
+    // Ne može u WHERE klauzulu: usporedba stupca sa stupcem. Atomičnost čuva
+    // updateMany ispod; datumi se ne mijenjaju paralelno, pa utrke nema.
+    const draft = await prisma.election.findFirst({
+      where: { id, organizationId, status: "DRAFT" },
+      select: { startsAt: true, endsAt: true },
+    });
+    if (!draft) return { success: false, error: "invalidStatus" };
+    if (windowOver(draft)) return { success: false, error: "deadlinePassed" };
+
     const { count } = await prisma.election.updateMany({
       where: { id, organizationId, status: "DRAFT" },
       // startsAt = now: voting opened at the click, not at the wizard's

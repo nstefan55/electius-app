@@ -215,7 +215,13 @@ export const formatVotingDateTime = (iso: string, locale: string) => {
     timeZone: "UTC",
   }).format(d);
   const time = new Intl.DateTimeFormat(l, {
-    hour: "numeric",
+    // 2-digit, ne numeric: za hr-HR preglednik dopunjava nulom (`09:41`), a
+    // Node ne (`9:41`) — ista vrijednost, dva ispisa, hidracijska greška na
+    // svakim izborima čiji je UTC sat manji od 10. UTC to ne rješava; samo
+    // 2-digit je jednoznačan u oba motora. Isto kao u step-review.tsx.
+    // Nuspojava: en prikazuje `09:41 AM` umjesto `9:41 AM` (en nije imao grešku,
+    // ali jedno pravilo za oba jezika nadjačava idiomatski ispis).
+    hour: "2-digit",
     minute: "2-digit",
     timeZone: "UTC",
   }).format(d);

@@ -19,7 +19,10 @@ import {
 const OPTIONS = [
   { key: "sealedResults", pro: false },
   { key: "quorum", pro: true },
-  { key: "autoCloseOnDeadline", pro: false },
+  // autoCloseOnDeadline maknut: glasanje se UVIJEK zatvara na rok (čistač u
+  // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je
+  // ionako umirao na endsAt — izbori bi ostali "otvoreni" bez ijedne žive
+  // poveznice.
   { key: "adminTurnoutReminder", pro: true },
   { key: "voterReminder24h", pro: true },
 ] as const;
