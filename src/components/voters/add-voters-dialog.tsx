@@ -91,6 +91,9 @@ export function AddVotersDialog({
       // `skipped` može biti veći od onoga što je klijent vidio.
       const added = res.added ?? 0;
       if (added === 0) toast(t("allDuplicates"));
+      // Birači su dodani, ali rok je prošao — poveznica nije poslana i ne može
+      // biti. Prije grane s greškom slanja: ovo nije neuspjeh, nego odbijanje.
+      else if (res.blocked) toast(t("addedWindowOver", { count: added }));
       else if (res.failed) toast.success(t("addedPartial", { count: added, failed: res.failed }));
       else if (res.sent) toast.success(t("addedInvited", { count: added }));
       else toast.success(t("added", { count: added }));

@@ -33,6 +33,17 @@ export function tokenExpiry(startsAt: Date, endsAt: Date, now: Date = new Date()
   return endsAt;
 }
 
+// Rok glasanja je istekao — token skovan SADA rodio bi se istekao, pa nitko
+// nije dostupan. Jedno pravilo za svih šest staza slanja + podsjetnike; nikad
+// prepisano kao `endsAt < now` (to tiho gubi granu čarobnjakovog rezerviranog
+// datuma koju tokenExpiry već pokriva).
+export function windowOver(
+  election: { startsAt: Date; endsAt: Date },
+  now: Date = new Date(),
+): boolean {
+  return tokenExpiry(election.startsAt, election.endsAt, now) <= now;
+}
+
 // Re-mint a single voter's token (voter-flow spec: QR entry / "request a new
 // link"). Unlike the bulk PENDING minter below, this serves INVITED voters too
 // — status is the caller's concern. Delete + re-mint revokes the previously

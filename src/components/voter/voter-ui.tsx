@@ -4,9 +4,11 @@ import type { ComponentType, ReactNode } from "react";
 // Flow.dc.html). No hooks — usable from both server state screens and the
 // client flow. Styling follows design-system §7.15–7.17 + the prototype.
 
-// "pet, 12. lipnja · 18:00" / "Fri, June 12 · 6:00 PM" — UTC like the admin
+// "pet, 12. lipnja · 18:00" / "Fri, June 12 · 06:00 PM" — UTC like the admin
 // start card, so server and browser render identical strings (no hydration
-// mismatch, deterministic across timezones).
+// mismatch, deterministic across timezones). UTC sam po sebi nije dovoljan:
+// sat mora biti 2-digit jer kod numeric za hr-HR preglednik dopunjava nulom
+// (`09:41`), a Node ne (`9:41`) — hidracijska greška ispod 10 sati UTC.
 const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
 
 export function formatVoterDateTime(iso: string | Date, locale: string): string {
@@ -19,7 +21,7 @@ export function formatVoterDateTime(iso: string | Date, locale: string): string 
     timeZone: "UTC",
   }).format(d);
   const time = new Intl.DateTimeFormat(l, {
-    hour: "numeric",
+    hour: "2-digit",
     minute: "2-digit",
     timeZone: "UTC",
   }).format(d);

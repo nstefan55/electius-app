@@ -46,7 +46,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(requireSession).mockResolvedValue(session);
   vi.mocked(publishElection).mockResolvedValue({ sent: 0, failed: 0 });
-  vi.mocked(inviteVoter).mockResolvedValue(true);
+  vi.mocked(inviteVoter).mockResolvedValue("sent");
   vi.mocked(prisma.voter.createMany).mockResolvedValue({ count: 0 });
 });
 
@@ -163,6 +163,25 @@ describe("addVoters", () => {
     expect(result).toEqual({ success: true, added: 1, skipped: 0, sent: 1, failed: 0 });
   });
 
+  it("still adds the voters when the window is over, but reports nothing was sent", async () => {
+    // Birači pripadaju popisu bez obzira na rok — samo poveznica ne ide.
+    mockElection({ status: "ACTIVE", voters: [] });
+    vi.mocked(publishElection).mockResolvedValue({
+      sent: 0,
+      failed: 0,
+      blocked: "windowOver",
+    });
+
+    expect(await addVoters({ electionId: "e1", rows })).toEqual({
+      success: true,
+      added: 1,
+      skipped: 0,
+      sent: 0,
+      failed: 0,
+      blocked: "windowOver",
+    });
+  });
+
   it("does not send on an election that has not opened yet", async () => {
     mockElection({ status: "SCHEDULED", voters: [] });
 
@@ -254,9 +273,16 @@ describe("removeVoter", () => {
 });
 
 describe("resendVoterInvite", () => {
+  const OPENS = new Date("2026-07-20T00:00:00Z");
+  const CLOSES = new Date("2030-01-01T00:00:00Z");
   const voter = {
     status: "INVITED",
-    election: { title: "Izbori", organization: { name: "Org" } },
+    election: {
+      title: "Izbori",
+      startsAt: OPENS,
+      endsAt: CLOSES,
+      organization: { name: "Org" },
+    },
   };
 
   it("requires an ACTIVE election, the right org, and a voter who has not voted", async () => {
@@ -274,7 +300,6 @@ describe("resendVoterInvite", () => {
   });
 
   it("reuses the shared single-voter send path with the current status", async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(prisma.voter.findFirst).mockResolvedValue({
       ...voter,
       status: "PENDING",
@@ -286,6 +311,20 @@ describe("resendVoterInvite", () => {
     expect(inviteVoter).toHaveBeenCalledWith("v1", "PENDING", {
       title: "Izbori",
       organizationName: "Org",
+      startsAt: OPENS,
+      endsAt: CLOSES,
+    });
+  });
+
+  it("surfaces a window-over refusal instead of reporting success", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(prisma.voter.findFirst).mockResolvedValue(voter as any);
+    vi.mocked(inviteVoter).mockResolvedValue("windowOver");
+
+    // Tiho "uspjeh" bi admin pročitao kao "poveznica je poslana".
+    expect(await resendVoterInvite("v1")).toEqual({
+      success: false,
+      error: "windowOver",
     });
   });
 

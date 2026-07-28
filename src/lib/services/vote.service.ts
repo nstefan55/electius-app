@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomInt } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { hashToken } from "./token.service";
+import { hashToken, windowOver } from "./token.service";
 
 // Vote casting — stage 2 of the Security & Integrity Model (voter-flow-spec,
 // contract in election-publication-spec). The load-bearing invariant: a Vote
@@ -94,7 +94,9 @@ export async function getBallotState(segment: string): Promise<BallotState> {
     });
     if (!election) return { state: "invalid" };
     const e = toBallotElection(election);
-    if (isClosed(e)) return { state: "closed", election: e, voted: null };
+    // Rok istekao → zatvoreno, a ne qrEntry: obrazac bi mogao proizvesti samo
+    // mrtvu poveznicu.
+    if (votingOver(e)) return { state: "closed", election: e, voted: null };
     if (e.status === "SCHEDULED")
       return { state: "notStarted", election: e, hasToken: false };
     if (e.status === "ACTIVE") return { state: "qrEntry", election: e };
@@ -104,7 +106,7 @@ export async function getBallotState(segment: string): Promise<BallotState> {
   }
 
   const e = toBallotElection(token.voter.election);
-  if (isClosed(e)) return { state: "closed", election: e, voted: token.used };
+  if (votingOver(e)) return { state: "closed", election: e, voted: token.used };
   if (e.status !== "ACTIVE")
     return { state: "notStarted", election: e, hasToken: true };
   if (token.used) return { state: "used", election: e };
@@ -119,8 +121,15 @@ export async function getBallotState(segment: string): Promise<BallotState> {
   return { state: "ballot", election: e, options };
 }
 
-function isClosed(e: BallotElection): boolean {
-  return e.status === "CLOSED" || e.status === "ARCHIVED";
+// Glasanje je gotovo: status ga zatvara, ILI je rok istekao prije nego što ga
+// je čistač stigao zatvoriti. Druga grana je sigurnosna mreža za minute između
+// endsAt i sljedećeg prolaza — i za slučaj da pinger uopće ne radi. Bez nje
+// birač dobiva "istekla poveznica" s pozivom da zatraži novu, koja je jednako
+// mrtva: zatvorena petlja bez izlaza.
+function votingOver(e: BallotElection, now: Date = new Date()): boolean {
+  return (
+    e.status === "CLOSED" || e.status === "ARCHIVED" || windowOver(e, now)
+  );
 }
 
 // --- vote casting -----------------------------------------------------------

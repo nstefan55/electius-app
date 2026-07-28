@@ -31,7 +31,6 @@ function toPayload(data: WizardData): WizardPayload {
     closeAt: data.closeAt,
     sealedResults: data.sealedResults,
     quorumThreshold: data.quorum ? data.quorumPct : null,
-    autoCloseOnDeadline: data.autoCloseOnDeadline,
     adminTurnoutReminder: data.adminTurnoutReminder,
     voterReminder24h: data.voterReminder24h,
   };

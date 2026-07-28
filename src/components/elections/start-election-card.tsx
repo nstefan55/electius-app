@@ -67,6 +67,9 @@ export function StartElectionCard({
   const [sendReport, setSendReport] = useState<{
     sent: number;
     failed: number;
+    // Rok je prošao pa nitko nije dostupan — različito od "0 jer nitko nije
+    // trebao pozivnicu". Ponovni pokušaj tu ne pomaže, pa nema gumba.
+    blocked?: boolean;
   } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -78,7 +81,13 @@ export function StartElectionCard({
     startTransition(async () => {
       const res = await startElection(id);
       if (res.success) {
-        setSendReport({ sent: res.sent ?? 0, failed: res.failed ?? 0 });
+        setSendReport({
+          sent: res.sent ?? 0,
+          failed: res.failed ?? 0,
+          blocked: res.blocked === "windowOver",
+        });
+      } else if (res.error === "deadlinePassed") {
+        toast.error(t("errors.deadlinePassed"));
       } else {
         toast.error(
           t(res.error === "invalidStatus" ? "errors.invalidStatus" : "errors.failed"),
@@ -93,6 +102,7 @@ export function StartElectionCard({
         setSendReport((prev) => ({
           sent: (prev?.sent ?? 0) + (res.sent ?? 0),
           failed: res.failed ?? 0,
+          blocked: res.blocked === "windowOver",
         }));
         if ((res.sent ?? 0) > 0) toast.success(t("success.retryDone"));
         if ((res.failed ?? 0) > 0) toast.error(t("errors.resendFailed"));
@@ -114,6 +124,17 @@ export function StartElectionCard({
           <p className="mt-2 text-base text-neutral-600">
             {t("success.body", { count: sendReport.sent })}
           </p>
+          {sendReport.blocked && (
+            <div className="mx-auto mt-5 flex max-w-105 items-start gap-3 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-left">
+              <TriangleAlert
+                className="mt-0.5 size-4.5 shrink-0 text-warning-700"
+                aria-hidden
+              />
+              <p className="text-[13px] leading-normal text-warning-700">
+                {t("success.windowOverNote")}
+              </p>
+            </div>
+          )}
           {sendReport.failed > 0 && (
             <div className="mx-auto mt-5 flex max-w-105 items-start gap-3 rounded-xl border border-warning-500/40 bg-warning-50 px-4 py-3 text-left">
               <TriangleAlert

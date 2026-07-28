@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   formatVotingDate,
+  formatVotingDateTime,
   quorumRequiredVoters,
   timeLeftParts,
   turnoutPct,
@@ -133,6 +134,30 @@ describe("formatVotingDate", () => {
     // 23:30 UTC must not roll into the next day on a CET/CEST server.
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "en")).toBe("May 4");
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "hr")).toBe("4. svi");
+  });
+});
+
+describe("formatVotingDateTime", () => {
+  // NAPOMENA: hidracijsku razliku koja je iznudila `hour: "2-digit"` ovaj test
+  // NE može uhvatiti — nastaje između Node-a (`9:41`) i preglednika (`09:41`),
+  // a Vitest vidi samo Node. Ovdje se pinaju format i UTC; sama razlika
+  // provjerena je usporedbom oba motora (docs).
+  it("pads the hour so both engines print the same string", () => {
+    expect(formatVotingDateTime("2026-07-28T09:41:00.000Z", "hr")).toBe(
+      "28. srp 2026. · 09:41",
+    );
+  });
+
+  it("pads midnight too — the case that surfaced the mismatch", () => {
+    expect(formatVotingDateTime("2026-07-20T00:00:00.000Z", "hr")).toBe(
+      "20. srp 2026. · 00:00",
+    );
+  });
+
+  it("is timezone-stable (UTC), not the server's local zone", () => {
+    expect(formatVotingDateTime("2026-05-04T23:30:00.000Z", "hr")).toBe(
+      "4. svi 2026. · 23:30",
+    );
   });
 });
 describe("turnoutPct", () => {

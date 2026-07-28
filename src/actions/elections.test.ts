@@ -55,6 +55,17 @@ beforeEach(() => {
 });
 
 describe("startElection", () => {
+  // Skica s budućim rokom — predčitanje koje odlučuje smije li se pokrenuti.
+  const openDraft = {
+    startsAt: new Date("2026-07-01T00:00:00Z"),
+    endsAt: new Date("2030-01-01T00:00:00Z"),
+  };
+
+  beforeEach(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(openDraft as any);
+  });
+
   it("rejects an empty id without touching the session or DB", async () => {
     const result = await startElection("");
     expect(result).toEqual({ success: false, error: "invalid" });
@@ -93,11 +104,43 @@ describe("startElection", () => {
   });
 
   it("returns invalidStatus when no DRAFT row matches (non-draft, cross-org, or missing)", async () => {
-    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 0 });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(null);
 
     const result = await startElection("el_active");
     expect(result).toEqual({ success: false, error: "invalidStatus" });
+    expect(prisma.election.updateMany).not.toHaveBeenCalled();
     expect(publishElection).not.toHaveBeenCalled();
+  });
+
+  it("refuses a draft whose close date already passed, without flipping or sending", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      startsAt: new Date("2026-07-01T00:00:00Z"),
+      endsAt: new Date("2026-07-10T00:00:00Z"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    // Bez ovoga: startsAt = sada pretvori endsAt u rezervirani datum i glasanje
+    // tiho traje 30 dana umjesto do datuma koji je admin postavio.
+    expect(await startElection("el_stale")).toEqual({
+      success: false,
+      error: "deadlinePassed",
+    });
+    expect(prisma.election.updateMany).not.toHaveBeenCalled();
+    expect(publishElection).not.toHaveBeenCalled();
+  });
+
+  it("still starts an unscheduled draft (endsAt <= startsAt is the placeholder, not a passed deadline)", async () => {
+    const opens = new Date("2026-07-01T00:00:00Z");
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      startsAt: opens,
+      endsAt: opens,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
+
+    expect(await startElection("el_unscheduled")).toMatchObject({
+      success: true,
+    });
   });
 
   it("stays a success when the publish pipeline throws — activation never rolls back", async () => {

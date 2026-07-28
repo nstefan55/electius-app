@@ -588,10 +588,6 @@
             "label": "Prag kvoruma",
             "desc": "Zahtijevaj minimalni udio glasača s pravom glasa za valjanost rezultata."
           },
-          "autoCloseOnDeadline": {
-            "label": "Automatsko zatvaranje na rok",
-            "desc": "Automatski završi glasovanje na datum i vrijeme zatvaranja."
-          },
           "adminTurnoutReminder": {
             "label": "Automatski podsjetnici administratoru",
             "desc": "Primajte e-mailom ažuriranja o izlaznosti dok je glasovanje otvoreno."
@@ -733,6 +729,7 @@
           "title": "Glasanje je pokrenuto",
           "body": "{count, plural, =0 {Nijedna pozivnica nije poslana.} one {Poslana je # pozivnica e-poštom.} few {Poslane su # pozivnice e-poštom.} other {Poslano je # pozivnica e-poštom.}}",
           "failedNote": "{count, plural, one {# pozivnica nije poslana — birač ostaje na čekanju.} few {# pozivnice nisu poslane — birači ostaju na čekanju.} other {# pozivnica nije poslano — birači ostaju na čekanju.}} Pokušajte ponovno poslati.",
+          "windowOverNote": "Rok za glasanje je prošao, pa pozivnice nisu poslane — svaka poveznica bila bi istekla prije nego što stigne. Izbori će se automatski zatvoriti.",
           "retry": "Pošalji ponovno",
           "retryDone": "Pozivnice su ponovno poslane.",
           "back": "Natrag na izbore",
@@ -742,6 +739,7 @@
         "errors": {
           "failed": "Pokretanje izbora nije uspjelo. Pokušajte ponovno.",
           "invalidStatus": "Samo se izbori u pripremi mogu ručno pokrenuti.",
+          "deadlinePassed": "Datum zatvaranja je već prošao. Postavite budući datum prije pokretanja — inače bi poveznice za glasanje bile istekle prije nego što stignu.",
           "resendFailed": "Ponovno slanje pozivnica nije uspjelo. Pokušajte ponovno."
         }
       },
@@ -993,6 +991,7 @@
         "resent": "Nova poveznica je poslana.",
         "removed": "Birač je uklonjen.",
         "notAllowed": "Ova radnja nije moguća u trenutačnom stanju izbora.",
+        "windowOver": "Rok za glasanje je prošao — nova poveznica bila bi istekla prije nego što stigne.",
         "failed": "Nešto je pošlo po zlu. Pokušajte ponovno."
       },
       "edit": {
@@ -1033,6 +1032,7 @@
         "submitInvite": "{count, plural, one {Dodaj i pozovi # birača} few {Dodaj i pozovi # birača} other {Dodaj i pozovi # birača}}",
         "added": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}",
         "addedInvited": "{count, plural, one {Dodan # birač i poslana mu je pozivnica} few {Dodana # birača i poslane su im pozivnice} other {Dodano # birača i poslane su im pozivnice}}",
+        "addedWindowOver": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}, ali rok za glasanje je prošao pa pozivnica nije poslana.",
         "addedPartial": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}, ali {failed, plural, one {# pozivnica nije poslana} few {# pozivnice nisu poslane} other {# pozivnica nije poslano}}.",
         "allDuplicates": "Svi uneseni birači već su na popisu.",
         "closed": "Popis birača se više ne može mijenjati.",

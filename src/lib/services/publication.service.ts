@@ -6,7 +6,7 @@ import {
   mintTokenForVoter,
   mintTokensForPendingVoters,
   mintTokensForVoters,
-  tokenExpiry,
+  windowOver,
   type MintedToken,
 } from "./token.service";
 import {
@@ -34,7 +34,17 @@ export function chunk<T>(items: T[], size: number = CHUNK_SIZE): T[][] {
 export interface PublishResult {
   sent: number;
   failed: number;
+  // Zašto je poslano 0: "nitko nije trebao pozivnicu" i "nitko nije dostupan
+  // jer je glasanje gotovo" su različite činjenice. Jedan diskriminator za sve
+  // tri površine koje prikazuju rezultat slanja.
+  blocked?: "windowOver";
 }
+
+// Izbori s podacima koje slanje treba: tekst e-pošte + rok za provjeru prozora.
+export type SendableElection = InvitationElection & {
+  startsAt: Date;
+  endsAt: Date;
+};
 
 // Sequential, not parallel — respects Resend's 2 req/s rate limit. Failure
 // granularity is per chunk (a batch call succeeds/fails whole); a failed chunk
@@ -70,9 +80,19 @@ export async function publishElection(
 ): Promise<PublishResult> {
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { title: true, organization: { select: { name: true } } },
+    select: {
+      title: true,
+      startsAt: true,
+      endsAt: true,
+      organization: { select: { name: true } },
+    },
   });
   if (!election) return { sent: 0, failed: 0 };
+
+  // Prije kovanja: mrtva poveznica ne smije nikad otići.
+  if (windowOver(election)) {
+    return { sent: 0, failed: 0, blocked: "windowOver" };
+  }
 
   const minted = await mintTokensForPendingVoters(electionId);
   if (minted.length === 0) return { sent: 0, failed: 0 };
@@ -86,15 +106,19 @@ export async function publishElection(
 // Jedan birač, jedna poveznica — dijele je resend iz glasačkog toka i redak u
 // popisu birača. Re-mint poništava prethodno poslanu poveznicu.
 // Baca ako slanje padne; pozivatelj odlučuje što s tim.
+export type InviteResult = "sent" | "notFound" | "windowOver";
+
 export async function inviteVoter(
   voterId: string,
   currentStatus: VoterStatus,
-  invitation: InvitationElection,
-): Promise<boolean> {
-  const minted = await mintTokenForVoter(voterId);
-  if (!minted) return false;
+  election: SendableElection,
+): Promise<InviteResult> {
+  if (windowOver(election)) return "windowOver";
 
-  await sendInvitationEmails([minted], invitation);
+  const minted = await mintTokenForVoter(voterId);
+  if (!minted) return "notFound";
+
+  await sendInvitationEmails([minted], election);
 
   // PENDING birač je sad stvarno dobio e-poštu — ista semantika kao skupni
   // prijelaz po komadu. INVITED ostaje INVITED.
@@ -104,7 +128,7 @@ export async function inviteVoter(
       data: { status: "INVITED" },
     });
   }
-  return true;
+  return "sent";
 }
 
 // Voter-initiated resend (voter-flow spec §4: QR entry + the expired-link CTA).
@@ -120,10 +144,15 @@ export async function resendVoterLink(
     select: {
       status: true,
       title: true,
+      startsAt: true,
+      endsAt: true,
       organization: { select: { name: true } },
     },
   });
-  if (!election || election.status !== "ACTIVE") return;
+  // Prozor se provjerava PRIJE traženja birača — grana ovisi o izborima, ne o
+  // tome je li adresa na popisu, pa nabrajanje ostaje nemoguće.
+  // Nedostižno kroz UI otkako votingOver zatvara zaslon, ali endpoint je javan.
+  if (!election || election.status !== "ACTIVE" || windowOver(election)) return;
 
   const voter = await prisma.voter.findFirst({
     where: {
@@ -138,6 +167,8 @@ export async function resendVoterLink(
   await inviteVoter(voter.id, voter.status, {
     title: election.title,
     organizationName: election.organization.name,
+    startsAt: election.startsAt,
+    endsAt: election.endsAt,
   });
 }
 
@@ -204,11 +235,8 @@ export async function getReminderTargets(
     select: { id: true, status: true, token: { select: { expiresAt: true } } },
   });
 
-  return partitionReminderTargets(
-    voters,
-    now,
-    tokenExpiry(election.startsAt, election.endsAt, now) <= now,
-  );
+  // Isto pravilo koje čuva pet ostalih staza — ovdje je i nastalo.
+  return partitionReminderTargets(voters, now, windowOver(election, now));
 }
 
 // Re-mints on the way out: the raw token is unrecoverable by design, so a

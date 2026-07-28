@@ -10,7 +10,7 @@ vi.mock("@/lib/services/token.service", () => ({
   mintTokensForPendingVoters: vi.fn(),
   mintTokenForVoter: vi.fn(),
   mintTokensForVoters: vi.fn(),
-  tokenExpiry: vi.fn(),
+  windowOver: vi.fn(),
 }));
 vi.mock("@/lib/services/email.service", () => ({
   sendInvitationEmails: vi.fn(),
@@ -21,7 +21,7 @@ const {
   mintTokensForPendingVoters,
   mintTokenForVoter,
   mintTokensForVoters,
-  tokenExpiry,
+  windowOver,
 } = await import("@/lib/services/token.service");
 const { sendInvitationEmails } = await import("@/lib/services/email.service");
 const {
@@ -37,10 +37,22 @@ const {
 // Far enough out that nothing is expired unless a test says so.
 const FUTURE = new Date("2030-01-01T00:00:00Z");
 
+const OPENS = new Date("2026-07-20T00:00:00Z");
+
 const election = {
   status: "ACTIVE",
   title: "Studentski izbori",
+  startsAt: OPENS,
+  endsAt: FUTURE,
   organization: { name: "VVG" },
+};
+
+// Ono što inviteVoter proslijedi dalje: tekst e-pošte + rok za provjeru prozora.
+const sendable = {
+  title: "Studentski izbori",
+  organizationName: "VVG",
+  startsAt: OPENS,
+  endsAt: FUTURE,
 };
 
 const mintedVoter = (i: number) => ({
@@ -62,8 +74,8 @@ beforeEach(() => {
   vi.mocked(mintTokenForVoter).mockReset();
   vi.mocked(mintTokensForVoters).mockReset();
   vi.mocked(mintTokensForVoters).mockResolvedValue([]);
-  vi.mocked(tokenExpiry).mockReset();
-  vi.mocked(tokenExpiry).mockReturnValue(FUTURE);
+  vi.mocked(windowOver).mockReset();
+  vi.mocked(windowOver).mockReturnValue(false);
   vi.mocked(sendInvitationEmails).mockReset();
 });
 
@@ -97,6 +109,20 @@ describe("publishElection", () => {
   it("no-ops when nothing is PENDING (idempotent re-publish)", async () => {
     vi.mocked(mintTokensForPendingVoters).mockResolvedValue([]);
     expect(await publishElection("el_1")).toEqual({ sent: 0, failed: 0 });
+    expect(sendInvitationEmails).not.toHaveBeenCalled();
+  });
+
+  it("refuses once the window is over — nothing minted, nothing sent, blocked reported", async () => {
+    vi.mocked(windowOver).mockReturnValue(true);
+
+    // "0 poslano jer nitko nije trebao pozivnicu" i "0 jer je rok prošao" su
+    // različite činjenice — diskriminator ih razdvaja za sve tri površine.
+    expect(await publishElection("el_1")).toEqual({
+      sent: 0,
+      failed: 0,
+      blocked: "windowOver",
+    });
+    expect(mintTokensForPendingVoters).not.toHaveBeenCalled();
     expect(sendInvitationEmails).not.toHaveBeenCalled();
   });
 
@@ -180,11 +206,20 @@ describe("resendVoterLink", () => {
     await resendVoterLink("el_1", "Voter1@Example.com");
 
     expect(mintTokenForVoter).toHaveBeenCalledWith("v_1");
-    expect(sendInvitationEmails).toHaveBeenCalledWith(
-      [mintedVoter(1)],
-      { title: "Studentski izbori", organizationName: "VVG" },
-    );
+    expect(sendInvitationEmails).toHaveBeenCalledWith([mintedVoter(1)], sendable);
     expect(prisma.voter.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("sends nothing once the window is over — before the voter is even looked up", async () => {
+    vi.mocked(windowOver).mockReturnValue(true);
+
+    await resendVoterLink("el_1", "voter1@example.com");
+
+    // Grana ovisi o izborima, ne o biraču: findFirst se nikad ne izvrši, pa
+    // odgovor endpointa ne može odati je li adresa na popisu.
+    expect(prisma.voter.findFirst).not.toHaveBeenCalled();
+    expect(mintTokenForVoter).not.toHaveBeenCalled();
+    expect(sendInvitationEmails).not.toHaveBeenCalled();
   });
 
   it("flips a PENDING voter to INVITED after a successful send", async () => {
@@ -284,7 +319,7 @@ describe("getReminderTargets", () => {
   });
 
   it("treats a past election-derived expiry as window-over", async () => {
-    vi.mocked(tokenExpiry).mockReturnValue(new Date("2000-01-01T00:00:00Z"));
+    vi.mocked(windowOver).mockReturnValue(true);
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
       { id: "a", status: "INVITED", token: null },
     ]);
