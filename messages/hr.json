@@ -374,10 +374,11 @@
         "toast": {
           "renamed": "Izbori preimenovani",
           "duplicated": "Izbori duplicirani",
-          "archived": "Izbori arhivirani",
           "deleted": "Izbori izbrisani",
           "renameEmpty": "Unesite naziv izbora za nastavak",
-          "error": "Nešto je pošlo po zlu. Pokušajte ponovno."
+          "error": "Nešto je pošlo po zlu. Pokušajte ponovno.",
+          "sealed": "Arhivirano — Merkle korijen {root}",
+          "archiveNotClosed": "Najprije zatvorite izbore, pa ih onda arhivirajte."
         }
       },
       "status": {
@@ -882,7 +883,8 @@
           "votes": "Glasova",
           "share": "Postotak",
           "fileSuffix": "rezultati"
-        }
+        },
+        "auditSealed": "Zapisi zapečaćeni"
       },
       "report": {
         "title": "Pregled PDF izvještaja",
@@ -902,7 +904,8 @@
         "quorumValue": "{pct}% · {state}",
         "auditBody": "Ovi izbori provedeni su na platformi Electius. Svaki je glas zabilježen anonimno — zapis o glasu ne sadrži nikakvu poveznicu na birača — a svaki listić nosi vlastiti kriptografski kontrolni zapis.",
         "auditContact": "Za sva pitanja ili probleme obratite se na",
-        "footerBrand": "Electius — Sigurno elektroničko glasanje"
+        "footerBrand": "Electius — Sigurno elektroničko glasanje",
+        "auditSealedBody": "Cjelovit skup listića zapečaćen je u Merkle stablo. Korijen zabilježen ispod omogućuje neovisnu provjeru — svaki se kontrolni kod može potvrditi bez pristupa ovoj bazi i bez povjerenja u Electius."
       },
       "lists": {
         "archive": {

@@ -374,10 +374,11 @@
         "toast": {
           "renamed": "Election renamed",
           "duplicated": "Election duplicated",
-          "archived": "Election archived",
           "deleted": "Election deleted",
           "renameEmpty": "Enter an election name to continue",
-          "error": "Something went wrong. Please try again."
+          "error": "Something went wrong. Please try again.",
+          "sealed": "Archived — Merkle root {root}",
+          "archiveNotClosed": "Close the election first, then archive it."
         }
       },
       "status": {
@@ -882,7 +883,8 @@
           "votes": "Votes",
           "share": "Share",
           "fileSuffix": "results"
-        }
+        },
+        "auditSealed": "Records sealed"
       },
       "report": {
         "title": "PDF report preview",
@@ -902,7 +904,8 @@
         "quorumValue": "{pct}% · {state}",
         "auditBody": "This election was conducted on the Electius platform. Every vote was recorded anonymously — a ballot record carries no link to a voter — and each ballot carries its own cryptographic hash.",
         "auditContact": "For any issues or questions please contact",
-        "footerBrand": "Electius — Secure electronic voting"
+        "footerBrand": "Electius — Secure electronic voting",
+        "auditSealedBody": "The complete set of ballots has been sealed into a Merkle tree. The root recorded below allows independent verification — any verification code can be confirmed without access to this database and without trusting Electius."
       },
       "lists": {
         "archive": {

@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
+import { ArchiveError, sealElection } from "@/lib/services/archive.service";
 import {
   getReminderTargets,
   publishElection,
@@ -108,21 +109,31 @@ export async function duplicateElection(id: string): Promise<ActionResult> {
   }
 }
 
-// Archive — soft close into the read-only Archive tab (drops off the dashboard).
-export async function archiveElection(id: string): Promise<ActionResult> {
+// Arhiviranje = PEČAĆENJE (election-archive-merkle-seal-spec, stadij 3):
+// snimka konfiguracije + Merkle stablo nad svim voteHashevima → red u Archive,
+// pa atomični CLOSED → ARCHIVED. Vraća korijen jer je on potvrda.
+//
+// Bio je ovo jedini mutator u bazi koji je čitao pa provjeravao: assertOwned u
+// zasebnom krugu i gol update BEZ ijedne provjere statusa, pa se aktivni izbori
+// dao arhivirati usred glasanja. sealElection zatvara oboje — čuvari su u WHERE
+// klauzuli (invarijanta #3). Samo CLOSED: pečaćenje živih izbora zamrznulo bi
+// glasanje, pa se ACTIVE/DRAFT namjerno odbija s invalidStatus.
+export type ArchiveActionResult = ActionResult & {
+  merkleRoot?: string;
+  votesSealed?: number;
+};
+
+export async function archiveElection(
+  id: string,
+): Promise<ArchiveActionResult> {
   if (!id) return { success: false, error: "invalid" };
 
   try {
     const { organizationId } = await requireSession();
-    if (!(await assertOwned(id, organizationId))) {
-      return { success: false, error: "forbidden" };
-    }
-    await prisma.election.update({
-      where: { id },
-      data: { status: "ARCHIVED" },
-    });
-    return { success: true };
-  } catch {
+    const { merkleRoot, votesSealed } = await sealElection(id, organizationId);
+    return { success: true, merkleRoot, votesSealed };
+  } catch (e) {
+    if (e instanceof ArchiveError) return { success: false, error: e.code };
     return { success: false, error: "failed" };
   }
 }

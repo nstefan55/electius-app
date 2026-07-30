@@ -329,6 +329,13 @@ function AuditDialog({
             <p className="text-[14.5px] leading-relaxed text-neutral-800">
               {treport("auditBody")}
             </p>
+            {/* Jača tvrdnja samo kad pečat postoji — nezapečaćena arhiva je
+                trajno stanje, ne skela. */}
+            {sealed && (
+              <p className="mt-3 text-[14.5px] leading-relaxed text-neutral-800">
+                {treport("auditSealedBody")}
+              </p>
+            )}
             <p className="mt-3.5 text-sm leading-relaxed text-neutral-600">
               {treport("auditContact")}{" "}
               <span className="font-bold text-success-700">

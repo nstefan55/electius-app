@@ -18,6 +18,7 @@ import {
   type OptionTally,
   type RankedCandidate,
 } from "@/lib/results-view";
+import type { ArchiveSeal } from "@/lib/db/elections";
 import {
   TurnoutDonut,
   VotesPerDayChart,
@@ -58,6 +59,7 @@ export interface ElectionResultsProps {
   options: OptionTally[];
   days: DayBucket[];
   locale: string;
+  sealed: ArchiveSeal | null;
 }
 
 export async function ElectionResults({
@@ -72,6 +74,7 @@ export async function ElectionResults({
   options,
   days,
   locale,
+  sealed,
 }: ElectionResultsProps) {
   const t = await getTranslations("dashboard.election.results");
   const tType = await getTranslations("dashboard.wizard.step1");
@@ -207,7 +210,7 @@ export async function ElectionResults({
             </div>
           </section>
 
-          <AuditPendingCard />
+          <AuditCard sealed={sealed} />
         </div>
       </div>
 
@@ -434,12 +437,47 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-// Kartica integriteta u stanju čekanja. Merkle stablo živi u Archive.merkleRoot,
-// a nijedan zapis arhive se još ne piše (specifikacija arhive nije započeta).
-// Namjerno neutralno sivo, bez kvačice i bez izmišljenog hasha — lažna tvrdnja o
-// integritetu gora je od nikakve.
-async function AuditPendingCard() {
+// Kartica integriteta, dvije grane po tome postoji li pečat.
+//
+// Zapečaćeno: zelena kvačica i PRAVI 64-hex korijen iz Archive.merkleRoot.
+// Nezapečaćeno: neutralno sivo, bez kvačice i bez izmišljenog hasha — lažna
+// tvrdnja o integritetu gora je od nikakve. Ta grana je trajna, ne skela:
+// pečaćenje ide samo pri arhiviranju, pa je otvoreni ili zatvoreni izbor
+// legitimno nezapečaćen, kao i sve arhivirano prije ove značajke.
+async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
   const t = await getTranslations("dashboard.election.results");
+  const treport = await getTranslations("dashboard.election.report");
+
+  if (sealed) {
+    return (
+      <section className={CARD}>
+        <div className="flex items-center gap-3 border-b border-neutral-200 px-6 py-4.5">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success-50 text-success-700">
+            <ShieldCheck className="size-4.75" aria-hidden />
+          </span>
+          <div className="min-w-0">
+            <h2 className="font-heading text-base font-semibold text-neutral-800">
+              {t("auditTitle")}
+            </h2>
+            <div className="mt-0.25 text-[12.5px] text-neutral-600">
+              {t("auditSealed")}
+            </div>
+          </div>
+        </div>
+        <div className="px-6 pt-4 pb-4.5">
+          <div className="mb-1.5 text-xs font-semibold text-neutral-600">
+            {t("merkleRoot")}
+          </div>
+          <div className="rounded-md border border-[#E5EAF2] bg-[#F3F6FB] px-3 py-2.5 font-mono text-[12.5px] break-all text-brand-900">
+            {sealed.merkleRoot}
+          </div>
+          <p className="mt-3 text-[12.5px] leading-relaxed text-neutral-600">
+            {treport("auditSealedBody")}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className={CARD}>

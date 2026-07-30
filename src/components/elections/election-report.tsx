@@ -11,6 +11,7 @@ import {
   type OptionTally,
 } from "@/lib/results-view";
 import { CONTACT_EMAIL } from "@/lib/urls";
+import type { ArchiveSeal } from "@/lib/db/elections";
 
 // List službenog izvještaja (dizajn: PDF Report Preview.dc.html).
 // Poslužiteljska komponenta bez ijednog klijentskog dijela — sam list je ono što
@@ -34,6 +35,7 @@ export interface ElectionReportProps {
   options: OptionTally[];
   generatedAt: Date;
   locale: string;
+  sealed: ArchiveSeal | null;
 }
 
 export async function ElectionReport({
@@ -46,6 +48,7 @@ export async function ElectionReport({
   options,
   generatedAt,
   locale,
+  sealed,
 }: ElectionReportProps) {
   const t = await getTranslations("dashboard.election.report");
   // Posuđuje iz namespacea rezultata: pobjednik, izjednačenje i udio moraju
@@ -208,9 +211,11 @@ export async function ElectionReport({
         ))}
       </div>
 
-      {/* Napomena o zapisu glasova. Opisuje KAKO se glasovi bilježe — ne tvrdi da
-          je revizija provedena. Merkle korijen nitko još ne piše, pa bi tvrdnja o
-          provjeri bila neistinita na dokumentu koji organizacija trajno čuva. */}
+      {/* Napomena o zapisu glasova. auditBody opisuje KAKO se glasovi bilježe i
+          istinit je za svaki izbor. Tvrdnja o zapečaćenom stablu dolazi SAMO kad
+          pečat postoji — izvještaj zatvorenog izbora još nije zapečaćen (pečat
+          ide pri arhiviranju), a lažna tvrdnja o provjeri na dokumentu koji
+          organizacija trajno čuva gora je od nikakve. */}
       <SectionHeading>{t("headingAudit")}</SectionHeading>
       <div className="mt-3.5 flex gap-3.5 rounded-[10px] border border-[#D6F0DE] bg-success-50 px-5 py-4.5 break-inside-avoid">
         <ShieldCheck
@@ -221,6 +226,21 @@ export async function ElectionReport({
           <p className="text-sm leading-relaxed text-[#33544A]">
             {t("auditBody")}
           </p>
+          {sealed && (
+            <>
+              <p className="mt-2.5 text-sm leading-relaxed text-[#33544A]">
+                {t("auditSealedBody")}
+              </p>
+              <div className="mt-2.5">
+                <div className="mb-1 text-[11.5px] font-bold text-neutral-600">
+                  {tr("merkleRoot")}
+                </div>
+                <div className="rounded-md border border-[#D6F0DE] bg-white px-3 py-2 font-mono text-[11.5px] break-all text-brand-900">
+                  {sealed.merkleRoot}
+                </div>
+              </div>
+            </>
+          )}
           <p className="mt-2.5 text-sm leading-relaxed text-neutral-600">
             {t("auditContact")}{" "}
             <span className="font-bold text-success-700">{CONTACT_EMAIL}</span>
