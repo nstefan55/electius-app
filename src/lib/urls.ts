@@ -31,3 +31,7 @@ export const electionVoteUrl = (electionId: string) => `${APEX}/vote/${electionI
 
 // "Share public results" — apex public results page (resultsVisible-gated).
 export const publicResultsUrl = (id: string) => `${APEX}/results/${id}`;
+
+// Kontakt za pitanja o integritetu zapisa. Ispisuju ga PDF izvještaj i modal
+// revizije u arhivi — jedna definicija, da se dvije adrese ne raziđu.
+export const CONTACT_EMAIL = "contact@electius.com";

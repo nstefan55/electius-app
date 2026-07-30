@@ -3,7 +3,12 @@ import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
-import { bucketVotesByDay } from "@/lib/results-view";
+import {
+  bucketVotesByDay,
+  rankCandidates,
+  winnerOutcome,
+  type WinnerOutcome,
+} from "@/lib/results-view";
 
 // Schema only has SINGLE_CHOICE / MULTI_CHOICE; render as readable labels.
 const VOTING_TYPE_LABEL: Record<string, string> = {
@@ -88,6 +93,68 @@ export async function getElectionsByStatus(
     select: ELECTION_SELECT,
   });
   return rows.map(toDashboardElection);
+}
+
+export interface ArchivedElection extends DashboardElection {
+  winner: WinnerOutcome;
+  // null dok pečat ne postoji — izbori arhivirani prije pečata nikad ga neće dobiti.
+  sealed: { merkleRoot: string; createdAt: string } | null;
+}
+
+// Arhiva (elections-archived-phase-2): kartice trebaju i pobjednika, što
+// DashboardElection ne nosi. JEDAN upit s ugniježđenim spojevima — ne
+// getElectionResults po retku (N+1), i ne prošireni ELECTION_SELECT (/elections,
+// /results i nadzorna ploča plaćali bi opcije koje nikad ne prikazuju).
+//
+// Pobjednik se izvodi OVDJE: komponenta ostaje glupa, a sirovi zbrojevi po
+// kandidatu ne dolaze do stabla prikaza (isti obrazac kao bucketVotesByDay).
+//
+// ponytail: findMany bez limita, po retku šačica opcija. Dovoljno na MVP
+// mjerilu; stranicaj ako arhiva naraste na tisuće izbora.
+export async function getArchivedElections(
+  organizationId: string,
+): Promise<ArchivedElection[]> {
+  const rows = await prisma.election.findMany({
+    where: { organizationId, status: "ARCHIVED" },
+    orderBy: { createdAt: "desc" },
+    select: {
+      ...ELECTION_SELECT,
+      options: {
+        orderBy: { orderIndex: "asc" },
+        select: {
+          id: true,
+          text: true,
+          description: true,
+          _count: { select: { votes: true } },
+        },
+      },
+      archive: { select: { merkleRoot: true, createdAt: true } },
+    },
+  });
+
+  return rows.map((e) => {
+    const base = toDashboardElection(e);
+    // Nazivnik je broj predanih listića — isti kao na stranici rezultata.
+    const ranked = rankCandidates(
+      e.options.map((o) => ({
+        id: o.id,
+        text: o.text,
+        description: o.description,
+        votes: o._count.votes,
+      })),
+      base.voted,
+    );
+    return {
+      ...base,
+      winner: winnerOutcome(ranked),
+      sealed: e.archive
+        ? {
+            merkleRoot: e.archive.merkleRoot,
+            createdAt: e.archive.createdAt.toISOString(),
+          }
+        : null,
+    };
+  });
 }
 
 // One election for the /elections/[id] aggregate-root layout + its facets.

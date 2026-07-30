@@ -900,7 +900,7 @@
         "rowTurnout": "Izlaznost",
         "rowQuorum": "Prag kvoruma",
         "quorumValue": "{pct}% · {state}",
-        "auditBody": "Ovi izbori provedeni su na platformi Electius. Svaki je glas zabilježen anonimno — zapis o glasu ne sadrži nikakvu poveznicu na birača — a svaki listić nosi vlastiti kriptografski kontrolni zapis (SHA-256).",
+        "auditBody": "Ovi izbori provedeni su na platformi Electius. Svaki je glas zabilježen anonimno — zapis o glasu ne sadrži nikakvu poveznicu na birača — a svaki listić nosi vlastiti kriptografski kontrolni zapis.",
         "auditContact": "Za sva pitanja ili probleme obratite se na",
         "footerBrand": "Electius — Sigurno elektroničko glasanje"
       },
@@ -909,22 +909,21 @@
           "title": "Arhiva",
           "subtitle": "Arhivirani izbori — zapečaćeni i pohranjeni.",
           "empty": "Još nema arhiviranih izbora.",
-          "comingSoon": "{action} — uskoro.",
-          "actions": {
-            "menuLabel": "Radnje",
-            "view": "Prikaži detalje",
-            "exportPdf": "Izvezi PDF",
-            "auditLog": "Zapisnik revizije",
-            "hide": "Sakrij",
-            "delete": "Izbriši"
-          },
           "searchLabel": "Pretraži arhivu",
           "searchPlaceholder": "Pretraži izbore po ključnim riječima…",
           "resultAll": "{count, plural, one {# arhivirani izbor} few {# arhivirana izbora} other {# arhiviranih izbora}}",
           "resultFiltered": "Prikazano {count} od {total}",
           "emptyTitle": "Ne mogu pronaći izbore „{query}”",
           "emptyBody": "Pokušajte s drugim ključnim riječima ili očistite pretragu.",
-          "clearSearch": "Očisti pretragu"
+          "clearSearch": "Očisti pretragu",
+          "participation": "Sudjelovanje",
+          "result": "Rezultat",
+          "votesOf": "{voted, number} / {voters, number} glasova",
+          "view": "Pregled",
+          "pdf": "PDF",
+          "audit": "Revizija",
+          "sealedAt": "Zapečaćeno {date}",
+          "close": "Zatvori"
         },
         "voters": {
           "title": "Glasači",

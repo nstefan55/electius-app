@@ -2,42 +2,44 @@
 
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Menu } from "@base-ui/react/menu";
-import toast from "react-hot-toast";
+import { Dialog } from "@base-ui/react/dialog";
 import {
-  MoreVertical,
+  Calendar,
+  Clock,
   Eye,
   FileText,
-  ScrollText,
-  EyeOff,
-  Trash2,
   Search,
+  ShieldCheck,
+  Trophy,
   X,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
-import { StatusBadge } from "@/components/elections/status-badge";
 import {
-  formatVotingDate,
+  formatVotingDateTime,
   matchesQuery,
-  type DashboardElection,
+  turnoutPct,
 } from "@/lib/elections-view";
-import { cn } from "@/lib/utils";
+import { voterSharePct } from "@/lib/results-view";
+import { CONTACT_EMAIL } from "@/lib/urls";
+import type { ArchivedElection } from "@/lib/db/elections";
 
-const MENU_ITEM =
-  "flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm text-neutral-700 outline-none data-highlighted:bg-neutral-100";
-
-// ARCHIVED-elections list with inline row actions and NO detail route (archive rows
-// funnel to /elections/[id]/results). Scaffold: View details navigates; Export PDF /
-// Audit log / Hide / Delete are placeholders (owned by results + archive-filtering specs).
+// Arhiva — mreža kartica (dizajn: Elections Archived.dc.html). Detaljne stranice
+// nema: kartica vodi na /elections/[id]/results, /results/report i modal revizije.
 //
-// Naslov stranice živi ovdje, a ne na serverskoj stranici, jer pretraga stoji desno
-// u istom redu i dijeli stanje s listom.
-export function ArchiveList({ elections }: { elections: DashboardElection[] }) {
+// Naslov stranice živi ovdje, a ne na serverskoj stranici, jer pretraga stoji
+// desno u istom redu i dijeli stanje s listom.
+//
+// Pobjednik i izlaznost dolaze iz zajedničkih funkcija (getArchivedElections →
+// winnerOutcome, turnoutPct): arhivirani izbori ne smiju prijaviti drugog
+// pobjednika ni drugi postotak od vlastite stranice rezultata.
+const ACTION =
+  "inline-flex h-9.5 shrink-0 cursor-pointer items-center justify-center gap-1.75 rounded-md border border-border bg-white px-3.5 text-[13.5px] font-semibold text-neutral-600 transition-colors hover:border-brand-100 hover:bg-brand-50 hover:text-brand-700";
+
+export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
   const t = useTranslations("dashboard.election.lists.archive");
-  const locale = useLocale();
-  const soon = (label: string) => toast(t("comingSoon", { action: label }));
 
   const [query, setQuery] = useState("");
+  const [auditFor, setAuditFor] = useState<ArchivedElection | null>(null);
   const hasQuery = query.trim() !== "";
   // Lista je nepaginirana — filtriranje na klijentu ne može sakriti pogodak.
   const rows = useMemo(
@@ -70,7 +72,7 @@ export function ArchiveList({ elections }: { elections: DashboardElection[] }) {
                 type="button"
                 onClick={() => setQuery("")}
                 aria-label={t("clearSearch")}
-                className="flex size-6.5 shrink-0 items-center justify-center rounded-md bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-neutral-800"
+                className="flex size-6.5 shrink-0 cursor-pointer items-center justify-center rounded-md bg-neutral-100 text-neutral-600 transition-colors hover:bg-neutral-200 hover:text-neutral-800"
               >
                 <X className="size-3.5" />
               </button>
@@ -106,97 +108,273 @@ export function ArchiveList({ elections }: { elections: DashboardElection[] }) {
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="mt-5 h-10 rounded-md bg-brand-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
+                className="mt-5 h-10 cursor-pointer rounded-md bg-brand-700 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
               >
                 {t("clearSearch")}
               </button>
             </div>
           ) : (
-            <ul className="overflow-hidden rounded-lg border border-border bg-white">
-              {rows.map((e) => {
-                const pct =
-                  e.voters > 0 ? Math.round((e.voted / e.voters) * 100) : 0;
-                return (
-                  <li
-                    key={e.id}
-                    className="flex items-center gap-4 border-b border-border px-6 py-4 last:border-b-0"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
-                        {e.name}
-                      </div>
-                      <div className="mt-0.5 text-[13px] text-muted-foreground">
-                        {formatVotingDate(e.opens, locale)} –{" "}
-                        {formatVotingDate(e.closes, locale)} · {e.voted}/
-                        {e.voters} ({pct}%)
-                      </div>
-                    </div>
-                    <StatusBadge status={e.status} />
-                    <Menu.Root>
-                      <Menu.Trigger
-                        aria-label={t("actions.menuLabel")}
-                        className="flex size-8.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
-                      >
-                        <MoreVertical className="size-4.5" />
-                      </Menu.Trigger>
-                      <Menu.Portal>
-                        <Menu.Positioner
-                          side="bottom"
-                          align="end"
-                          sideOffset={6}
-                          className="z-50 outline-none"
-                        >
-                          <Menu.Popup className="min-w-48 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              render={<Link href={`/elections/${e.id}/results`} />}
-                            >
-                              <Eye className="size-4" />
-                              {t("actions.view")}
-                            </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => soon(t("actions.exportPdf"))}
-                            >
-                              <FileText className="size-4" />
-                              {t("actions.exportPdf")}
-                            </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => soon(t("actions.auditLog"))}
-                            >
-                              <ScrollText className="size-4" />
-                              {t("actions.auditLog")}
-                            </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => soon(t("actions.hide"))}
-                            >
-                              <EyeOff className="size-4" />
-                              {t("actions.hide")}
-                            </Menu.Item>
-                            <Menu.Separator className="my-1 h-px bg-border" />
-                            <Menu.Item
-                              className={cn(
-                                MENU_ITEM,
-                                "text-error-700 data-highlighted:bg-error-50",
-                              )}
-                              onClick={() => soon(t("actions.delete"))}
-                            >
-                              <Trash2 className="size-4" />
-                              {t("actions.delete")}
-                            </Menu.Item>
-                          </Menu.Popup>
-                        </Menu.Positioner>
-                      </Menu.Portal>
-                    </Menu.Root>
-                  </li>
-                );
-              })}
+            <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,420px),1fr))] gap-5">
+              {rows.map((e) => (
+                <ArchiveCard
+                  key={e.id}
+                  election={e}
+                  onAudit={() => setAuditFor(e)}
+                />
+              ))}
             </ul>
           )}
         </>
       )}
+
+      <AuditDialog
+        election={auditFor}
+        onClose={() => setAuditFor(null)}
+      />
     </>
+  );
+}
+
+function ArchiveCard({
+  election: e,
+  onAudit,
+}: {
+  election: ArchivedElection;
+  onAudit: () => void;
+}) {
+  const t = useTranslations("dashboard.election.lists.archive");
+  const locale = useLocale();
+  const pct = turnoutPct(e.voted, e.voters);
+
+  return (
+    <li className="flex flex-col gap-4 rounded-xl border border-border bg-white p-5.5 shadow-sm transition-shadow hover:shadow-md">
+      <div className="min-w-0">
+        <h2 className="font-heading text-[17px] leading-snug font-semibold text-neutral-800">
+          {e.name}
+        </h2>
+        <p className="mt-1.5 flex items-center gap-1.75 text-[13px] text-neutral-600">
+          <Calendar className="size-3.5 shrink-0" aria-hidden />
+          <span className="min-w-0">
+            {formatVotingDateTime(e.opens, locale)} –{" "}
+            {formatVotingDateTime(e.closes, locale)}
+          </span>
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 border-y border-neutral-100 py-4">
+        <div className="min-w-0">
+          <Label>{t("participation")}</Label>
+          <div className="mt-1.5 font-heading text-base font-semibold text-neutral-800">
+            {t("votesOf", { voted: e.voted, voters: e.voters })}
+          </div>
+          <div className="mt-1.75 flex items-center gap-2">
+            <div className="h-1.25 flex-1 overflow-hidden rounded-full bg-neutral-100">
+              <div
+                className="h-full rounded-full bg-brand-700"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+            <span className="shrink-0 text-xs font-semibold text-neutral-600">
+              {pct}%
+            </span>
+          </div>
+        </div>
+
+        <div className="min-w-0">
+          <Label>{t("result")}</Label>
+          <Winner election={e} />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2.5">
+        <Link
+          href={`/elections/${e.id}/results`}
+          className="inline-flex h-9.5 flex-1 items-center justify-center gap-1.75 rounded-md border border-brand-700 bg-white px-3 text-[13.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-700 hover:text-white"
+        >
+          <Eye className="size-3.75" aria-hidden />
+          {t("view")}
+        </Link>
+        <Link href={`/elections/${e.id}/results/report`} className={ACTION}>
+          <FileText className="size-3.75" aria-hidden />
+          {t("pdf")}
+        </Link>
+        <button type="button" onClick={onAudit} className={ACTION}>
+          <ShieldCheck className="size-3.75" aria-hidden />
+          {t("audit")}
+        </button>
+      </div>
+    </li>
+  );
+}
+
+// Pobjednik ima tri oblika i sva tri se prikazuju: kartica koja čita ranked[0]
+// izmislila bi pobjednika kojeg nema.
+function Winner({ election: e }: { election: ArchivedElection }) {
+  const tr = useTranslations("dashboard.election.results");
+  const { kind, candidates } = e.winner;
+
+  if (kind === "none") {
+    return (
+      <>
+        <div className="mt-1.5 flex items-center gap-2">
+          <Badge tone="neutral">
+            <Trophy className="size-3.5" aria-hidden />
+          </Badge>
+          <span className="min-w-0 truncate text-[14.5px] font-semibold text-neutral-600">
+            {tr("winnerNone")}
+          </span>
+        </div>
+      </>
+    );
+  }
+
+  const tie = kind === "tie";
+  const lead = candidates[0];
+
+  return (
+    <>
+      <div className="mt-1.5 flex items-center gap-2">
+        <Badge tone="gold">
+          <Trophy className="size-3.5" aria-hidden />
+        </Badge>
+        <span className="min-w-0 truncate text-[14.5px] font-semibold text-neutral-800">
+          {tie ? tr("winnerTie") : lead.text}
+        </span>
+      </div>
+      <p className="mt-1.25 truncate text-xs text-neutral-600">
+        {tie
+          ? candidates.map((c) => c.text).join(" · ")
+          : tr("winnerShare", { pct: voterSharePct(lead.votes, e.voters) })}
+      </p>
+    </>
+  );
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="text-[11.5px] font-semibold tracking-[0.03em] text-neutral-600 uppercase">
+      {children}
+    </div>
+  );
+}
+
+function Badge({
+  tone,
+  children,
+}: {
+  tone: "gold" | "neutral";
+  children: React.ReactNode;
+}) {
+  return (
+    <span
+      className={`flex size-6.5 shrink-0 items-center justify-center rounded-full ${
+        tone === "gold"
+          ? "bg-[#FEF9C3] text-[#A16207]"
+          : "bg-neutral-100 text-neutral-400"
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+// Modal revizije. Tekst dolazi iz ključa koji ispisuje i PDF izvještaj — dvije
+// kopije tvrdnje o integritetu raziđu se, a ova bi se razišla prema neistini.
+//
+// Dvije grane: zapečaćeno (pravi Merkle korijen) i nezapečaćeno. Druga NIJE
+// privremena — izbori arhivirani prije pečata pečat više ne mogu dobiti.
+function AuditDialog({
+  election: e,
+  onClose,
+}: {
+  election: ArchivedElection | null;
+  onClose: () => void;
+}) {
+  const t = useTranslations("dashboard.election.lists.archive");
+  const tr = useTranslations("dashboard.election.results");
+  const treport = useTranslations("dashboard.election.report");
+  const locale = useLocale();
+  const sealed = e?.sealed ?? null;
+
+  return (
+    <Dialog.Root open={e !== null} onOpenChange={(open) => !open && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-black/40" />
+        <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-3rem)] w-[calc(100%-2rem)] max-w-130 -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white shadow-lg outline-none">
+          <div className="flex items-center gap-3.25 border-b border-border px-6 py-5.5">
+            <span
+              className={`flex size-10 shrink-0 items-center justify-center rounded-full ${
+                sealed
+                  ? "bg-success-50 text-success-700"
+                  : "bg-neutral-100 text-neutral-400"
+              }`}
+            >
+              {sealed ? (
+                <ShieldCheck className="size-5" aria-hidden />
+              ) : (
+                <Clock className="size-5" aria-hidden />
+              )}
+            </span>
+            <div className="min-w-0">
+              <Dialog.Title className="font-heading text-[18px] font-semibold text-neutral-800">
+                {tr("auditTitle")}
+              </Dialog.Title>
+              <Dialog.Description className="mt-0.25 truncate text-[13px] text-neutral-600">
+                {e?.name ?? ""}
+              </Dialog.Description>
+            </div>
+          </div>
+
+          <div className="px-6 py-5.5">
+            <p className="text-[14.5px] leading-relaxed text-neutral-800">
+              {treport("auditBody")}
+            </p>
+            <p className="mt-3.5 text-sm leading-relaxed text-neutral-600">
+              {treport("auditContact")}{" "}
+              <span className="font-bold text-success-700">
+                {CONTACT_EMAIL}
+              </span>
+            </p>
+
+            <div className="mt-4.5">
+              <div className="mb-1.5 text-xs font-semibold text-neutral-600">
+                {tr("merkleRoot")}
+              </div>
+              {sealed ? (
+                <>
+                  <div className="rounded-md border border-[#E5EAF2] bg-[#F3F6FB] px-3.5 py-3 font-mono text-xs break-all text-brand-900">
+                    {sealed.merkleRoot}
+                  </div>
+                  <p className="mt-2 text-[12.5px] text-neutral-600">
+                    {t("sealedAt", {
+                      date: formatVotingDateTime(sealed.createdAt, locale),
+                    })}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3.5 py-3 font-mono text-[12.5px] text-neutral-400">
+                    {tr("merkleUnavailable")}
+                  </div>
+                  <p className="mt-2 text-[12.5px] leading-relaxed text-neutral-600">
+                    {tr("auditPendingBody")}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex justify-end border-t border-border px-6 py-4">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-11 cursor-pointer rounded-md bg-brand-700 px-5.5 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+            >
+              {t("close")}
+            </button>
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
