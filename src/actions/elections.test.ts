@@ -17,11 +17,21 @@ vi.mock("@/lib/services/publication.service", () => ({
   getReminderTargets: vi.fn(),
   sendReminders: vi.fn(),
 }));
+// archive.service is its own seam — the seal itself is covered by its colocated
+// tests; here only the wiring and the error mapping.
+vi.mock("@/lib/services/archive.service", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@/lib/services/archive.service")>();
+  return { ...actual, sealElection: vi.fn() };
+});
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
 const { publishElection, getReminderTargets, sendReminders } = await import(
   "@/lib/services/publication.service"
+);
+const { sealElection, ArchiveError } = await import(
+  "@/lib/services/archive.service"
 );
 const {
   startElection,
@@ -29,6 +39,7 @@ const {
   closeElection,
   reminderPreview,
   sendElectionReminders,
+  archiveElection,
 } = await import("@/actions/elections");
 
 const session = {
@@ -326,5 +337,54 @@ describe("sendElectionReminders", () => {
 
     const result = await sendElectionReminders("el_1");
     expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+describe("archiveElection", () => {
+  beforeEach(() => {
+    vi.mocked(sealElection).mockReset();
+  });
+
+  it("seals through the service, scoped to the session org", async () => {
+    vi.mocked(sealElection).mockResolvedValue({
+      merkleRoot: "a".repeat(64),
+      votesSealed: 7,
+    });
+
+    const result = await archiveElection("el_1");
+
+    // The org comes from the session, never from the caller.
+    expect(sealElection).toHaveBeenCalledWith("el_1", "org_1");
+    expect(result).toEqual({
+      success: true,
+      merkleRoot: "a".repeat(64),
+      votesSealed: 7,
+    });
+  });
+
+  it("maps the CLOSED guard to invalidStatus (missing / cross-org / wrong status collapse)", async () => {
+    vi.mocked(sealElection).mockRejectedValue(new ArchiveError("invalidStatus"));
+
+    expect(await archiveElection("el_1")).toEqual({
+      success: false,
+      error: "invalidStatus",
+    });
+  });
+
+  it("an unexpected throw stays a generic failure", async () => {
+    vi.mocked(sealElection).mockRejectedValue(new Error("boom"));
+
+    expect(await archiveElection("el_1")).toEqual({
+      success: false,
+      error: "failed",
+    });
+  });
+
+  it("never reaches the service without an id", async () => {
+    expect(await archiveElection("")).toEqual({
+      success: false,
+      error: "invalid",
+    });
+    expect(sealElection).not.toHaveBeenCalled();
   });
 });

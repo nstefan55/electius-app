@@ -46,6 +46,7 @@ export default async function ElectionResultsPage({
       options={results.options}
       days={results.days}
       locale={await getLocale()}
+      sealed={results.sealed}
     />
   );
 }

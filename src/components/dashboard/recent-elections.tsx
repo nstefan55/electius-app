@@ -35,6 +35,10 @@ const GRID = "md:grid-cols-[minmax(0,1fr)_120px_190px_130px_44px]";
 const MENU_ITEM =
   "flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm text-neutral-800 outline-none select-none data-highlighted:bg-neutral-100";
 
+// Skraćeni Merkle korijen za poruku o uspjehu — cijeli se vidi u reviziji arhive.
+const shortRoot = (root?: string) =>
+  root ? `${root.slice(0, 4)}…${root.slice(-4)}` : "";
+
 export function RecentElections({
   elections,
 }: {
@@ -65,11 +69,14 @@ export function RecentElections({
 
   const activeCount = rows.filter((e) => e.status === "ACTIVE").length;
 
-  const run = (fn: () => Promise<{ success: boolean }>, onOk: () => void) =>
+  const run = <T extends { success: boolean }>(
+    fn: () => Promise<T>,
+    onOk: (res: T) => void,
+  ) =>
     startTransition(async () => {
       const res = await fn();
       if (res.success) {
-        onOk();
+        onOk(res);
         router.refresh();
       } else {
         toast.error(t("actions.toast.error"));
@@ -112,12 +119,26 @@ export function RecentElections({
     );
   }
 
+  // Arhiviranje pečati izbore, pa red pada s ploče tek kad pečat uspije — a ne
+  // optimistično prije, jer pečaćenje se može odbiti (utrka sa statusom).
+  // Korijen JE potvrda, pa ga poruka pokazuje skraćeno.
   function onArchive(id: string) {
-    setRows((rs) => rs.filter((r) => r.id !== id)); // archived drops off the dashboard
-    run(
-      () => archiveElection(id),
-      () => toast.success(t("actions.toast.archived")),
-    );
+    startTransition(async () => {
+      const res = await archiveElection(id);
+      if (res.success) {
+        setRows((rs) => rs.filter((r) => r.id !== id));
+        toast.success(
+          t("actions.toast.sealed", { root: shortRoot(res.merkleRoot) }),
+        );
+      } else {
+        toast.error(
+          res.error === "invalidStatus"
+            ? t("actions.toast.archiveNotClosed")
+            : t("actions.toast.error"),
+        );
+      }
+      router.refresh();
+    });
   }
 
   function onConfirmDelete() {
@@ -302,13 +323,19 @@ export function RecentElections({
                               <Copy className="size-4" />
                               {t("actions.duplicate")}
                             </Menu.Item>
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => onArchive(e.id)}
-                            >
-                              <Archive className="size-4" />
-                              {t("actions.archive")}
-                            </Menu.Item>
+                            {/* Pečaćenje ide samo nad zatvorenim izborima, pa
+                                stavka postoji samo tamo — inače bi odbijenica
+                                bila pravilo, a ne rub. Čuvar ostaje i na
+                                serveru (precedent: Dodaj birače). */}
+                            {e.status === "CLOSED" && (
+                              <Menu.Item
+                                className={MENU_ITEM}
+                                onClick={() => onArchive(e.id)}
+                              >
+                                <Archive className="size-4" />
+                                {t("actions.archive")}
+                              </Menu.Item>
+                            )}
                             <Menu.Separator className="my-1 h-px bg-border" />
                             <Menu.Item
                               className={cn(

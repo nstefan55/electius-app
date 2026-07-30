@@ -95,10 +95,17 @@ export async function getElectionsByStatus(
   return rows.map(toDashboardElection);
 }
 
+// Pečat arhive. Jedan tip za sve tri revizijske površine — kartica na
+// rezultatima, PDF izvještaj i modal arhive — pa "zapečaćeno" svuda znači isto.
+export interface ArchiveSeal {
+  merkleRoot: string;
+  createdAt: string;
+}
+
 export interface ArchivedElection extends DashboardElection {
   winner: WinnerOutcome;
   // null dok pečat ne postoji — izbori arhivirani prije pečata nikad ga neće dobiti.
-  sealed: { merkleRoot: string; createdAt: string } | null;
+  sealed: ArchiveSeal | null;
 }
 
 // Arhiva (elections-archived-phase-2): kartice trebaju i pobjednika, što
@@ -322,11 +329,21 @@ export const getElectionResults = cache(
         // mjerilu (Free: 50 birača); za velike izbore prebaci na date_trunc upit.
         votes: { select: { createdAt: true } },
         _count: { select: { voters: true, votes: true } },
+        // Pečat, ako postoji — isti oblik kao getArchivedElections, jedan
+        // rječnik za sve tri revizijske površine (kartica rezultata, izvještaj,
+        // modal arhive). Prazno za sve što nije zapečaćeno.
+        archive: { select: { merkleRoot: true, createdAt: true } },
       },
     });
     if (!e) return null;
 
     return {
+      sealed: e.archive
+        ? {
+            merkleRoot: e.archive.merkleRoot,
+            createdAt: e.archive.createdAt.toISOString(),
+          }
+        : null,
       electionType: e.electionType,
       votingType: e.votingType,
       quorumThreshold: e.quorumThreshold,
