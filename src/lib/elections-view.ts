@@ -95,6 +95,28 @@ export const windowYears = (els: DashboardElection[]) =>
     .sort((a, b) => b - a)
     .map(String);
 
+// ───────── Naslovna pretraga (elections-archived-phase-1) ─────────
+// Bez dijakritika i bez velikih slova — hr korisnici tipkaju "referendum" i
+// očekuju "Referendum". đ nije d + dijakritik pa ga NFD ne rastavlja (isti
+// slučaj kao u csv.ts slugify).
+export const foldForSearch = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .trim();
+
+// Prazan upit propušta sve — poziv na strani liste ne treba grananje.
+export const matchesQuery = (
+  e: Pick<DashboardElection, "name">,
+  query: string,
+) => {
+  const q = foldForSearch(query);
+  return q === "" || foldForSearch(e.name).includes(q);
+};
+
 // ───────── Overview body maths (election-overview-phase-2) ─────────
 // Turnout denominator is the FULL voter list, not "invitations sent" — same rule
 // as the dashboard, and the only reading that matches "quorum = % of eligible
