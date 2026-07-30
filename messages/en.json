@@ -900,7 +900,7 @@
         "rowTurnout": "Turnout",
         "rowQuorum": "Quorum threshold",
         "quorumValue": "{pct}% · {state}",
-        "auditBody": "This election was conducted on the Electius platform. Every vote was recorded anonymously — a ballot record carries no link to a voter — and each ballot carries its own cryptographic hash (SHA-256).",
+        "auditBody": "This election was conducted on the Electius platform. Every vote was recorded anonymously — a ballot record carries no link to a voter — and each ballot carries its own cryptographic hash.",
         "auditContact": "For any issues or questions please contact",
         "footerBrand": "Electius — Secure electronic voting"
       },
@@ -909,22 +909,21 @@
           "title": "Archive",
           "subtitle": "Archived elections — sealed and stored.",
           "empty": "No archived elections yet.",
-          "comingSoon": "{action} — coming soon.",
-          "actions": {
-            "menuLabel": "Actions",
-            "view": "View details",
-            "exportPdf": "Export PDF",
-            "auditLog": "Audit log",
-            "hide": "Hide",
-            "delete": "Delete"
-          },
           "searchLabel": "Search the archive",
           "searchPlaceholder": "Search elections by keywords…",
           "resultAll": "{count, plural, one {# archived election} other {# archived elections}}",
           "resultFiltered": "Showing {count} of {total}",
           "emptyTitle": "Can’t find elections “{query}”",
           "emptyBody": "Try different keywords or clear your search.",
-          "clearSearch": "Clear search"
+          "clearSearch": "Clear search",
+          "participation": "Participation",
+          "result": "Result",
+          "votesOf": "{voted, number} / {voters, number} votes",
+          "view": "View",
+          "pdf": "PDF",
+          "audit": "Audit",
+          "sealedAt": "Sealed {date}",
+          "close": "Close"
         },
         "voters": {
           "title": "Voters",

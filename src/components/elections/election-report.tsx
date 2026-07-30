@@ -10,6 +10,7 @@ import {
   winnerOutcome,
   type OptionTally,
 } from "@/lib/results-view";
+import { CONTACT_EMAIL } from "@/lib/urls";
 
 // List službenog izvještaja (dizajn: PDF Report Preview.dc.html).
 // Poslužiteljska komponenta bez ijednog klijentskog dijela — sam list je ono što
@@ -22,7 +23,6 @@ import {
 // ponytail: uvijek Electius znak. Organization.logoUrl (Pro) nitko još ne piše —
 // postavke ga prikazuju, ali učitavanje logotipa nije izgrađeno. Kad stigne,
 // ovdje ide jedna grana; do tada je Electius znak ionako točan za Free razinu.
-const CONTACT_EMAIL = "contact@electius.com";
 
 export interface ElectionReportProps {
   electionId: string;
