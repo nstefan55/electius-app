@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  foldForSearch,
   formatVotingDate,
   formatVotingDateTime,
+  matchesQuery,
   quorumRequiredVoters,
   timeLeftParts,
   turnoutPct,
@@ -337,5 +339,49 @@ describe("resultsRows", () => {
 
   it("is empty when nothing has results yet", () => {
     expect(resultsRows([election({ status: "DRAFT" })])).toEqual([]);
+  });
+});
+
+describe("foldForSearch", () => {
+  it("strips Croatian diacritics so an ASCII query matches", () => {
+    expect(foldForSearch("Čačić Šžćé")).toBe("cacic szce");
+  });
+
+  // đ nije d + kombinirajući znak — NFD ga ne rastavlja, pa treba vlastito pravilo.
+  it("folds đ/Đ, which NFD leaves intact", () => {
+    expect(foldForSearch("Đurđevac")).toBe("durdevac");
+    expect(foldForSearch("Đ")).toBe("d");
+  });
+
+  it("lowercases and trims", () => {
+    expect(foldForSearch("  REFERENDUM  ")).toBe("referendum");
+  });
+});
+
+describe("matchesQuery", () => {
+  const e = (name: string) => ({ name });
+
+  it("matches case- and diacritic-insensitively", () => {
+    expect(matchesQuery(e("Izbor Studentskog Zbora"), "studentskog")).toBe(true);
+    expect(matchesQuery(e("Referendum o Statutu"), "REFERENDUM")).toBe(true);
+    expect(matchesQuery(e("Čačić za predsjednika"), "cacic")).toBe(true);
+    expect(matchesQuery(e("Đaci glasaju"), "daci")).toBe(true);
+  });
+
+  it("matches a diacritic query against a diacritic title", () => {
+    expect(matchesQuery(e("Čačić za predsjednika"), "čačić")).toBe(true);
+  });
+
+  it("matches mid-word substrings", () => {
+    expect(matchesQuery(e("Izbor dekana"), "eka")).toBe(true);
+  });
+
+  it("rejects a non-match", () => {
+    expect(matchesQuery(e("Izbor dekana"), "referendum")).toBe(false);
+  });
+
+  it("passes everything through on an empty or whitespace-only query", () => {
+    expect(matchesQuery(e("Bilo što"), "")).toBe(true);
+    expect(matchesQuery(e("Bilo što"), "   ")).toBe(true);
   });
 });

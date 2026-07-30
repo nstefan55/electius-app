@@ -917,7 +917,14 @@
             "auditLog": "Audit log",
             "hide": "Hide",
             "delete": "Delete"
-          }
+          },
+          "searchLabel": "Search the archive",
+          "searchPlaceholder": "Search elections by keywords…",
+          "resultAll": "{count, plural, one {# archived election} other {# archived elections}}",
+          "resultFiltered": "Showing {count} of {total}",
+          "emptyTitle": "Can’t find elections “{query}”",
+          "emptyBody": "Try different keywords or clear your search.",
+          "clearSearch": "Clear search"
         },
         "voters": {
           "title": "Voters",
