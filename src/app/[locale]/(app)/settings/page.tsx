@@ -1,41 +1,11 @@
-import { notFound } from "next/navigation";
-import { getFormatter, getTranslations } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/require-session";
-import { prisma } from "@/lib/prisma";
-import { ProfileCard } from "@/components/settings/profile-card";
-import { OrganizationCard } from "@/components/settings/organization-card";
+import { DashboardFooter } from "@/components/dashboard/dashboard-footer";
 
-// /settings (profile-settings phase 1) — Profile + Organization cards. Later
-// phases append their cards here (billing, customizations, danger zone).
-// requireSession() is cache()d, so this read shares the layout's round trip.
+// /settings — controls only; identity moved to /profile. Shell until phases
+// 3–7 land their cards. Stays a server component so they can fetch here.
 export default async function SettingsPage() {
-  const { user, organizationId } = await requireSession();
-
-  const [account, organization, activeElections, totalElections] =
-    await Promise.all([
-      prisma.user.findUnique({
-        where: { email: user.email },
-        select: {
-          name: true,
-          email: true,
-          emailVerified: true,
-          image: true,
-          createdAt: true,
-          accounts: { select: { providerId: true } },
-        },
-      }),
-      prisma.organization.findUnique({
-        where: { id: organizationId },
-        select: { name: true, contactEmail: true, logoUrl: true },
-      }),
-      prisma.election.count({ where: { organizationId, status: "ACTIVE" } }),
-      prisma.election.count({ where: { organizationId } }),
-    ]);
-  if (!account || !organization) notFound();
-
-  // "First Last" → two fields: split on the FIRST space (setup-page convention).
-  const [firstName, ...rest] = account.name.split(" ");
-  const format = await getFormatter();
+  await requireSession();
   const t = await getTranslations("dashboard.settings");
 
   return (
@@ -47,26 +17,7 @@ export default async function SettingsPage() {
         <p className="mt-1.5 text-[15px] text-neutral-600">{t("subtitle")}</p>
       </div>
 
-      <ProfileCard
-        initialFirstName={firstName ?? ""}
-        initialLastName={rest.join(" ")}
-        email={account.email}
-        emailVerified={account.emailVerified}
-        image={account.image}
-        memberSince={format.dateTime(account.createdAt, { dateStyle: "long" })}
-        activeElections={activeElections}
-        totalElections={totalElections}
-        hasPassword={account.accounts.some(
-          (a) => a.providerId === "credential",
-        )}
-        organizationName={organization.name}
-      />
-
-      <OrganizationCard
-        initialName={organization.name}
-        initialContactEmail={organization.contactEmail}
-        logoUrl={organization.logoUrl}
-      />
+      <DashboardFooter />
     </div>
   );
 }

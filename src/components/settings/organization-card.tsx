@@ -7,13 +7,10 @@ import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import { updateOrganization } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
-import { LanguageSwitcher } from "@/components/dashboard/language-switcher";
 import { SettingsCard } from "@/components/settings/settings-card";
 
-// "Organization" card (profile-settings phase 1): logo DISPLAY only (upload is
-// phase 2 — no affordance rendered), name + contact email, and the language
-// selector row. Recorded deviation: the design's standalone Language card is
-// superseded — the requirement mounts the existing LanguageSwitcher here.
+// "Organization" card on /profile: logo DISPLAY only (upload is phase 2 — no
+// affordance rendered), name + contact email. Language moved to its own card.
 const inputClass =
   "h-11 w-full rounded-md border border-neutral-200 bg-neutral-100 px-3 text-base font-normal text-neutral-950 shadow-xs outline-none placeholder:text-neutral-400 focus:border-brand-700 focus:bg-white focus:shadow-focus aria-invalid:border-error-500";
 
@@ -30,7 +27,7 @@ export function OrganizationCard({
   initialContactEmail: string;
   logoUrl: string | null;
 }) {
-  const t = useTranslations("dashboard.settings.organization");
+  const t = useTranslations("dashboard.profile.organization");
   const router = useRouter();
 
   const [saved, setSaved] = useState({
@@ -153,17 +150,6 @@ export function OrganizationCard({
             {t("contactHelper")}
           </span>
         </div>
-      </div>
-
-      {/* Language selector — the switcher's long-planned home */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-neutral-100 pt-4.5">
-        <div className="min-w-0">
-          <div className={labelClass}>{t("language.label")}</div>
-          <p className="mt-1 text-[13px] text-neutral-600">
-            {t("language.helper")}
-          </p>
-        </div>
-        <LanguageSwitcher />
       </div>
     </SettingsCard>
   );

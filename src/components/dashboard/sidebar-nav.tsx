@@ -11,6 +11,7 @@ import {
   Archive,
   Users,
   ChevronsUpDown,
+  User,
   Settings,
   LogOut,
   type LucideIcon,
@@ -147,6 +148,13 @@ export function SidebarNav({
               className="z-50 outline-none"
             >
               <Menu.Popup className="min-w-52 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
+                <Menu.Item
+                  className={MENU_ITEM}
+                  render={<Link href="/profile" onClick={onNavigate} />}
+                >
+                  <User className="size-4" />
+                  {t("account.profile")}
+                </Menu.Item>
                 <Menu.Item
                   className={MENU_ITEM}
                   render={<Link href="/settings" onClick={onNavigate} />}

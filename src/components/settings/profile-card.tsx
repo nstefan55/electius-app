@@ -1,21 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { z } from "zod";
 import toast from "react-hot-toast";
-import { Check, KeyRound } from "lucide-react";
+import { Calendar, Check, KeyRound, TriangleAlert } from "lucide-react";
 import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { updateProfile } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { SettingsCard } from "@/components/settings/settings-card";
+import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
-// "Your profile" card (profile-settings phase 1, merged with the
-// settings-profile-card spec): name fields, read-only email + Verified badge,
-// avatar / member-since / usage stats, and the inline password sub-form
-// (credential accounts only — Google-only users never see it).
+// "Account information" card on /profile: identity row, unverified-email
+// banner, name fields, read-only email + Verified badge, member-since, and the
+// inline password sub-form (credential accounts only — Google-only users
+// never see it).
 const inputClass =
   "h-11 w-full rounded-md border border-neutral-200 bg-neutral-100 px-3 text-base font-normal text-neutral-950 shadow-xs outline-none placeholder:text-neutral-400 focus:border-brand-700 focus:bg-white focus:shadow-focus aria-invalid:border-error-500";
 
@@ -28,8 +29,7 @@ interface ProfileCardProps {
   emailVerified: boolean;
   image: string | null;
   memberSince: string;
-  activeElections: number;
-  totalElections: number;
+  viaGoogle: boolean;
   hasPassword: boolean;
   organizationName: string;
 }
@@ -43,12 +43,13 @@ export function ProfileCard({
   emailVerified,
   image,
   memberSince,
-  activeElections,
-  totalElections,
+  viaGoogle,
   hasPassword,
   organizationName,
 }: ProfileCardProps) {
-  const t = useTranslations("dashboard.settings.profile");
+  const t = useTranslations("dashboard.profile.account");
+  const tOtp = useTranslations("auth.signup.form.otp");
+  const locale = useLocale();
   const router = useRouter();
 
   const [saved, setSaved] = useState({
@@ -94,6 +95,27 @@ export function ProfileCard({
     setSaved({ first: parsed.data.first, last: parsed.data.last });
     toast.success(t("form.success"));
     router.refresh(); // sidebar account block re-reads the session name
+  }
+
+  // ── Unverified email: send a code, then expand the shared OTP panel ──
+  const [otpOpen, setOtpOpen] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  async function resendVerification() {
+    setSending(true);
+    const { error } = await authClient.emailOtp.sendVerificationOtp({
+      email,
+      type: "email-verification",
+    });
+    setSending(false);
+    if (error) {
+      toast.error(
+        error.status === 429 ? tOtp("errors.rateLimited") : tOtp("errors.generic"),
+      );
+      return;
+    }
+    toast.success(tOtp("resent"));
+    setOtpOpen(true);
   }
 
   // ── Password sub-form (collapsed by default) ──
@@ -171,50 +193,70 @@ export function ProfileCard({
         </Button>
       }
     >
-      {/* Avatar · member-since · usage stats */}
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-        <div className="flex min-w-0 flex-1 items-center gap-4">
-          {image ? (
-            // Plain <img> — Google avatar hosts aren't in next/image remotePatterns.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt=""
-              className="size-14 shrink-0 rounded-full border border-neutral-200 object-cover"
-            />
-          ) : (
-            <InitialsAvatar
-              name={fullName}
-              className="size-14 bg-brand-100 text-xl text-brand-700"
-            />
-          )}
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-neutral-800">
-              {fullName}
-            </div>
-            <div className="mt-0.5 text-xs text-neutral-600">
-              {t("memberSince", { date: memberSince })}
-            </div>
+      {/* Identity row */}
+      <div className="flex items-center gap-4">
+        {image ? (
+          // Plain <img> — Google avatar hosts aren't in next/image remotePatterns.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image}
+            alt=""
+            className="size-16 shrink-0 rounded-full border border-neutral-200 object-cover"
+          />
+        ) : (
+          <InitialsAvatar
+            name={fullName}
+            className="size-16 bg-brand-100 text-2xl text-brand-700"
+          />
+        )}
+        <div className="min-w-0">
+          <div className="truncate font-heading text-lg font-semibold text-neutral-800">
+            {fullName}
+          </div>
+          <div className="mt-0.5 text-[13px] text-neutral-600">
+            {t(viaGoogle ? "providerGoogle" : "providerEmail")}
           </div>
         </div>
-        <dl className="flex gap-6">
-          {(
-            [
-              ["active", activeElections],
-              ["total", totalElections],
-            ] as const
-          ).map(([key, value]) => (
-            <div key={key} className="text-right">
-              <dd className="font-heading text-xl font-semibold text-neutral-800">
-                {value}
-              </dd>
-              <dt className="text-xs text-neutral-600">
-                {t(`stats.${key}`, { count: value })}
-              </dt>
-            </div>
-          ))}
-        </dl>
       </div>
+
+      {/* Unverified email — the OTP panel expands underneath once a code is sent */}
+      {!emailVerified && (
+        <div className="flex flex-col gap-4 rounded-md border border-[#FDE68A] bg-warning-50 p-4">
+          <div className="flex flex-wrap items-start gap-3">
+            <TriangleAlert
+              className="mt-0.5 size-4.5 shrink-0 text-warning-700"
+              aria-hidden
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-sm font-semibold text-warning-700">
+                {t("unverified.title")}
+              </div>
+              <p className="mt-0.5 text-[13px] text-warning-700">
+                {t("unverified.body")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={resendVerification}
+              disabled={sending}
+              className="h-8.5 shrink-0 rounded-md border border-[#FDE68A] px-3.5 text-[13px] font-semibold text-warning-700 transition-colors hover:bg-[#FEF3C7] disabled:opacity-60"
+            >
+              {t("unverified.resend")}
+            </button>
+          </div>
+          {otpOpen && (
+            <div className="rounded-md border border-neutral-200 bg-white p-6">
+              {/* ponytail: the shared panel hard-navigates on success — reloading
+                  /profile is the router.refresh() the spec asks for, and keeps
+                  one code-entry UI. */}
+              <OtpVerifyPanel
+                email={email}
+                redirectTo={`/${locale}/profile`}
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Name fields */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -245,7 +287,7 @@ export function ProfileCard({
       {/* Email (read-only) */}
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-2">
-          <label htmlFor="settings-email" className={labelClass}>
+          <label htmlFor="profile-email" className={labelClass}>
             {t("form.email")}
           </label>
           {emailVerified && (
@@ -256,19 +298,27 @@ export function ProfileCard({
           )}
         </div>
         <input
-          id="settings-email"
+          id="profile-email"
           type="email"
           value={email}
           readOnly
-          aria-describedby="settings-email-helper"
+          aria-describedby="profile-email-helper"
           className="h-11 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 text-base text-neutral-600 outline-none"
         />
-        <span
-          id="settings-email-helper"
-          className="text-xs text-neutral-600"
-        >
+        <span id="profile-email-helper" className="text-xs text-neutral-600">
           {t("form.emailHelper")}
         </span>
+      </div>
+
+      {/* Member since */}
+      <div className="flex items-center gap-2 text-[13px] text-neutral-600">
+        <Calendar className="size-3.75 shrink-0" aria-hidden />
+        {t.rich("memberSince", {
+          date: memberSince,
+          b: (chunks) => (
+            <span className="font-semibold text-neutral-800">{chunks}</span>
+          ),
+        })}
       </div>
 
       {/* Password change — credential accounts only */}
