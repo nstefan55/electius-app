@@ -7,7 +7,7 @@ import { SessionBounce } from "@/components/auth/session-bounce";
 
 // Sign-in (auth-phase-4): split-screen design-system UI over the phase-1
 // BetterAuth form. Unauthenticated dashboard-host traffic lands here via the
-// proxy gate. TODO(auth-spec): OTP flow.
+// proxy gate. LoginForm swaps in the OTP panel on a 403 (unverified account).
 export default function LoginPage() {
   const t = useTranslations("auth.login");
   return (

@@ -41,6 +41,7 @@ export function SendReminderDialog({
   // again with the (now smaller) recipient count.
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset na otvaranje je namjeran
     setPreview(null);
     setFailedToLoad(false);
     setSent(null);

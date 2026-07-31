@@ -59,6 +59,7 @@ export default async function ElectionOverviewPage({
       voted24h={overview.voted24h}
       // Server render time — the countdown's first paint must match the server's
       // (see ElectionOverview: deriving Date.now() at hydration would mismatch).
+      // eslint-disable-next-line react-hooks/purity -- Server Component, ne hook
       nowMs={Date.now()}
     />
   );
