@@ -314,6 +314,7 @@
         "voters": "Voters"
       },
       "account": {
+        "profile": "Profile",
         "settings": "Settings",
         "logout": "Log out"
       },
@@ -1051,16 +1052,19 @@
         "emailDuplicate": "That email address is already on the list."
       }
     },
-    "settings": {
-      "title": "Settings",
-      "subtitle": "Manage your account, organization and plan.",
-      "profile": {
-        "title": "Your profile",
+    "profile": {
+      "title": "Profile",
+      "subtitle": "Your account information and organization details.",
+      "account": {
+        "title": "Account information",
         "subtitle": "You manage elections on behalf of {orgName}.",
-        "memberSince": "Member since {date}",
-        "stats": {
-          "active": "{count, plural, one {active election} other {active elections}}",
-          "total": "{count, plural, one {election total} other {elections total}}"
+        "providerGoogle": "Signed in with Google",
+        "providerEmail": "Signed in with email",
+        "memberSince": "Member since <b>{date}</b>",
+        "unverified": {
+          "title": "Your email isn't verified",
+          "body": "Check your inbox for the one-time code, or request a new one.",
+          "resend": "Send code"
         },
         "form": {
           "firstName": "First name",
@@ -1097,17 +1101,13 @@
         "subtitle": "Shown to voters on invitations, ballots and reports.",
         "logo": {
           "label": "Organization logo",
-          "helper": "PNG or SVG, square works best. Replaces the Electius mark on organization-branded PDF reports.",
+          "helper": "PNG, JPG or WebP, square works best. Replaces the Electius mark on organization-branded PDF reports.",
           "pro": "Pro",
           "placeholder": "Logo"
         },
         "name": "Organization name",
         "contactEmail": "Contact email",
         "contactHelper": "Voters see this as the reply-to address on invitations.",
-        "language": {
-          "label": "Interface language",
-          "helper": "Dashboard language. English ships post-launch."
-        },
         "save": "Save changes",
         "success": "Organization details updated.",
         "errors": {
@@ -1116,7 +1116,19 @@
           "emailTaken": "That contact email is already in use.",
           "generic": "Something went wrong. Please try again."
         }
+      },
+      "language": {
+        "title": "Language",
+        "subtitle": "Interface language for the dashboard and voter emails.",
+        "defaultOption": "Default language",
+        "soonOption": "Ships post-launch",
+        "soon": "Soon",
+        "enToast": "English ships post-launch — the interface is already i18n-ready."
       }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Accessibility, plan, data and account controls."
     }
   },
   "marketing": {

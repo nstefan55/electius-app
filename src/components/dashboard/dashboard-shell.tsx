@@ -23,6 +23,7 @@ type CrumbKey =
   | "sidebar.nav.results"
   | "sidebar.nav.archive"
   | "sidebar.nav.voters"
+  | "sidebar.account.profile"
   | "sidebar.account.settings";
 
 function crumbLabelKey(pathname: string): CrumbKey {
@@ -31,8 +32,10 @@ function crumbLabelKey(pathname: string): CrumbKey {
       return `sidebar.nav.${key}`;
     }
   }
-  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
-    return "sidebar.account.settings";
+  for (const key of ["profile", "settings"] as const) {
+    if (pathname === `/${key}` || pathname.startsWith(`/${key}/`)) {
+      return `sidebar.account.${key}`;
+    }
   }
   //TODO: Add support for election details and results pages
   // if (pathname.startsWith("/elections/" || pathname.startsWith("/results/")) {

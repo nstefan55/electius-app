@@ -314,6 +314,7 @@
         "voters": "Glasači"
       },
       "account": {
+        "profile": "Profil",
         "settings": "Postavke",
         "logout": "Odjava"
       },
@@ -1051,16 +1052,19 @@
         "emailDuplicate": "Ta e-mail adresa je već na popisu."
       }
     },
-    "settings": {
-      "title": "Postavke",
-      "subtitle": "Upravljajte svojim računom, organizacijom i planom.",
-      "profile": {
-        "title": "Vaš profil",
+    "profile": {
+      "title": "Profil",
+      "subtitle": "Podaci vašeg računa i vaše organizacije.",
+      "account": {
+        "title": "Podaci računa",
         "subtitle": "Izbore vodite u ime organizacije {orgName}.",
-        "memberSince": "Član od {date}",
-        "stats": {
-          "active": "{count, plural, one {aktivan izbor} few {aktivna izbora} other {aktivnih izbora}}",
-          "total": "{count, plural, one {izbor ukupno} other {izbora ukupno}}"
+        "providerGoogle": "Prijava putem Googlea",
+        "providerEmail": "Prijava putem e-pošte",
+        "memberSince": "Član od <b>{date}</b>",
+        "unverified": {
+          "title": "Vaša e-pošta nije potvrđena",
+          "body": "Provjerite pristiglu poštu i unesite jednokratni kod ili zatražite novi.",
+          "resend": "Pošalji kod"
         },
         "form": {
           "firstName": "Ime",
@@ -1097,17 +1101,13 @@
         "subtitle": "Prikazuje se biračima na pozivnicama, listićima i izvještajima.",
         "logo": {
           "label": "Logotip organizacije",
-          "helper": "PNG ili SVG, kvadratni format izgleda najbolje. Zamjenjuje Electius oznaku na brendiranim PDF izvještajima.",
+          "helper": "PNG, JPG ili WebP, kvadratni format izgleda najbolje. Zamjenjuje Electius oznaku na brendiranim PDF izvještajima.",
           "pro": "Pro",
           "placeholder": "Logo"
         },
         "name": "Naziv organizacije",
         "contactEmail": "Kontakt e-pošta",
         "contactHelper": "Birači ovu adresu vide kao adresu za odgovor na pozivnicama.",
-        "language": {
-          "label": "Jezik sučelja",
-          "helper": "Jezik nadzorne ploče. Engleski stiže nakon lansiranja."
-        },
         "save": "Spremi promjene",
         "success": "Podaci organizacije su ažurirani.",
         "errors": {
@@ -1116,7 +1116,19 @@
           "emailTaken": "Ta kontakt e-pošta već je u upotrebi.",
           "generic": "Nešto je pošlo po zlu. Pokušajte ponovno."
         }
+      },
+      "language": {
+        "title": "Jezik",
+        "subtitle": "Jezik sučelja za nadzornu ploču i e-poruke biračima.",
+        "defaultOption": "Zadani jezik",
+        "soonOption": "Stiže nakon lansiranja",
+        "soon": "Uskoro",
+        "enToast": "Engleski stiže nakon lansiranja — sučelje je već pripremljeno za višejezičnost."
       }
+    },
+    "settings": {
+      "title": "Postavke",
+      "subtitle": "Pristupačnost, plan, podaci i upravljanje računom."
     }
   },
   "marketing": {

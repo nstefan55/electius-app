@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { routing } from "./i18n/routing";
+import { DASHBOARD_ONLY_PATHS, PUBLIC_AUTH_PATHS } from "./lib/dashboard-paths";
 
 const handleI18n = createMiddleware(routing);
 
@@ -11,29 +12,6 @@ const handleI18n = createMiddleware(routing);
 export function isDashboardHost(host: string): boolean {
   return host.split(":")[0].startsWith("dashboard."); // covers dashboard.localhost in dev
 }
-
-// Pre-session auth surfaces; /setup + /onboarding come AFTER signup
-// (autoSignIn sets the cookie), so they stay gated (§5.B).
-const PUBLIC_AUTH_PATHS = [
-  "/login",
-  "/signup",
-  "/forgot-password",
-  "/reset-password",
-];
-
-// Admin-only surfaces the apex would otherwise also serve (route folders exist
-// once) — apex hits 307 to NEXT_PUBLIC_APP_URL. Prefix-matched; /results is
-// checked separately as EXACT-only because apex /results/[id] is public.
-const DASHBOARD_ONLY_PATHS = [
-  ...PUBLIC_AUTH_PATHS,
-  "/setup",
-  "/onboarding",
-  "/home",
-  "/elections",
-  "/archive",
-  "/voters",
-  "/settings",
-];
 
 // Leading locale segment, e.g. "hr" in "/hr/…" — null for a bare "/" since
 // localePrefix: "always" prefixes every locale including the default.
