@@ -8,9 +8,10 @@ import { useRouter } from "@/i18n/navigation";
 import { updateOrganization } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { SettingsCard } from "@/components/settings/settings-card";
+import { LogoUpload } from "@/components/settings/logo-upload";
 
-// "Organization" card on /profile: logo DISPLAY only (upload is phase 2 — no
-// affordance rendered), name + contact email. Language moved to its own card.
+// "Organization" card on /profile: logo (LogoUpload owns the whole row),
+// name + contact email. Language moved to its own card.
 const inputClass =
   "h-11 w-full rounded-md border border-neutral-200 bg-neutral-100 px-3 text-base font-normal text-neutral-950 shadow-xs outline-none placeholder:text-neutral-400 focus:border-brand-700 focus:bg-white focus:shadow-focus aria-invalid:border-error-500";
 
@@ -89,33 +90,7 @@ export function OrganizationCard({
         </Button>
       }
     >
-      {/* Logo — display only; upload lands in phase 2 */}
-      <div className="flex items-center gap-4">
-        {logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={logoUrl}
-            alt=""
-            className="size-18 shrink-0 rounded-lg border border-neutral-200 object-contain"
-          />
-        ) : (
-          <span
-            aria-hidden
-            className="flex size-18 shrink-0 items-center justify-center rounded-lg border border-dashed border-neutral-200 bg-neutral-50 text-xs font-medium text-neutral-400"
-          >
-            {t("logo.placeholder")}
-          </span>
-        )}
-        <div className="min-w-0">
-          <div className={labelClass}>{t("logo.label")}</div>
-          <p className="mt-1 text-[13px] leading-normal text-neutral-600">
-            {t("logo.helper")}{" "}
-            <span className="inline-flex h-4.5 translate-y-0.5 items-center rounded-full bg-brand-100 px-1.75 text-[11px] font-semibold text-brand-700">
-              {t("logo.pro")}
-            </span>
-          </p>
-        </div>
-      </div>
+      <LogoUpload logoUrl={logoUrl} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <label className={`flex flex-col gap-1.5 ${labelClass}`}>

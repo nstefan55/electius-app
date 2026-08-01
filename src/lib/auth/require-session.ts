@@ -19,7 +19,13 @@ export interface Session {
   user: {
     name: string;
     email: string;
+    // Read from the DB, not from the BetterAuth session object, so an upload
+    // shows up on the next request instead of waiting for the session to roll.
+    image: string | null;
     organization: string;
+    // Rides along on the org select that already runs — no extra round trip,
+    // and the PDF report needs it wherever it renders.
+    organizationLogo: string | null;
     isPro: boolean;
   };
   organizationId: string;
@@ -38,8 +44,9 @@ export const requireSession = cache(async (): Promise<Session> => {
     where: { id: session.user.id },
     select: {
       isPro: true,
+      image: true,
       organizationId: true,
-      organization: { select: { name: true } },
+      organization: { select: { name: true, logoUrl: true } },
     },
   });
   if (!admin?.organizationId || !admin.organization) {
@@ -52,7 +59,9 @@ export const requireSession = cache(async (): Promise<Session> => {
     user: {
       name: session.user.name,
       email: session.user.email,
+      image: admin.image,
       organization: admin.organization.name,
+      organizationLogo: admin.organization.logoUrl,
       isPro: admin.isPro,
     },
     organizationId: admin.organizationId,

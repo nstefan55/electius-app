@@ -43,7 +43,7 @@ const {
 } = await import("@/actions/elections");
 
 const session = {
-  user: { email: "admin@example.com", name: "A", organization: "Org", isPro: false },
+  user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
   organizationId: "org_1",
 };
 

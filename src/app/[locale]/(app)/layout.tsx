@@ -10,7 +10,13 @@ export default async function AppLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   const { user } = await requireSession();
   // Explicit projection — TS types don't strip runtime fields; without this the
-  // full user (email, isPro) would be serialized into the RSC payload.
-  const shellUser = { name: user.name, organization: user.organization };
+  // full user (email, isPro) would be serialized into the RSC payload. `image`
+  // is listed by name, not waved through: it is a public URL the admin uploads
+  // and removes themselves, and the sidebar needs it to show their avatar.
+  const shellUser = {
+    name: user.name,
+    image: user.image,
+    organization: user.organization,
+  };
   return <DashboardShell user={shellUser}>{children}</DashboardShell>;
 }

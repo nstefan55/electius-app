@@ -10,6 +10,11 @@ import { authClient } from "@/lib/auth/client";
 import { updateProfile } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import {
+  ImageUploadSlot,
+  useImageUpload,
+  type ImageUploadLabels,
+} from "@/components/ui/image-upload";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
@@ -51,6 +56,27 @@ export function ProfileCard({
   const tOtp = useTranslations("auth.signup.form.otp");
   const locale = useLocale();
   const router = useRouter();
+
+  // Avatar dijeli slot i mrežu s logotipom organizacije; razlikuju se samo
+  // oblik, zamjena za prazno stanje i ruta.
+  const avatarLabels: ImageUploadLabels = {
+    upload: t("avatar.upload"),
+    replace: t("avatar.replace"),
+    remove: t("avatar.remove"),
+    uploading: t("avatar.uploading"),
+    uploaded: t("avatar.uploaded"),
+    removed: t("avatar.removed"),
+    errors: {
+      tooLarge: t("avatar.errors.tooLarge"),
+      badType: t("avatar.errors.badType"),
+      generic: t("avatar.errors.generic"),
+    },
+  };
+  const {
+    pending: avatarPending,
+    upload: uploadAvatar,
+    remove: removeAvatar,
+  } = useImageUpload("/api/profile/avatar", avatarLabels);
 
   const [saved, setSaved] = useState({
     first: initialFirstName,
@@ -193,22 +219,23 @@ export function ProfileCard({
         </Button>
       }
     >
-      {/* Identity row */}
+      {/* Identity row — the avatar is the upload target (same slot the
+          organization logo uses, round instead of square). */}
       <div className="flex items-center gap-4">
-        {image ? (
-          // Plain <img> — Google avatar hosts aren't in next/image remotePatterns.
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image}
-            alt=""
-            className="size-16 shrink-0 rounded-full border border-neutral-200 object-cover"
-          />
-        ) : (
-          <InitialsAvatar
-            name={fullName}
-            className="size-16 bg-brand-100 text-2xl text-brand-700"
-          />
-        )}
+        <ImageUploadSlot
+          imageUrl={image}
+          pending={avatarPending}
+          onFile={uploadAvatar}
+          labels={avatarLabels}
+          empty={
+            <InitialsAvatar
+              name={fullName}
+              className="size-full bg-brand-100 text-2xl text-brand-700"
+            />
+          }
+          className="size-16 rounded-full"
+          imageClassName="object-cover"
+        />
         <div className="min-w-0">
           <div className="truncate font-heading text-lg font-semibold text-neutral-800">
             {fullName}
@@ -216,6 +243,19 @@ export function ProfileCard({
           <div className="mt-0.5 text-[13px] text-neutral-600">
             {t(viaGoogle ? "providerGoogle" : "providerEmail")}
           </div>
+          {(image || avatarPending) && (
+            <div className="mt-1.5">
+              {avatarPending ? (
+                <span className="text-[13px] text-neutral-600">
+                  {avatarLabels.uploading}
+                </span>
+              ) : (
+                <Button variant="ghost" size="sm" onClick={removeAvatar}>
+                  {avatarLabels.remove}
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

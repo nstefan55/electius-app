@@ -21,14 +21,14 @@ import type { ArchiveSeal } from "@/lib/db/elections";
 // elections-view.ts, istih funkcija koje čitaju stranica rezultata i CSV izvoz.
 // Predložak koji sam računa postotak prva je greška koja razdvoji dva zaslona.
 
-// ponytail: uvijek Electius znak. Organization.logoUrl (Pro) nitko još ne piše —
-// postavke ga prikazuju, ali učitavanje logotipa nije izgrađeno. Kad stigne,
-// ovdje ide jedna grana; do tada je Electius znak ionako točan za Free razinu.
+// Logotip organizacije ako je učitan, inače Electius znak — što je za Free
+// razinu ionako točno.
 
 export interface ElectionReportProps {
   electionId: string;
   title: string;
   orgName: string;
+  orgLogoUrl: string | null;
   quorumThreshold: number | null;
   voters: number;
   votesCast: number;
@@ -42,6 +42,7 @@ export async function ElectionReport({
   electionId,
   title,
   orgName,
+  orgLogoUrl,
   quorumThreshold,
   voters,
   votesCast,
@@ -106,16 +107,25 @@ export async function ElectionReport({
           </div>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <Image
-            src="/logo/logo-mark-light.png"
-            alt=""
-            width={48}
-            height={48}
-            className="h-12 w-auto"
-          />
-          <span className="font-heading text-[15px] font-bold text-brand-900">
-            Electius
-          </span>
+          {orgLogoUrl ? (
+            // Obični <img>: domena kante dolazi iz env varijable, pa next/image
+            // traži remotePatterns za host koji se mijenja po okruženju.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={orgLogoUrl} alt="" className="h-12 w-auto max-w-40 object-contain" />
+          ) : (
+            <>
+              <Image
+                src="/logo/logo-mark-light.png"
+                alt=""
+                width={48}
+                height={48}
+                className="h-12 w-auto"
+              />
+              <span className="font-heading text-[15px] font-bold text-brand-900">
+                Electius
+              </span>
+            </>
+          )}
         </div>
       </header>
 
