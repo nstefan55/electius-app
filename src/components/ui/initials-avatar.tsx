@@ -10,9 +10,11 @@ const toInitials = (name: string) =>
     .join("")
     .toUpperCase();
 
-// Reusable initials avatar (auth-phase-4). Google `image` support is a
-// deliberately deferred decision — the (app) shell only receives
-// { name, organization } (PII-guard projection, 2026-07-11 audit).
+// Reusable initials avatar (auth-phase-4) — the fallback wherever User.image is
+// null. The shell projection now passes `image` through by name alongside
+// { name, organization } (PII guard, 2026-07-11 audit), so the sidebar and the
+// profile card render the picture when there is one and these initials when
+// there is not.
 export function InitialsAvatar({
   name,
   className,

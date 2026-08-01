@@ -20,6 +20,8 @@ const session = {
     email: "admin@example.com",
     name: "A",
     organization: "Org",
+    image: null,
+    organizationLogo: null,
     isPro: false,
   },
   organizationId: "org_1",

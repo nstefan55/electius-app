@@ -1094,6 +1094,19 @@
             "match": "Lozinke se ne podudaraju.",
             "generic": "Nešto je pošlo po zlu. Pokušajte ponovno."
           }
+        },
+        "avatar": {
+          "upload": "Učitaj profilnu sliku",
+          "replace": "Promijeni profilnu sliku",
+          "remove": "Ukloni sliku",
+          "uploading": "Učitavanje…",
+          "uploaded": "Profilna slika je učitana.",
+          "removed": "Profilna slika je uklonjena.",
+          "errors": {
+            "tooLarge": "Datoteka je prevelika. Najviše 2 MB.",
+            "badType": "Podržani su PNG, JPG i WebP.",
+            "generic": "Učitavanje nije uspjelo. Pokušajte ponovno."
+          }
         }
       },
       "organization": {
@@ -1101,9 +1114,20 @@
         "subtitle": "Prikazuje se biračima na pozivnicama, listićima i izvještajima.",
         "logo": {
           "label": "Logotip organizacije",
-          "helper": "PNG, JPG ili WebP, kvadratni format izgleda najbolje. Zamjenjuje Electius oznaku na brendiranim PDF izvještajima.",
+          "helper": "PNG, JPG ili WebP, do 2 MB. Kvadratni format izgleda najbolje. Zamjenjuje Electius oznaku na brendiranim PDF izvještajima.",
           "pro": "Pro",
-          "placeholder": "Logo"
+          "placeholder": "Logo",
+          "upload": "Učitaj logotip",
+          "replace": "Zamijeni",
+          "remove": "Ukloni",
+          "uploading": "Učitavanje…",
+          "uploaded": "Logotip je učitan.",
+          "removed": "Logotip je uklonjen.",
+          "errors": {
+            "tooLarge": "Datoteka je prevelika. Najviše 2 MB.",
+            "badType": "Podržani su PNG, JPG i WebP.",
+            "generic": "Učitavanje nije uspjelo. Pokušajte ponovno."
+          }
         },
         "name": "Naziv organizacije",
         "contactEmail": "Kontakt e-pošta",

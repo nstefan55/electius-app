@@ -47,6 +47,7 @@ function crumbLabelKey(pathname: string): CrumbKey {
 
 export interface ShellUser {
   name: string;
+  image: string | null;
   organization: string;
 }
 

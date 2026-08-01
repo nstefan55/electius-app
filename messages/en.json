@@ -1094,6 +1094,19 @@
             "match": "Passwords don't match.",
             "generic": "Something went wrong. Please try again."
           }
+        },
+        "avatar": {
+          "upload": "Upload profile picture",
+          "replace": "Change profile picture",
+          "remove": "Remove picture",
+          "uploading": "Uploading…",
+          "uploaded": "Profile picture uploaded.",
+          "removed": "Profile picture removed.",
+          "errors": {
+            "tooLarge": "That file is too large. The maximum size is 2 MB.",
+            "badType": "PNG, JPG and WebP are supported.",
+            "generic": "Upload failed. Please try again."
+          }
         }
       },
       "organization": {
@@ -1101,9 +1114,20 @@
         "subtitle": "Shown to voters on invitations, ballots and reports.",
         "logo": {
           "label": "Organization logo",
-          "helper": "PNG, JPG or WebP, square works best. Replaces the Electius mark on organization-branded PDF reports.",
+          "helper": "PNG, JPG or WebP, up to 2 MB. Square works best. Replaces the Electius mark on organization-branded PDF reports.",
           "pro": "Pro",
-          "placeholder": "Logo"
+          "placeholder": "Logo",
+          "upload": "Upload logo",
+          "replace": "Replace",
+          "remove": "Remove",
+          "uploading": "Uploading…",
+          "uploaded": "Logo uploaded.",
+          "removed": "Logo removed.",
+          "errors": {
+            "tooLarge": "That file is too large. The maximum size is 2 MB.",
+            "badType": "PNG, JPG and WebP are supported.",
+            "generic": "Upload failed. Please try again."
+          }
         },
         "name": "Organization name",
         "contactEmail": "Contact email",

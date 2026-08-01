@@ -125,7 +125,19 @@ export function SidebarNav({
               collapsed && "justify-center px-0",
             )}
           >
-            <InitialsAvatar name={user.name} />
+            {user.image ? (
+              // Plain <img>: the R2 host comes from an env var and Google's
+              // avatar host is external, so neither is in next/image's
+              // remotePatterns.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={user.image}
+                alt=""
+                className="size-9.5 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <InitialsAvatar name={user.name} />
+            )}
             {!collapsed && (
               <>
                 <div className="min-w-0 flex-1">

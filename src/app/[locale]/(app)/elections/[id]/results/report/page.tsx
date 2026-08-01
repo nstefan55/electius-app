@@ -63,6 +63,7 @@ export default async function ElectionReportPage({
       electionId={id}
       title={election.name}
       orgName={user.organization}
+      orgLogoUrl={user.organizationLogo}
       quorumThreshold={results.quorumThreshold}
       voters={results.voters}
       votesCast={results.votesCast}
