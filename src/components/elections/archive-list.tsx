@@ -21,6 +21,9 @@ import {
 } from "@/lib/elections-view";
 import { voterSharePct } from "@/lib/results-view";
 import { CONTACT_EMAIL } from "@/lib/urls";
+import { Pagination } from "@/components/ui/pagination";
+import { ARCHIVE_PER_PAGE } from "@/lib/constants/pagination";
+import { usePagination } from "@/lib/use-pagination";
 import type { ArchivedElection } from "@/lib/db/elections";
 
 // Arhiva — mreža kartica (dizajn: Elections Archived.dc.html). Detaljne stranice
@@ -41,10 +44,21 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
   const [query, setQuery] = useState("");
   const [auditFor, setAuditFor] = useState<ArchivedElection | null>(null);
   const hasQuery = query.trim() !== "";
-  // Lista je nepaginirana — filtriranje na klijentu ne može sakriti pogodak.
+  // Upit dohvaća CIJELI skup, pa filtriranje na klijentu ne može sakriti
+  // pogodak. Vrijedi i dalje uz stranicanje: stranica se reže tek NAKON
+  // filtriranja. Doda li se `take` u getArchivedElections, pretraga postaje
+  // pretraga prve stranice — tada i ona mora u WHERE.
   const rows = useMemo(
     () => elections.filter((e) => matchesQuery(e, query)),
     [elections, query],
+  );
+
+  // Pretraga vraća na prvu stranicu — bez toga bi suženje na dva pogotka dok si
+  // na 3. stranici pokazalo prazno.
+  const { page, pageCount, setPage, pageItems } = usePagination(
+    rows,
+    ARCHIVE_PER_PAGE,
+    query.trim(),
   );
 
   return (
@@ -114,15 +128,24 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
               </button>
             </div>
           ) : (
-            <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,420px),1fr))] gap-5">
-              {rows.map((e) => (
-                <ArchiveCard
-                  key={e.id}
-                  election={e}
-                  onAudit={() => setAuditFor(e)}
-                />
-              ))}
-            </ul>
+            <>
+              <ul className="grid grid-cols-[repeat(auto-fill,minmax(min(100%,420px),1fr))] gap-5">
+                {pageItems.map((e) => (
+                  <ArchiveCard
+                    key={e.id}
+                    election={e}
+                    onAudit={() => setAuditFor(e)}
+                  />
+                ))}
+              </ul>
+
+              <Pagination
+                page={page}
+                pageCount={pageCount}
+                onPageChange={setPage}
+                className="mt-6"
+              />
+            </>
           )}
         </>
       )}

@@ -5,7 +5,14 @@
       "hr": "Hrvatski",
       "en": "Engleski"
     },
-    "loading": "Učitavanje…"
+    "loading": "Učitavanje…",
+    "pagination": {
+      "label": "Stranicanje",
+      "page": "Stranica {page} od {pages}",
+      "prev": "Prethodna",
+      "next": "Sljedeća",
+      "goToPage": "Stranica {page}"
+    }
   },
   "notFound": {
     "badge": "Greška 404",
@@ -408,7 +415,9 @@
           "window": "Razdoblje glasovanja"
         },
         "empty": "Još nema izbora",
-        "emptyHint": "Stvorite svoj prvi izbor za početak."
+        "emptyHint": "Stvorite svoj prvi izbor za početak.",
+        "loadMore": "Učitaj još",
+        "loadMoreRemaining": "Preostalo: {count}"
       },
       "actions": {
         "menuLabel": "Radnje retka",
@@ -1039,11 +1048,6 @@
         "body": "Dodajte birače kako biste im mogli poslati pozivnice za glasanje.",
         "noMatchTitle": "Nema rezultata",
         "noMatchBody": "Nijedan birač ne odgovara pretrazi ili odabranom statusu."
-      },
-      "pagination": {
-        "page": "Stranica {page} od {pages}",
-        "prev": "Prethodna",
-        "next": "Sljedeća"
       },
       "actions": {
         "menuLabel": "Radnje za birača",

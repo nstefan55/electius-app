@@ -3,6 +3,7 @@ import "server-only";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
+import { clampPage, pageCountOf } from "@/lib/pagination";
 import {
   bucketVotesByDay,
   rankCandidates,
@@ -93,6 +94,44 @@ export async function getElectionsByStatus(
     select: ELECTION_SELECT,
   });
   return rows.map(toDashboardElection);
+}
+
+export interface ElectionsPage {
+  elections: DashboardElection[];
+  page: number;
+  pageCount: number;
+  total: number;
+}
+
+// Stranicana inačica gornjeg upita za /voters — jedini popis izbora bez
+// klijentskog filtra, pa `skip`/`take` ovdje ništa ne skriva. Liste s filtrom
+// (/elections, /results, /archive) namjerno dohvaćaju sve: filtar je ispravan
+// samo dok klijent drži cijeli skup (vidi pagination-spec).
+export async function getElectionsPage(
+  organizationId: string,
+  page: number,
+  perPage: number,
+): Promise<ElectionsPage> {
+  const where = { organizationId };
+  const total = await prisma.election.count({ where });
+  const pageCount = pageCountOf(total, perPage);
+  // Stegni PRIJE `skip`: ?page=999 mora vratiti zadnju stranicu, ne prazno.
+  const current = clampPage(page, pageCount);
+
+  const rows = await prisma.election.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    skip: (current - 1) * perPage,
+    take: perPage,
+    select: ELECTION_SELECT,
+  });
+
+  return {
+    elections: rows.map(toDashboardElection),
+    page: current,
+    pageCount,
+    total,
+  };
 }
 
 // Pečat arhive. Jedan tip za sve tri revizijske površine — kartica na

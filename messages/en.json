@@ -5,7 +5,14 @@
       "hr": "Croatian",
       "en": "English"
     },
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "pagination": {
+      "label": "Pagination",
+      "page": "Page {page} of {pages}",
+      "prev": "Previous",
+      "next": "Next",
+      "goToPage": "Page {page}"
+    }
   },
   "notFound": {
     "badge": "Error 404",
@@ -408,7 +415,9 @@
           "window": "Voting window"
         },
         "empty": "No elections yet",
-        "emptyHint": "Create your first election to get started."
+        "emptyHint": "Create your first election to get started.",
+        "loadMore": "Load more",
+        "loadMoreRemaining": "{count} remaining"
       },
       "actions": {
         "menuLabel": "Row actions",
@@ -1039,11 +1048,6 @@
         "body": "Add voters so you can send them voting invitations.",
         "noMatchTitle": "No results",
         "noMatchBody": "No voter matches your search or the selected status."
-      },
-      "pagination": {
-        "page": "Page {page} of {pages}",
-        "prev": "Previous",
-        "next": "Next"
       },
       "actions": {
         "menuLabel": "Voter actions",
