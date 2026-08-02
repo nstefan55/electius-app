@@ -2,18 +2,29 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { confirmDeletionUrl } from "@/lib/urls";
 import { RATE_LIMIT_RULES } from "@/lib/auth/rate-limit-rules";
 import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import {
+  sendDeleteAccountEmail,
   sendOtpEmail,
   sendResetPasswordEmail,
 } from "@/lib/services/email.service";
+import {
+  DeleteAccountError,
+  purgeAvatar,
+  purgeOrganizationData,
+} from "@/lib/services/account-deletion.service";
 
 // Kill switch for the whole email-verification-on-register flow. Default ON
 // (prod-safe); only the literal "false" disables it — for dev/testing when the
@@ -76,6 +87,41 @@ export const auth = betterAuth({
           : verifyPassword({ hash, password }),
     },
   },
+  // Brisanje računa (profile-settings-phase-4-spec). Poveznica iz e-pošte je
+  // drugi faktor: posjed sandučića potvrđuje identitet i kad je sesija oteta,
+  // pa modal u aplikaciji sam po sebi ne može obrisati ništa.
+  user: {
+    deleteUser: {
+      enabled: true,
+      // Šaljemo vlastitu poveznicu, ne BetterAuthov `url`: njegov vodi ravno na
+      // GET /delete-user/callback, koji bez sesije vraća JSON 404 na praznoj
+      // stranici (npr. poštu se otvori na mobitelu). Token je isti.
+      sendDeleteAccountVerification: async ({ user, token }) => {
+        await sendDeleteAccountEmail(user.email, confirmDeletionUrl(token));
+      },
+      // Kaskada organizacije teče prije nego BetterAuth obriše korisnika —
+      // elections.createdById je RESTRICT, pa je ovo jedini ispravan trenutak.
+      // Pad ovdje prekida cijeli tok, dakle ništa se ne obriše.
+      beforeDelete: async (user) => {
+        try {
+          await purgeOrganizationData(user.id);
+        } catch (error) {
+          if (error instanceof DeleteAccountError) {
+            throw new APIError("BAD_REQUEST", {
+              code: error.code,
+              message: "Account deletion is not allowed for this account.",
+            });
+          }
+          throw error;
+        }
+      },
+      // Avatar tek sad: objekt nestaje nakon svog retka. Sesije kaskadiraju
+      // preko FK-a, pa ih ne treba dirati.
+      afterDelete: async (user) => {
+        await purgeAvatar(user.image);
+      },
+    },
+  },
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -86,15 +132,20 @@ export const auth = betterAuth({
     before: createAuthMiddleware(async (ctx) => {
       const rule = RATE_LIMIT_RULES[ctx.path];
       if (!rule) return;
-      const email =
-        rule.withEmail && typeof ctx.body?.email === "string"
-          ? ctx.body.email.toLowerCase()
-          : null;
       const ip = clientIp(ctx.headers);
-      const { success, reset } = await checkRateLimit(
-        rule.action,
-        email ? `${ip}:${email}` : ip,
-      );
+
+      // withUser: ključ je vlasnik sesije, ne IP. Prefiks "user:" da se id nikad
+      // ne sudari s adresom. Bez sesije pada natrag na IP — neprijavljeno
+      // pipkanje mora ostati ograničeno.
+      let identifier = ip;
+      if (rule.withUser) {
+        const session = await getSessionFromCtx(ctx).catch(() => null);
+        if (session?.user?.id) identifier = `user:${session.user.id}`;
+      } else if (rule.withEmail && typeof ctx.body?.email === "string") {
+        identifier = `${ip}:${ctx.body.email.toLowerCase()}`;
+      }
+
+      const { success, reset } = await checkRateLimit(rule.action, identifier);
       if (!success) {
         const seconds = retryAfterSeconds(reset);
         throw new APIError(

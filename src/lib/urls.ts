@@ -32,6 +32,14 @@ export const electionVoteUrl = (electionId: string) => `${APEX}/vote/${electionI
 // "Share public results" — apex public results page (resultsVisible-gated).
 export const publicResultsUrl = (id: string) => `${APEX}/results/${id}`;
 
+// Odredište poveznice za brisanje računa. NAMJERNO naša stranica, a ne
+// BetterAuthova /api/auth/delete-user/callback ruta: taj je poziv GET koji traži
+// sesiju, pa svaki neuspjeh (otvoreno na mobitelu, istekla sesija, iskorištena
+// poveznica) završi kao goli JSON na praznoj stranici. Stranica vlada svakim
+// ishodom i sama zove callback.
+export const confirmDeletionUrl = (token: string) =>
+  `${APP}/confirm-deletion?token=${encodeURIComponent(token)}`;
+
 // Kontakt za pitanja o integritetu zapisa. Ispisuju ga PDF izvještaj i modal
 // revizije u arhivi — jedna definicija, da se dvije adrese ne raziđu.
 export const CONTACT_EMAIL = "contact@electius.com";

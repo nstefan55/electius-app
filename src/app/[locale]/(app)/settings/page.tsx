@@ -1,14 +1,24 @@
 import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/require-session";
+import { prisma } from "@/lib/prisma";
+import { subscriptionBlocks } from "@/lib/services/account-deletion.service";
 import { DashboardFooter } from "@/components/dashboard/dashboard-footer";
 import { DashboardCustomizationsCard } from "@/components/settings/dashboard-customizations-card";
+import { AccountManagementCard } from "@/components/settings/account-management-card";
 
 // /settings — controls only; identity moved to /profile. Shell until phases
-// 4–7 land their cards. Stays a server component so they can fetch here.
+// 5–7 land their cards. Stays a server component so they can fetch here.
 // ponytail: redoslijed kartica se slaže kad stigne Plan i naplata (faza 7).
 export default async function SettingsPage() {
-  await requireSession();
+  const session = await requireSession();
   const t = await getTranslations("dashboard.settings");
+
+  // isPro stiže iz sesije, ali blokada brisanja treba i stvarnu pretplatu —
+  // jedan uzak upit umjesto širenja requireSession za jednu karticu.
+  const billing = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { isPro: true, stripeSubscriptionId: true },
+  });
 
   return (
     <div className="mx-auto flex w-full max-w-[860px] flex-col gap-6">
@@ -20,6 +30,13 @@ export default async function SettingsPage() {
       </div>
 
       <DashboardCustomizationsCard />
+
+      <AccountManagementCard
+        organizationName={session.user.organization}
+        subscriptionActive={
+          billing ? subscriptionBlocks(billing) : false
+        }
+      />
 
       <DashboardFooter />
     </div>

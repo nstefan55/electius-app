@@ -54,6 +54,12 @@ const limiters = (() => {
     // I brzi put (posluživanje spremljenog objekta) troši kvotu — jednostavnije,
     // a 10 preuzimanja u 15 minuta je za čovjeka ionako široko.
     reportRender: make(redis, "report-render", 10, "15 m"),
+    // Slanje potvrde o brisanju računa (profile-settings-phase-4-spec §5).
+    // Isti prozor kao zaboravljena lozinka: jedan namjeran zahtjev po sesiji,
+    // sve preko toga je bombardiranje sandučića. Poveznica u pošti nije
+    // ograničena — token je nepogodiv i jednokratan, a limit bi rušio legitiman
+    // ponovni klik na jedinom koraku koji brisanje uopće izvršava.
+    deleteAccount: make(redis, "delete-account", 3, "1 h"),
   };
 })();
 
