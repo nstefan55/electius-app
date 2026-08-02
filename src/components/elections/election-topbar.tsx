@@ -13,6 +13,7 @@ import {
   Eye,
   FileText,
   Pencil,
+  Printer,
   Trash2,
   X,
 } from "lucide-react";
@@ -90,7 +91,13 @@ export function ElectionTopbar({
   // stanja obične trake — ondje se ništa od toga ne prikazuje.
   const reportHref = `/elections/${id}/results/report`;
   if (pathname === reportHref) {
-    return <ReportTopbar backHref={`/elections/${id}/results`} title={title} />;
+    return (
+      <ReportTopbar
+        id={id}
+        backHref={`/elections/${id}/results`}
+        title={title}
+      />
+    );
   }
 
   // Kartica rezultata dobiva vlastiti podnaslov i gumbe za izvoz; ostale
@@ -252,14 +259,51 @@ export function ElectionTopbar({
 // Traka pregleda PDF izvještaja. Jedan gumb, ne dva: pod isporukom preko ispisa
 // preglednika "Otvori cijeli PDF" i "Preuzmi PDF" otvaraju isti dijalog, a gumb
 // koji laže da radi nešto drugo gori je od nepostojećeg.
+// Dva gumba, jer rade dvije različite stvari: Ispis predaje list ispisnom
+// motoru preglednika, Preuzmi traži poslužiteljski render koji se za zatvorene
+// izbore i sprema. Jedan gumb za oboje bio bi laž o jednom od njih.
 function ReportTopbar({
+  id,
   backHref,
   title,
 }: {
+  id: string;
   backHref: string;
   title: string;
 }) {
   const t = useTranslations("dashboard.election.report");
+  const locale = useLocale();
+  const [downloading, setDownloading] = useState(false);
+
+  // fetch + blob, ne obični <a href>: pad iscrtavanja tako daje lokaliziranu
+  // poruku umjesto stranice greške preglednika.
+  const handleDownload = async () => {
+    setDownloading(true);
+    try {
+      const response = await fetch(
+        `/api/elections/${id}/report/pdf?locale=${locale}`,
+      );
+      if (!response.ok) {
+        toast.error(
+          t(response.status === 429 ? "downloadRateLimited" : "downloadFailed"),
+        );
+        return;
+      }
+      // Ime datoteke dolazi iz Content-Disposition — jedan izvor s poslužiteljem.
+      const disposition = response.headers.get("content-disposition") ?? "";
+      const name = disposition.match(/filename="([^"]+)"/)?.[1] ?? "report.pdf";
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = name;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error(t("downloadFailed"));
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <header className="-mx-8 -mt-8 mb-6 flex min-h-19 flex-wrap items-center justify-between gap-5 border-b border-border bg-neutral-50 px-8 py-3.5 print:hidden">
@@ -282,14 +326,21 @@ function ReportTopbar({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => window.print()}
-        className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-4.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600"
-      >
-        <Download className="size-4" aria-hidden />
-        {t("download")}
-      </button>
+      <div className="flex flex-wrap items-center gap-2.5">
+        <button type="button" onClick={() => window.print()} className={GHOST_BTN}>
+          <Printer className="size-4" aria-hidden />
+          {t("print")}
+        </button>
+        <button
+          type="button"
+          onClick={handleDownload}
+          disabled={downloading}
+          className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-4.5 text-sm font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Download className="size-4" aria-hidden />
+          {downloading ? t("downloading") : t("download")}
+        </button>
+      </div>
     </header>
   );
 }

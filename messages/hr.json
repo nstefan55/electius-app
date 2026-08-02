@@ -892,7 +892,6 @@
         "back": "Natrag na rezultate",
         "download": "Preuzmi PDF",
         "official": "Službeni izvještaj o izborima",
-        "generated": "Generirano {date}",
         "electionId": "ID izbora:",
         "headingResults": "Rezultati",
         "headingTurnout": "Izlaznost",
@@ -906,7 +905,21 @@
         "auditBody": "Ovi izbori provedeni su na platformi Electius. Svaki je glas zabilježen anonimno — zapis o glasu ne sadrži nikakvu poveznicu na birača — a svaki listić nosi vlastiti kriptografski kontrolni zapis.",
         "auditContact": "Za sva pitanja ili probleme obratite se na",
         "footerBrand": "Electius — Sigurno elektroničko glasanje",
-        "auditSealedBody": "Cjelovit skup listića zapečaćen je u Merkle stablo. Korijen zabilježen ispod omogućuje neovisnu provjeru — svaki se kontrolni kod može potvrditi bez pristupa ovoj bazi i bez povjerenja u Electius."
+        "auditSealedBody": "Cjelovit skup listića zapečaćen je u Merkle stablo. Korijen zabilježen ispod omogućuje neovisnu provjeru — svaki se kontrolni kod može potvrditi bez pristupa ovoj bazi i bez povjerenja u Electius.",
+        "generatedUtc": "Generirano {date} UTC",
+        "preliminaryTitle": "Privremeno — glasanje je još otvoreno",
+        "preliminaryTurnout": "Izlaznost {pct}% nakon {duration} glasanja",
+        "preliminaryNote": "Brojke opisuju trenutak, ne ishod. Pobjednik i ocjena kvoruma objavljuju se tek kad se glasanje zatvori.",
+        "statTotal": "Ukupno birača",
+        "statInvited": "Pozvano",
+        "statVoted": "Glasalo",
+        "statNotVoted": "Nije glasalo",
+        "durationDays": "{count, plural, one {# dan} few {# dana} other {# dana}}",
+        "durationHours": "{count, plural, one {# sat} few {# sata} other {# sati}}",
+        "print": "Ispis",
+        "downloading": "Priprema PDF-a…",
+        "downloadFailed": "Izrada PDF-a nije uspjela. Pokušajte ponovno.",
+        "downloadRateLimited": "Previše preuzimanja. Pokušajte za nekoliko minuta."
       },
       "lists": {
         "archive": {

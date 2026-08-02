@@ -200,17 +200,28 @@ export const resultsRows = (els: DashboardElection[]): ResultsRow[] =>
     })
     .sort((a, b) => ACCESS_ORDER[a.access] - ACCESS_ORDER[b.access]);
 
-// Countdown split for the "Time left" stat card. Returns parts (not a label) so
-// the unit suffixes stay in the i18n catalogs. Clamped at zero: a target in the
-// past reads 0h 0m rather than counting up.
-export const timeLeftParts = (targetIso: string, nowMs: number) => {
-  let ms = Math.max(0, new Date(targetIso).getTime() - nowMs);
-  const days = Math.floor(ms / 86_400_000);
-  ms -= days * 86_400_000;
-  const hours = Math.floor(ms / 3_600_000);
-  ms -= hours * 3_600_000;
-  return { days, hours, minutes: Math.floor(ms / 60_000) };
+// Rastav trajanja na dane/sate/minute. Vraća dijelove, ne oznaku, da sufiksi
+// jedinica ostanu u katalozima. Odsječeno na nuli: negativno trajanje čita se
+// 0h 0m umjesto da broji unatrag.
+// Dijele ga odbrojavanje do kraja glasanja i proteklo vrijeme na privremenom
+// izvještaju — jedna implementacija, bez dvaput prepisane aritmetike.
+export const durationParts = (ms: number) => {
+  let rest = Math.max(0, ms);
+  const days = Math.floor(rest / 86_400_000);
+  rest -= days * 86_400_000;
+  const hours = Math.floor(rest / 3_600_000);
+  rest -= hours * 3_600_000;
+  return { days, hours, minutes: Math.floor(rest / 60_000) };
 };
+
+// Countdown split for the "Time left" stat card.
+export const timeLeftParts = (targetIso: string, nowMs: number) =>
+  durationParts(new Date(targetIso).getTime() - nowMs);
+
+// Proteklo vrijeme od otvaranja glasanja — mjeri tempo sudjelovanja na
+// privremenom izvještaju (D10; odbrojavanje do kraja već stoji na pregledu).
+export const elapsedParts = (startIso: string, nowMs: number) =>
+  durationParts(nowMs - new Date(startIso).getTime());
 
 // Voting-window date, locale-aware: en "Jun 18" · hr "18. lip". Takes the ISO
 // string from DashboardElection.opens/closes. timeZone UTC keeps output

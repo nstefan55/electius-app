@@ -8,6 +8,7 @@ import {
   MERKLE_ALGORITHM,
   MERKLE_LEAF_ORDERING,
 } from "./merkle.service";
+import { deleteObject } from "./storage.service";
 
 // Pečaćenje arhive — trenutak u kojem glasovi izbora postaju dokazivo
 // nepromijenjeni. Nakon ovoga svaki "kontrolni kod" s biračevog ekrana je
@@ -97,6 +98,9 @@ export async function sealElection(
       // organizaciji s više admina to često nije ista osoba. Vlasnik zapisa je
       // autoritet, pa se čita createdBy.isPro, a ne isPro iz sesije.
       createdBy: { select: { isPro: true } },
+      // Pročitano PRIJE transakcije: nakon nje su stupci već ništeni, pa ključ
+      // objekta više ne bi imao odakle doći.
+      reportKey: true,
     },
   });
 
@@ -158,10 +162,32 @@ export async function sealElection(
 
     const { count } = await tx.election.updateMany({
       where: { id: electionId, organizationId, status: "CLOSED" },
-      data: { status: "ARCHIVED" },
+      data: {
+        status: "ARCHIVED",
+        // Spremljeni izvještaj zastarijeva upravo ovdje: nastao je prije pečata,
+        // pa nema Merkle korijen. Bez ništenja bi brzi put zauvijek posluživao
+        // taj dokument bez zapisa o integritetu (D8).
+        reportKey: null,
+        reportGeneratedAt: null,
+        reportLocale: null,
+      },
     });
     if (count === 0) throw new ArchiveError("invalidStatus");
   });
+
+  // Tek nakon commita: baza prva, R2 drugi. Zaostali objekt je potrošen prostor;
+  // ključ koji pokazuje u prazno je greška. Glasno, nikad progutano.
+  if (election.reportKey) {
+    try {
+      await deleteObject("private", election.reportKey);
+    } catch (error) {
+      console.error("[archive] stale report delete failed", {
+        electionId,
+        key: election.reportKey,
+        error,
+      });
+    }
+  }
 
   return { merkleRoot: root, votesSealed: votesCast };
 }

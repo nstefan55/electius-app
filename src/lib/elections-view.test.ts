@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  durationParts,
+  elapsedParts,
   foldForSearch,
   formatVotingDate,
   formatVotingDateTime,
@@ -206,6 +208,55 @@ describe("timeLeftParts", () => {
 
   it("clamps a past target to zero instead of counting up", () => {
     expect(timeLeftParts("2026-07-01T00:00:00.000Z", now)).toEqual({
+      days: 0,
+      hours: 0,
+      minutes: 0,
+    });
+  });
+});
+
+describe("durationParts", () => {
+  const HOUR = 3_600_000;
+  const DAY = 86_400_000;
+
+  it("nula je nula, ne prazan objekt", () => {
+    expect(durationParts(0)).toEqual({ days: 0, hours: 0, minutes: 0 });
+  });
+
+  // Granica dana: 24 h je točno 1 dan i 0 sati, 25 h je 1 dan i 1 sat.
+  it("točno 24 h prelazi u jedan dan", () => {
+    expect(durationParts(DAY)).toEqual({ days: 1, hours: 0, minutes: 0 });
+  });
+
+  it("25 h je jedan dan i jedan sat", () => {
+    expect(durationParts(DAY + HOUR)).toEqual({ days: 1, hours: 1, minutes: 0 });
+  });
+
+  it("sat manje od dana ostaje u satima", () => {
+    expect(durationParts(DAY - HOUR)).toEqual({ days: 0, hours: 23, minutes: 0 });
+  });
+
+  it("negativno trajanje se odsijeca na nulu", () => {
+    expect(durationParts(-HOUR)).toEqual({ days: 0, hours: 0, minutes: 0 });
+  });
+
+  it("sekunde ne pune minutu", () => {
+    expect(durationParts(59_000)).toEqual({ days: 0, hours: 0, minutes: 0 });
+  });
+});
+
+describe("elapsedParts", () => {
+  // Proteklo mjeri now − start; odbrojavanje mjeri target − now. Isti rastav,
+  // suprotan smjer — test pribija da se smjer ne zamijeni.
+  it("mjeri od otvaranja prema sada", () => {
+    const start = "2026-07-01T00:00:00.000Z";
+    const now = Date.parse("2026-07-04T04:30:00.000Z");
+    expect(elapsedParts(start, now)).toEqual({ days: 3, hours: 4, minutes: 30 });
+  });
+
+  it("otvaranje u budućnosti daje nulu, ne negativno", () => {
+    const now = Date.parse("2026-07-01T00:00:00.000Z");
+    expect(elapsedParts("2026-07-05T00:00:00.000Z", now)).toEqual({
       days: 0,
       hours: 0,
       minutes: 0,

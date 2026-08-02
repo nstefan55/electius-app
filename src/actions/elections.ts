@@ -9,6 +9,7 @@ import {
   sendReminders,
 } from "@/lib/services/publication.service";
 import { windowOver } from "@/lib/services/token.service";
+import { deleteObject } from "@/lib/services/storage.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
 // Each action verifies the target election belongs to the session's org before
@@ -304,14 +305,33 @@ export async function deleteElection(id: string): Promise<ActionResult> {
 
   try {
     const { organizationId } = await requireSession();
-    if (!(await assertOwned(id, organizationId))) {
-      return { success: false, error: "forbidden" };
-    }
+    // Zamjenjuje assertOwned: org ostaje u WHERE, a u istom upitu stiže i ključ
+    // izvještaja — PRIJE brisanja retka, jer poslije ga nema odakle pročitati.
+    const election = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: { reportKey: true },
+    });
+    if (!election) return { success: false, error: "forbidden" };
+
     await prisma.$transaction([
       prisma.archive.deleteMany({ where: { electionId: id } }),
       prisma.vote.deleteMany({ where: { electionId: id } }),
       prisma.election.delete({ where: { id } }),
     ]);
+
+    // Baza prva, R2 drugi, i vlastiti catch: pad brisanja objekta ne smije
+    // prijaviti neuspjeh za izbore kojih više nema. Glasno, nikad progutano.
+    if (election.reportKey) {
+      try {
+        await deleteObject("private", election.reportKey);
+      } catch (error) {
+        console.error("[elections] report object delete failed", {
+          id,
+          key: election.reportKey,
+          error,
+        });
+      }
+    }
     return { success: true };
   } catch {
     return { success: false, error: "failed" };

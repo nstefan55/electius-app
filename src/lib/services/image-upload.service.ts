@@ -34,7 +34,8 @@ export async function storeImage({
   if (!check.ok) return { ok: false, reason: check.reason };
 
   const key = imageKey(folder, ownerId, check.extension);
-  await putObject(key, bytes, check.contentType);
+  // Slike idu u JAVNU kantu — <img> ih čita izravno, bez potpisa.
+  await putObject("public", key, bytes, check.contentType);
 
   const url = objectUrl(key);
   await save(url);
@@ -64,7 +65,7 @@ async function dropObject(previous: string | null): Promise<void> {
   const key = keyFromUrl(previous);
   if (!key) return;
   try {
-    await deleteObject(key);
+    await deleteObject("public", key);
   } catch (error) {
     // Glasno (file-image-spec §7), ali ne ruši zahtjev koji je svoj posao —
     // upis u bazu — već obavio. Zaostali objekt je potrošen prostor.

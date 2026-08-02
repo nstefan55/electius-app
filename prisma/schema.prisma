@@ -164,6 +164,12 @@ model Election {
   adminTurnoutReminder Boolean    @default(false) // email admin turnout updates during voting — Pro only
   sealedResults       Boolean     @default(false) // hide tallies from everyone (admins included) until close
 
+  // Spremljeni PDF izvještaj (election-report-storage-spec). Ključ, ne URL: URL
+  // bi ukalupio host kante, pa bi svaki redak bio kriv nakon selidbe ili CDN-a.
+  reportKey         String? // R2 object key u privatnoj kanti
+  reportGeneratedAt DateTime?
+  reportLocale      String? // "hr" | "en" — prvi render pobjeđuje (D7)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -284,11 +290,10 @@ model Archive {
   proofData    Json // JSONB: {leaves, tree, root, algorithm, leafOrdering}
   electionData Json // JSONB: snapshot of election config at archival time
 
-  // Stored artifact — Cloudflare R2 (file type) OR external link (link type)
-  fileUrl  String? // Cloudflare R2 object URL (null if link-only)
-  fileName String? // original filename (null if link)
-  fileSize Int? // bytes (null if link)
-  url      String? // external URL for link-type archives
+  // fileUrl/fileName/fileSize/url maknuti: rezervirani u shemi v2 za cjevovod
+  // koji su dvije kasnije odluke zaobišle (ispis preglednika, pečat bez
+  // artefakta). Izvještaj sada živi na Election (D5) — mrtva shema pokraj žive
+  // poziva upravo grešku s dva doma koju D5 izbjegava.
 
   expiresAt DateTime? // retention cap — Free: createdAt + 1 year; Pro: null (unlimited)
   createdAt DateTime  @default(now())
