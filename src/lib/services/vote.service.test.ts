@@ -36,7 +36,8 @@ const electionRow = (over: Record<string, unknown> = {}) => ({
   resultsVisible: false,
   organization: { name: "VVG" },
   ...over,
-});
+  // Prisma `select` sužava tip; fixture nosi samo polja koja servis čita.
+}) as never;
 
 beforeEach(() => {
   vi.mocked(prisma.voterToken.findUnique).mockReset();
@@ -48,7 +49,7 @@ beforeEach(() => {
   tx.vote.create.mockReset();
   // Default: interactive transaction runs its callback against the tx mocks.
   vi.mocked(prisma.$transaction).mockImplementation(async (cb) =>
-    (cb as (t: typeof tx) => Promise<unknown>)(tx),
+    (cb as unknown as (t: typeof tx) => Promise<unknown>)(tx),
   );
   tx.voterToken.updateMany.mockResolvedValue({ count: 1 });
 });
@@ -78,7 +79,7 @@ describe("getBallotState", () => {
     expiresAt: FUTURE,
     voter: { election },
     ...over,
-  });
+  }) as never;
 
   it("routes by the design's state table", async () => {
     const cases: Array<{
@@ -192,7 +193,7 @@ describe("getBallotState", () => {
     vi.mocked(prisma.voteOption.findMany).mockResolvedValue([
       { id: "o1", text: "Ana", description: null },
       { id: "o2", text: "Marko", description: "2. godina" },
-    ]);
+    ] as never);
 
     const result = await getBallotState("valid-raw-token");
 
@@ -226,7 +227,7 @@ describe("castVote", () => {
     electionId: "el_1",
     voter: { election },
     ...over,
-  });
+  }) as never;
 
   const expectCode = async (promise: Promise<unknown>, code: string) => {
     await expect(promise).rejects.toMatchObject({ code });
