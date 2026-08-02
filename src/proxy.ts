@@ -56,13 +56,11 @@ export default function proxy(request: NextRequest) {
     }
 
     if (rest === "" || rest === "/") {
-      // Host root ("/", "/hr", "/en") → the localized home overview. We
-      // MUST emit the rewrite ourselves: next-intl returns next() for an
-      // already-canonical path, which would re-route the ORIGINAL "/hr" to the
-      // marketing page (the phase-1 bilingual gap). See domain-architecture-spec §6.
+      // Host root ("/", "/hr", "/en") → 307 na lokalizirani /home. Redirect, ne
+      // rewrite: URL u adresnoj traci mora biti /{locale}/home.
       const url = request.nextUrl.clone();
       url.pathname = `/${prefix ?? routing.defaultLocale}/home`;
-      return NextResponse.rewrite(url);
+      return NextResponse.redirect(url);
     }
   } else {
     // Apex host: admin-only surfaces 307 cross-host to the app host (single

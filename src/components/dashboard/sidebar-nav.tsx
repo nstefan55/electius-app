@@ -28,7 +28,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", href: "/", icon: House },
+  { key: "dashboard", href: "/home", icon: House },
   { key: "elections", href: "/elections", icon: CheckCircle2 },
   { key: "results", href: "/results", icon: BarChart3 },
   { key: "archive", href: "/archive", icon: Archive },
@@ -90,8 +90,7 @@ export function SidebarNav({
       {/* Primary nav*/}
       <nav className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto p-3">
         {NAV_ITEMS.map(({ key, href, icon: Icon }) => {
-          const active =
-            href === "/" ? pathname === href : pathname.startsWith(href);
+          const active = pathname.startsWith(href);
           const label = t(`nav.${key}`);
           return (
             <Link

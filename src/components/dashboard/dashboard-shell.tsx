@@ -124,7 +124,7 @@ export function DashboardShell({
                   <>
                     <BreadcrumbItem>
                     {/* TODO: IF possible: Change the breadcrumb link to marketing landing page */}
-                      <BreadcrumbLink render={<Link href="/" />}>
+                      <BreadcrumbLink render={<Link href="/home" />}>
                         {t("topbar.home")}
                       </BreadcrumbLink>
                     </BreadcrumbItem>
