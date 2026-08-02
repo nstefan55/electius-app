@@ -24,9 +24,14 @@ import type { RateLimitAction } from "@/lib/rate-limit";
 //
 // Lives in this dependency-free module (type-only import) so tests can pin
 // the map without booting the BetterAuth server instance.
+// `withUser` keys on the session's user id instead of the IP — for routes that
+// already require a session. IP keying punishes the wrong person there: everyone
+// behind one NAT shares a budget, and a brand-new admin on a brand-new
+// organization inherits an exhausted window from an unrelated account. Falls
+// back to the IP when no session resolves, so unauthenticated probing stays capped.
 export const RATE_LIMIT_RULES: Record<
   string,
-  { action: RateLimitAction; withEmail?: boolean }
+  { action: RateLimitAction; withEmail?: boolean; withUser?: boolean }
 > = {
   "/sign-in/email": { action: "login", withEmail: true },
   "/sign-up/email": { action: "register" },
@@ -39,4 +44,9 @@ export const RATE_LIMIT_RULES: Record<
     withEmail: true,
   },
   "/email-otp/verify-email": { action: "verifyOtp", withEmail: true },
+  // Šalje poštu s poveznicom za brisanje računa. Ključ je korisnik, ne IP: pošta
+  // ide isključivo na vlastitu potvrđenu adresu, pa nitko ne može bombardirati
+  // tuđi sandučić, a novi račun ne nasljeđuje tuđi potrošeni prozor.
+  // /delete-user/callback namjerno NIJE ovdje — vidi komentar uz limiter.
+  "/delete-user": { action: "deleteAccount", withUser: true },
 };

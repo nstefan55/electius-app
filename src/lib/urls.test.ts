@@ -30,4 +30,16 @@ describe("urls", () => {
     );
     expect(marketingHomeUrl()).toBe("https://electius.com/");
   });
+
+  it("points the delete-account link at our page, not the BetterAuth API route", async () => {
+    const { confirmDeletionUrl } = await import("@/lib/urls");
+    // /api/auth/delete-user/callback answers a session-less GET with JSON 404 on
+    // a blank page (email opened on a phone). Our page owns every outcome.
+    expect(confirmDeletionUrl("tok123")).toBe(
+      "https://dashboard.electius.com/confirm-deletion?token=tok123",
+    );
+    expect(confirmDeletionUrl("a b&c")).toBe(
+      "https://dashboard.electius.com/confirm-deletion?token=a%20b%26c",
+    );
+  });
 });

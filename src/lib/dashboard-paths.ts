@@ -8,6 +8,12 @@ export const PUBLIC_AUTH_PATHS = [
   "/signup",
   "/forgot-password",
   "/reset-password",
+  // Poveznica iz e-pošte za brisanje računa: otvara se i bez sesije (pošta na
+  // mobitelu), pa stranica sama traži prijavu umjesto da je vratar odbije.
+  "/confirm-deletion",
+  // Odredište nakon brisanja računa: sesija je već poništena, pa stranica mora
+  // biti dostupna bez kolačića (profile-settings-phase-4-spec §2).
+  "/account-deleted",
 ];
 
 // Admin-only surfaces the apex would otherwise also serve (route folders exist

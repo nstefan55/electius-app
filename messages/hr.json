@@ -45,6 +45,55 @@
       "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
       "expiry": "Poveznica vrijedi 1 sat i može se iskoristiti samo jednom. Ako niste zatražili promjenu lozinke, slobodno zanemarite ovu poruku — lozinka ostaje nepromijenjena."
     },
+    "deleteAccountEmail": {
+      "subject": "Potvrdite brisanje Electius računa",
+      "heading": "Potvrdite brisanje računa",
+      "body": "Zaprimili smo zahtjev za brisanje vašeg Electius računa i svih podataka vaše organizacije — izbora, popisa birača, rezultata i arhiva. Kliknite gumb u nastavku kako biste brisanje potvrdili.",
+      "cta": "Potvrdi brisanje računa",
+      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
+      "expiry": "Poveznica se može iskoristiti samo jednom i uskoro istječe. Ako niste zatražili brisanje, zanemarite ovu poruku — račun ostaje netaknut."
+    },
+    "confirmDeletion": {
+      "title": "Potvrda brisanja računa",
+      "subtitle": "Još jedan korak i račun te svi podaci nestaju zauvijek.",
+      "checking": "Provjera…",
+      "warnTitle": "Ovo se ne može poništiti",
+      "warnBody": "Klikom se trajno brišu račun <b>{email}</b>, vaša organizacija i svi izbori, popisi birača, rezultati i arhive.",
+      "confirm": "Obriši račun trajno",
+      "deleting": "Brisanje…",
+      "cancel": "Odustani i vrati me natrag",
+      "signIn": "Prijava",
+      "back": "Natrag na početnu",
+      "needsSignIn": {
+        "title": "Prijavite se za nastavak",
+        "body": "Iz sigurnosnih razloga brisanje se dovršava samo iz prijavljene sesije. Prijavite se na ovom uređaju, pa ponovno otvorite poveznicu iz e-pošte — i dalje vrijedi."
+      },
+      "noToken": {
+        "title": "Poveznica nije potpuna",
+        "body": "U poveznici nedostaje token za potvrdu. Otvorite je izravno iz e-pošte ili zatražite novu u postavkama računa."
+      },
+      "invalidToken": {
+        "title": "Poveznica više ne vrijedi",
+        "body": "Već je iskorištena ili je istekla. Račun nije obrisan. Zatražite novu potvrdu u postavkama računa."
+      },
+      "subscriptionActive": {
+        "title": "Pretplata je još aktivna",
+        "body": "Prvo otkažite Pro pretplatu — inače bi naplata tekla za račun kojeg više nema. Račun nije obrisan."
+      },
+      "sharedOrganization": {
+        "title": "Organizaciju koristi još netko",
+        "body": "Vašu organizaciju vodi još jedan administrator, pa je nije moguće obrisati. Račun nije obrisan — javite nam se da prenesemo vlasništvo."
+      },
+      "failed": {
+        "title": "Brisanje nije uspjelo",
+        "body": "Dogodila se pogreška i ništa nije obrisano. Pokušajte ponovno ili zatražite novu potvrdu u postavkama računa."
+      }
+    },
+    "accountDeleted": {
+      "title": "Račun je obrisan",
+      "body": "Vaš račun i svi podaci vaše organizacije su obrisani. Hvala što ste koristili Electius.",
+      "home": "Natrag na početnu"
+    },
     "login": {
       "title": "Dobrodošli natrag",
       "subtitle": "Prijavite se za upravljanje izborima svoje organizacije.",
@@ -1183,6 +1232,24 @@
           "label": "Sakrij istaknutu izlaznost",
           "description": "Uklonite istaknuti panel aktivnih izbora."
         }
+      },
+      "account": {
+        "title": "Upravljanje računom",
+        "subtitle": "Radnje ovdje utječu na cijeli vaš račun.",
+        "deleteLabel": "Obriši račun",
+        "deleteDescription": "Trajno obrišite svoj račun i sve povezane podatke",
+        "subscriptionBlocked": "Prvo otkažite Pro pretplatu — inače bi naplata tekla za račun kojeg više nema.",
+        "manageBilling": "Upravljanje naplatom",
+        "modalTitle": "Obrisati vaš račun?",
+        "modalBody": "Ovime se trajno brišu vaš račun, <b>{org}</b> te svi izbori, popisi birača, rezultati i arhive. Izbori koji su u tijeku se zaustavljaju. Ovo se ne može poništiti.",
+        "modalGdpr": "Brisanje se dovršava u roku od 30 dana.",
+        "confirmLabel": "Za potvrdu upišite <word></word>",
+        "keepAccount": "Zadrži moj račun",
+        "deletePermanently": "Obriši trajno",
+        "sending": "Slanje…",
+        "requested": "Zahtjev je zaprimljen — provjerite e-poštu i potvrdite brisanje. Podaci se brišu u roku od 30 dana.",
+        "requestFailed": "Slanje potvrde nije uspjelo. Pokušajte ponovno.",
+        "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
       }
     }
   },

@@ -135,6 +135,16 @@ export async function sendResetPasswordEmail(
   await sendActionEmail(to, url, CATALOGS[locale].auth.resetEmail);
 }
 
+// Potvrda brisanja računa (profile-settings-phase-4-spec §2). Poveznica JE drugi
+// faktor — bez nje se račun ne može obrisati ni iz prijavljene sesije.
+export async function sendDeleteAccountEmail(
+  to: string,
+  url: string,
+  locale: Locale = "hr",
+) {
+  await sendActionEmail(to, url, CATALOGS[locale].auth.deleteAccountEmail);
+}
+
 // ───────── Voter invitations (election-publication-spec §3) ─────────
 
 // One entry per voter; rawToken becomes the magic-link URL and is never

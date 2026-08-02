@@ -45,6 +45,55 @@
       "fallback": "If the button doesn't work, copy this link into your browser:",
       "expiry": "The link is valid for 1 hour and can be used only once. If you didn't request a password change, you can safely ignore this message — your password stays unchanged."
     },
+    "deleteAccountEmail": {
+      "subject": "Confirm your Electius account deletion",
+      "heading": "Confirm account deletion",
+      "body": "We received a request to delete your Electius account and all of your organization's data — elections, voter lists, results and archives. Click the button below to confirm the deletion.",
+      "cta": "Confirm account deletion",
+      "fallback": "If the button doesn't work, copy this link into your browser:",
+      "expiry": "The link can be used only once and expires shortly. If you didn't request a deletion, ignore this message — your account stays untouched."
+    },
+    "confirmDeletion": {
+      "title": "Confirm account deletion",
+      "subtitle": "One more step and your account and all its data are gone for good.",
+      "checking": "Checking…",
+      "warnTitle": "This cannot be undone",
+      "warnBody": "Confirming permanently erases the account <b>{email}</b>, your organization, and every election, voter list, result and archive.",
+      "confirm": "Delete my account permanently",
+      "deleting": "Deleting…",
+      "cancel": "Cancel and take me back",
+      "signIn": "Sign in",
+      "back": "Back to home",
+      "needsSignIn": {
+        "title": "Sign in to continue",
+        "body": "For security, deletion can only be completed from a signed-in session. Sign in on this device, then open the link from your email again — it is still valid."
+      },
+      "noToken": {
+        "title": "This link is incomplete",
+        "body": "The confirmation token is missing from the link. Open it directly from your email, or request a new one in your account settings."
+      },
+      "invalidToken": {
+        "title": "This link is no longer valid",
+        "body": "It has already been used or has expired. Your account was not deleted. Request a new confirmation in your account settings."
+      },
+      "subscriptionActive": {
+        "title": "Your subscription is still active",
+        "body": "Cancel your Pro subscription first — otherwise billing would continue for an account that no longer exists. Your account was not deleted."
+      },
+      "sharedOrganization": {
+        "title": "Someone else still uses this organization",
+        "body": "Another administrator runs your organization, so it cannot be deleted. Your account was not deleted — contact us to transfer ownership."
+      },
+      "failed": {
+        "title": "Deletion failed",
+        "body": "Something went wrong and nothing was deleted. Try again, or request a new confirmation in your account settings."
+      }
+    },
+    "accountDeleted": {
+      "title": "Account deleted",
+      "body": "Your account and all of your organization's data have been erased. Thank you for using Electius.",
+      "home": "Back to home"
+    },
     "login": {
       "title": "Welcome back",
       "subtitle": "Sign in to manage your organization's elections.",
@@ -1183,6 +1232,24 @@
           "label": "Hide live turnout hero",
           "description": "Remove the highlighted active-election panel."
         }
+      },
+      "account": {
+        "title": "Account management",
+        "subtitle": "Actions here affect your whole account.",
+        "deleteLabel": "Delete account",
+        "deleteDescription": "Permanently delete your account and all associated data",
+        "subscriptionBlocked": "Cancel your Pro subscription first — otherwise billing would continue for an account that no longer exists.",
+        "manageBilling": "Manage billing",
+        "modalTitle": "Delete your account?",
+        "modalBody": "This permanently erases your account, <b>{org}</b>, and every election, voter list, result and archive. Running elections are stopped. This cannot be undone.",
+        "modalGdpr": "Deletion completes within 30 days.",
+        "confirmLabel": "Type <word></word> to confirm",
+        "keepAccount": "Keep my account",
+        "deletePermanently": "Delete permanently",
+        "sending": "Sending…",
+        "requested": "Deletion requested — check your email to confirm. Data is erased within 30 days.",
+        "requestFailed": "We couldn't send the confirmation. Please try again.",
+        "rateLimited": "Too many attempts. Please try again in a few minutes."
       }
     }
   },
