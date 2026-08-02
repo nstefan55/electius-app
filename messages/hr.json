@@ -1254,6 +1254,13 @@
           "description": "Uklonite istaknuti panel aktivnih izbora."
         }
       },
+      "export": {
+        "title": "Izvoz podataka",
+        "subtitle": "Preuzmite cjelovitu kopiju podataka svoje organizacije — izbore, listiće, rezultate, popise birača i arhive.",
+        "json": "Izvezi kao JSON",
+        "note": "JSON je strojno čitljiv, u skladu s pravom na prenosivost podataka (GDPR). Sadrži izbore, kandidate, popise birača, rezultate i arhive. Listići su anonimni u svakom izvozu — glas se nikad ne može povezati s biračem.",
+        "fileSuffix": "podaci"
+      },
       "account": {
         "title": "Upravljanje računom",
         "subtitle": "Radnje ovdje utječu na cijeli vaš račun.",
@@ -1263,6 +1270,7 @@
         "manageBilling": "Upravljanje naplatom",
         "modalTitle": "Obrisati vaš račun?",
         "modalBody": "Ovime se trajno brišu vaš račun, <b>{org}</b> te svi izbori, popisi birača, rezultati i arhive. Izbori koji su u tijeku se zaustavljaju. Ovo se ne može poništiti.",
+        "modalExport": "Razmislite o <a>izvozu podataka</a> prije brisanja.",
         "modalGdpr": "Brisanje se dovršava u roku od 30 dana.",
         "confirmLabel": "Za potvrdu upišite <word></word>",
         "keepAccount": "Zadrži moj račun",

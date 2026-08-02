@@ -5,6 +5,7 @@ import { subscriptionBlocks } from "@/lib/services/account-deletion.service";
 import { DashboardFooter } from "@/components/dashboard/dashboard-footer";
 import { AccessibilityCard } from "@/components/settings/accessibility-card";
 import { DashboardCustomizationsCard } from "@/components/settings/dashboard-customizations-card";
+import { DataExportCard } from "@/components/settings/data-export-card";
 import { AccountManagementCard } from "@/components/settings/account-management-card";
 
 // /settings — controls only; identity moved to /profile. Stays a server
@@ -34,6 +35,8 @@ export default async function SettingsPage() {
       <AccessibilityCard prefs={session.accessibility} />
 
       <DashboardCustomizationsCard />
+
+      <DataExportCard />
 
       <AccountManagementCard
         organizationName={session.user.organization}

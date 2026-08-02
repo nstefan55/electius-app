@@ -1254,6 +1254,13 @@
           "description": "Remove the highlighted active-election panel."
         }
       },
+      "export": {
+        "title": "Data export",
+        "subtitle": "Download a full copy of your organization's data — elections, ballots, results, voter lists and archives.",
+        "json": "Export as JSON",
+        "note": "JSON is machine-readable, per GDPR data portability. It contains your elections, candidates, voter lists, results and archives. Ballots are anonymous in every export — a vote can never be traced to a voter.",
+        "fileSuffix": "data"
+      },
       "account": {
         "title": "Account management",
         "subtitle": "Actions here affect your whole account.",
@@ -1263,6 +1270,7 @@
         "manageBilling": "Manage billing",
         "modalTitle": "Delete your account?",
         "modalBody": "This permanently erases your account, <b>{org}</b>, and every election, voter list, result and archive. Running elections are stopped. This cannot be undone.",
+        "modalExport": "Consider a <a>data export</a> first.",
         "modalGdpr": "Deletion completes within 30 days.",
         "confirmLabel": "Type <word></word> to confirm",
         "keepAccount": "Keep my account",
