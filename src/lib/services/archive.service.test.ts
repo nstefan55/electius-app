@@ -8,7 +8,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// R2 se ne dira u testu: zanima nas ZOVE li se brisanje i s kojom kantom.
+vi.mock("./storage.service", () => ({ deleteObject: vi.fn() }));
+
 const { prisma } = await import("@/lib/prisma");
+const { deleteObject } = await import("./storage.service");
 const { sealElection, ArchiveError } = await import("./archive.service");
 const { buildMerkleTree } = await import("./merkle.service");
 
@@ -180,5 +184,52 @@ describe("sealElection", () => {
     const res = await sealElection("e1", "org1");
     expect(res.votesSealed).toBe(0);
     expect(res.merkleRoot).toBe(buildMerkleTree([]).root);
+  });
+
+  // D8: izvještaj spremljen dok su izbori bili CLOSED nastao je prije pečata, pa
+  // nema Merkle korijen. Bez ništenja bi brzi put zauvijek posluživao taj
+  // dokument bez zapisa o integritetu.
+  it("pečaćenje ništi sva tri stupca spremljenog izvještaja", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(closed as never);
+    await sealElection("e1", "org1");
+
+    const data = vi.mocked(prisma.election.updateMany).mock.calls[0]![0]!.data;
+    expect(data).toMatchObject({
+      status: "ARCHIVED",
+      reportKey: null,
+      reportGeneratedAt: null,
+      reportLocale: null,
+    });
+  });
+
+  it("zastarjeli objekt se briše iz privatne kante nakon commita", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      ...closed,
+      reportKey: "reports/e1/abc.pdf",
+    } as never);
+
+    await sealElection("e1", "org1");
+
+    expect(deleteObject).toHaveBeenCalledWith("private", "reports/e1/abc.pdf");
+  });
+
+  it("bez spremljenog izvještaja se ništa ne briše", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(closed as never);
+    await sealElection("e1", "org1");
+    expect(deleteObject).not.toHaveBeenCalled();
+  });
+
+  // Zaostali objekt je potrošen prostor; pad brisanja ne smije srušiti pečat,
+  // koji je već commitan i nepovratan.
+  it("pad brisanja u R2 ne ruši pečaćenje", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      ...closed,
+      reportKey: "reports/e1/abc.pdf",
+    } as never);
+    vi.mocked(deleteObject).mockRejectedValueOnce(new Error("R2 down"));
+
+    await expect(sealElection("e1", "org1")).resolves.toMatchObject({
+      votesSealed: 3,
+    });
   });
 });

@@ -1,7 +1,12 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { ShieldCheck, Trophy } from "lucide-react";
-import { formatVotingDate, turnoutPct } from "@/lib/elections-view";
+import {
+  elapsedParts,
+  formatVotingDateTime,
+  turnoutPct,
+  voterCounts,
+} from "@/lib/elections-view";
 import {
   candidateInitials,
   quorumOutcome,
@@ -36,6 +41,13 @@ export interface ElectionReportProps {
   generatedAt: Date;
   locale: string;
   sealed: ArchiveSeal | null;
+  /** Glasanje još traje (access === "live"). Izvodi ga pozivatelj — komponenta
+   *  ne zaključuje o pravima pristupa. */
+  preliminary: boolean;
+  /** Otvaranje glasanja (ISO) — mjeri proteklo vrijeme na privremenom listu. */
+  opens: string;
+  /** Birači sa statusom PENDING; hrani zajednički voterCounts. */
+  notInvited: number;
 }
 
 export async function ElectionReport({
@@ -50,6 +62,9 @@ export async function ElectionReport({
   generatedAt,
   locale,
   sealed,
+  preliminary,
+  opens,
+  notInvited,
 }: ElectionReportProps) {
   const t = await getTranslations("dashboard.election.report");
   // Posuđuje iz namespacea rezultata: pobjednik, izjednačenje i udio moraju
@@ -58,38 +73,67 @@ export async function ElectionReport({
 
   const ranked = rankCandidates(options, votesCast);
   const outcome = winnerOutcome(ranked);
-  const others = ranked.filter((c) => !c.isWinner);
+  // Pobjednička kartica pada dok glasanje traje, pa vodeći kandidat mora ući u
+  // raspodjelu — inače bi ga list posve izostavio.
+  const distribution = preliminary ? ranked : ranked.filter((c) => !c.isWinner);
   const quorum =
     quorumThreshold === null
       ? null
       : quorumOutcome(voters, votesCast, quorumThreshold);
   const nf = new Intl.NumberFormat(locale === "hr" ? "hr-HR" : "en-US");
+  const turnout = turnoutPct(votesCast, voters);
+  const stamp = formatVotingDateTime(generatedAt.toISOString(), locale);
 
-  const quorumState = quorum
-    ? tr(quorum.met ? "quorumMet" : "quorumNotMet")
-    : "";
+  // Ocjena kvoruma je tvrdnja o ishodu: "nije postignut" usred glasanja znači
+  // "još nije", a čita se kao presuda (D9). Prag se ispisuje, ocjena ne.
+  const quorumState =
+    quorum && !preliminary ? tr(quorum.met ? "quorumMet" : "quorumNotMet") : "";
 
   const turnoutRows = [
     { label: t("rowEligible"), value: nf.format(voters), tone: "" },
     { label: t("rowVotesCast"), value: nf.format(votesCast), tone: "" },
     {
       label: t("rowTurnout"),
-      value: `${turnoutPct(votesCast, voters)}%`,
+      value: `${turnout}%`,
       tone: "text-brand-700",
     },
     ...(quorum
       ? [
           {
             label: t("rowQuorum"),
-            value: t("quorumValue", {
-              pct: quorum.requiredPct,
-              state: quorumState,
-            }),
-            tone: quorum.met ? "text-success-700" : "text-error-700",
+            value: preliminary
+              ? `${quorum.requiredPct}%`
+              : t("quorumValue", { pct: quorum.requiredPct, state: quorumState }),
+            tone: preliminary
+              ? ""
+              : quorum.met
+                ? "text-success-700"
+                : "text-error-700",
           },
         ]
       : []),
   ];
+
+  // Iste četiri brojke koje čitaju kartice pregleda i sažetak popisa birača —
+  // jedna derivacija, pa se tri zaslona ne mogu razići.
+  const counts = voterCounts({ total: voters, notInvited, voted: votesCast });
+  const figures = [
+    { label: t("statTotal"), value: counts.total },
+    { label: t("statInvited"), value: counts.invited },
+    { label: t("statVoted"), value: counts.voted },
+    { label: t("statNotVoted"), value: counts.pending },
+  ];
+
+  // Proteklo, ne preostalo (D10): mjeri tempo sudjelovanja, a odbrojavanje do
+  // kraja već stoji na pregledu izbora. Sati se ispisuju uvijek, dani samo kad
+  // ih ima — "0 dana 4 sata" je šum.
+  const elapsed = elapsedParts(opens, generatedAt.getTime());
+  const duration = [
+    elapsed.days > 0 ? t("durationDays", { count: elapsed.days }) : null,
+    t("durationHours", { count: elapsed.hours }),
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <article className="mx-auto w-full max-w-205 rounded-md border border-[#E2E6EC] bg-white px-8 py-10 shadow-md sm:px-15 sm:py-14 print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none">
@@ -130,8 +174,13 @@ export async function ElectionReport({
       </header>
 
       <div className="mt-6.5 h-0.5 rounded-sm bg-brand-900" />
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-400">
-        <span>{t("generated", { date: formatVotingDate(generatedAt.toISOString(), locale) })}</span>
+      {/* neutral-600, ne neutral-400: 2,9:1 pada AA i dizajn ga označava kao
+          boju samo za rezervirani tekst. Vrijeme uz datum — dva izvještaja s
+          istog dana inače su nerazlučiva — i UTC izrijekom, jer formatter
+          formatira u UTC-u, pa bi 17:04 na dokumentu značilo 19:04 lokalno. */}
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-neutral-600">
+        {/* Kad je privremeno, pečat stoji u traci upozorenja — ne dvaput. */}
+        <span>{preliminary ? "" : t("generatedUtc", { date: stamp })}</span>
         {/* Pravi id izbora, označen kao takav. Izmišljena referentna oznaka na
             službenom dokumentu bila bi mala verzija lažne tvrdnje o reviziji. */}
         <span className="font-mono">
@@ -139,25 +188,55 @@ export async function ElectionReport({
         </span>
       </div>
 
+      {/* Traka privremenog izvještaja (dizajn: §7.10 upozorenje). Stoji iznad
+          rezultata jer mijenja značenje svega ispod. */}
+      {preliminary && (
+        <div className="mt-6 rounded-md border-l-[3px] border-warning-500 bg-warning-50 px-5 py-4 break-inside-avoid">
+          <div className="font-heading text-[15px] font-bold text-warning-700">
+            {t("preliminaryTitle")}
+          </div>
+          <p className="mt-1 text-sm text-warning-700">
+            {t("preliminaryTurnout", { pct: turnout, duration })} ·{" "}
+            {t("generatedUtc", { date: stamp })}
+          </p>
+          <p className="mt-1.5 text-sm text-neutral-600">{t("preliminaryNote")}</p>
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
+            {figures.map((f) => (
+              <div key={f.label}>
+                <dt className="text-[11.5px] text-neutral-600">{f.label}</dt>
+                <dd className="font-heading text-[19px] leading-tight font-bold text-brand-900">
+                  {nf.format(f.value)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+
       {/* Rezultati */}
       <SectionHeading>{t("headingResults")}</SectionHeading>
 
-      <WinnerBlock
-        outcome={outcome}
-        labels={{
-          winner: tr("winner"),
-          tie: tr("winnerTie"),
-          none: tr("winnerNone"),
-          noneBody: tr("winnerNoneBody"),
-        }}
-        share={(votes) => tr("winnerShare", { pct: voterSharePct(votes, voters) })}
-        quorumPill={
-          quorum
-            ? { label: t("quorumPill", { state: quorumState }), met: quorum.met }
-            : null
-        }
-        nf={nf}
-      />
+      {/* Pobjednik je tvrdnja o ishodu koji se nije dogodio, pa dok glasanje
+          traje kartice nema (D9). Same brojke po kandidatu ostaju — one su
+          istinita tvrdnja o trenutku. */}
+      {!preliminary && (
+        <WinnerBlock
+          outcome={outcome}
+          labels={{
+            winner: tr("winner"),
+            tie: tr("winnerTie"),
+            none: tr("winnerNone"),
+            noneBody: tr("winnerNoneBody"),
+          }}
+          share={(votes) => tr("winnerShare", { pct: voterSharePct(votes, voters) })}
+          quorumPill={
+            quorum
+              ? { label: t("quorumPill", { state: quorumState }), met: quorum.met }
+              : null
+          }
+          nf={nf}
+        />
+      )}
 
       {ranked.length === 0 ? (
         <p className="mt-3.5 border-b border-[#EEF1F5] py-3 text-sm text-neutral-600">
@@ -165,7 +244,7 @@ export async function ElectionReport({
         </p>
       ) : (
         <div className="mt-3.5">
-          {others.map((c) => (
+          {distribution.map((c) => (
             <div
               key={c.id}
               className="flex items-center justify-between gap-4 border-b border-[#EEF1F5] px-1 py-3 break-inside-avoid"

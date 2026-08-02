@@ -49,6 +49,11 @@ const limiters = (() => {
     // 30 not 10; resend is keyed IP+email so it stays tight.
     vote: make(redis, "vote", 30, "15 m"),
     resendVoteLink: make(redis, "resend-vote-link", 3, "15 m"),
+    // PDF izvještaj (election-report-storage-spec §10): svaki render pokreće
+    // preglednik, pa je petlja po 20 izbora pravi novac. Ključ je IP+korisnik.
+    // I brzi put (posluživanje spremljenog objekta) troši kvotu — jednostavnije,
+    // a 10 preuzimanja u 15 minuta je za čovjeka ionako široko.
+    reportRender: make(redis, "report-render", 10, "15 m"),
   };
 })();
 

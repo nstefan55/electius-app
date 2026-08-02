@@ -362,6 +362,17 @@ export const getElectionResults = cache(
   },
 );
 
+// Referenca na spremljeni PDF izvještaj (election-report-storage-spec).
+// Namjerno zaseban upit, ne prošireni ELECTION_SELECT: /elections, /results i
+// nadzorna ploča ove stupce nikad ne čitaju. Org u WHERE, kao i svugdje — tuđi
+// id ne vrati redak, pa ruta nema kako postati potvrda o postojanju izbora.
+export async function getStoredReport(id: string, organizationId: string) {
+  return prisma.election.findFirst({
+    where: { id, organizationId },
+    select: { reportKey: true, reportLocale: true, reportGeneratedAt: true },
+  });
+}
+
 // Public apex results page (/vote-host /results/[id]) — the resultsVisible gate + title only.
 // Null → notFound(); resultsVisible=false → notFound() too (never leak unpublished results).
 // The detailed public-results UI selects more later (public-results spec).

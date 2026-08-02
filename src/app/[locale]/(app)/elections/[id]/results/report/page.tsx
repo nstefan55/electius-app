@@ -1,27 +1,37 @@
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { requireSession } from "@/lib/auth/require-session";
-import { getElectionDetail, getElectionResults } from "@/lib/db/elections";
+import {
+  getElectionDetail,
+  getElectionOverview,
+  getElectionResults,
+} from "@/lib/db/elections";
 import { resultsDetailAccess } from "@/lib/elections-view";
 import { exportFilename } from "@/lib/csv";
+import { REPORT_SUFFIX } from "@/lib/report-export";
+import { resolveExportLocale } from "@/lib/voter-export";
 import { ElectionReport } from "@/components/elections/election-report";
 
 // Pregled PDF izvještaja (election-results-pdf-report-spec).
 //
-// Isporuka je ispis preglednika: gumb zove window.print(), a @media print skida
-// svu ljusku i ostavlja sam list. Nema Puppeteera, nema paketa od 50 MB, nema
-// granice od 10 s — i nema problema sa sesijom, jer bezglavi preglednik nema
-// kolačić pa bi snimio zaslon prijave.
-// ponytail: ime spremljene datoteke bira preglednik (predlaže ga iz naslova
-// stranice, vidi generateMetadata). Kad arhiva zatraži PDF u R2, generator se
-// dograđuje na gotov predložak — nije prepisivanje.
+// Dva puta do istog dokumenta, oba kroz OVAJ list i @media print CSS:
+//   1. gumb Ispis — window.print(), ime datoteke bira preglednik (predlaže ga
+//      iz naslova stranice, vidi generateMetadata),
+//   2. gumb Preuzmi — /api/elections/[id]/report/pdf, gdje bezglavi Chromium
+//      otvara upravo ovu stranicu (election-report-storage-spec).
+// Zato ovdje nema drugog predloška: promjena lista mijenja oba puta.
+//
+// Ranije zabilježene zamjerke Puppeteeru više ne stoje: kolačić sesije se
+// prosljeđuje (pdf.service), a granica izvođenja je 300 s na svim Vercel
+// planovima, ne 10 s.
 //
 // Statusna zaštita: ista `resultsDetailAccess` kao stranica rezultata, uz jednu
 // razliku — zapečaćeni izbori ovdje daju 404, ne objašnjenje. Administratoru se
 // razlog kaže na stranici rezultata; izvještaj nema što objašnjavati.
 // Ruta se čuva sama: zaštita stranice rezultata ne seže do nje.
 
-const SUFFIX: Record<string, string> = { hr: "izvjestaj", en: "report" };
+// REPORT_SUFFIX je isti izvor koji koristi preuzimanje — naslov stranice i ime
+// spremljene datoteke ne smiju se razići.
 
 export async function generateMetadata({
   params,
@@ -38,7 +48,11 @@ export async function generateMetadata({
   // Naslov stranice JEST ime datoteke: preglednik ga predlaže pri spremanju u
   // PDF. Bez nastavka — .pdf dodaje sam.
   return {
-    title: exportFilename(election.name, SUFFIX[locale] ?? "report", new Date()),
+    title: exportFilename(
+      election.name,
+      REPORT_SUFFIX[resolveExportLocale(locale)],
+      new Date(),
+    ),
   };
 }
 
@@ -58,6 +72,16 @@ export default async function ElectionReportPage({
   const results = await getElectionResults(id, organizationId);
   if (!results) notFound();
 
+  // "live" znači da glasanje još traje — jedina razlika koju list treba znati.
+  const preliminary = access === "live";
+
+  // notInvited samo kad zatreba: getElectionOverview je cache()-omotan i već
+  // vraća isti broj koji čitaju kartice pregleda, pa izvještaj ne može reći
+  // drugu brojku od zaslona. Zatvoreni izbori ovaj upit ne plaćaju.
+  const overview = preliminary
+    ? await getElectionOverview(id, organizationId)
+    : null;
+
   return (
     <ElectionReport
       electionId={id}
@@ -71,6 +95,9 @@ export default async function ElectionReportPage({
       generatedAt={new Date()}
       locale={await getLocale()}
       sealed={results.sealed}
+      preliminary={preliminary}
+      opens={results.opens}
+      notInvited={overview?.notInvited ?? 0}
     />
   );
 }

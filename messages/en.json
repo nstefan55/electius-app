@@ -892,7 +892,6 @@
         "back": "Back to results",
         "download": "Download PDF",
         "official": "Official election report",
-        "generated": "Generated {date}",
         "electionId": "Election ID:",
         "headingResults": "Results",
         "headingTurnout": "Turnout",
@@ -906,7 +905,21 @@
         "auditBody": "This election was conducted on the Electius platform. Every vote was recorded anonymously — a ballot record carries no link to a voter — and each ballot carries its own cryptographic hash.",
         "auditContact": "For any issues or questions please contact",
         "footerBrand": "Electius — Secure electronic voting",
-        "auditSealedBody": "The complete set of ballots has been sealed into a Merkle tree. The root recorded below allows independent verification — any verification code can be confirmed without access to this database and without trusting Electius."
+        "auditSealedBody": "The complete set of ballots has been sealed into a Merkle tree. The root recorded below allows independent verification — any verification code can be confirmed without access to this database and without trusting Electius.",
+        "generatedUtc": "Generated {date} UTC",
+        "preliminaryTitle": "Preliminary — voting is still open",
+        "preliminaryTurnout": "Turnout {pct}% after {duration} of voting",
+        "preliminaryNote": "These figures describe a moment, not an outcome. The winner and the quorum verdict are published once voting closes.",
+        "statTotal": "Total voters",
+        "statInvited": "Invited",
+        "statVoted": "Voted",
+        "statNotVoted": "Didn't vote",
+        "durationDays": "{count, plural, one {# day} other {# days}}",
+        "durationHours": "{count, plural, one {# hour} other {# hours}}",
+        "print": "Print",
+        "downloading": "Preparing PDF…",
+        "downloadFailed": "Could not generate the PDF. Please try again.",
+        "downloadRateLimited": "Too many downloads. Try again in a few minutes."
       },
       "lists": {
         "archive": {
