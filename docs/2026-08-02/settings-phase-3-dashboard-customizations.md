@@ -1,6 +1,6 @@
 # Profile & Settings Phase 3 — Dashboard Customizations
 
-**Branch:** `feature/settings-phase-3` · **Version:** 0.9.9
+**Branch:** `feature/settings-phase-3` · **Version:** stays 0.9.8 (bump skipped at the owner's request)
 **Spec:** `context/features/profile-settings-phase-3-spec.md` (index: `profile-settings-spec.md`)
 **Design:** `Settings.dc.html` → "Dashboard customizations (Pro · not MVP)"
 
