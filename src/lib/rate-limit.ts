@@ -60,6 +60,10 @@ const limiters = (() => {
     // ograničena — token je nepogodiv i jednokratan, a limit bi rušio legitiman
     // ponovni klik na jedinom koraku koji brisanje uopće izvršava.
     deleteAccount: make(redis, "delete-account", 3, "1 h"),
+    // Izvoz podataka organizacije (profile-settings-phase-6-spec §5): jedan
+    // zahtjev pročita cijelu organizaciju. Ključ je korisnik, ne IP — dijeljeni
+    // IP fakulteta ne smije zaključati drugog administratora.
+    export: make(redis, "export", 3, "1 h"),
   };
 })();
 

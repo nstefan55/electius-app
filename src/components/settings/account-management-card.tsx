@@ -137,9 +137,19 @@ function DeleteAccountDialog({
                   ),
                 })}
               </Dialog.Description>
-              {/* Faza 6 (izvoz podataka) nije isporučena — rečenica o izvozu
-                  namjerno izostaje umjesto poveznice u prazno (spec §1). */}
               <p className="mt-2 text-[0.8125rem] leading-relaxed text-neutral-600">
+                {/* Ista ruta koju nudi kartica izvoza — brisanje je zadnji
+                    trenutak da administrator uzme svoje podatke. */}
+                {t.rich("modalExport", {
+                  a: (chunks) => (
+                    <a
+                      href={`/api/organization/export?locale=${locale}`}
+                      className="font-medium text-brand-700 hover:underline"
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                })}{" "}
                 {t("modalGdpr")}
               </p>
 
