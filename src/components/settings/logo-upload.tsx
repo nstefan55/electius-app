@@ -54,15 +54,15 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium text-neutral-800">{t("label")}</span>
-          <span className="inline-flex h-4.5 items-center rounded-full bg-brand-100 px-1.75 text-[11px] font-semibold text-brand-700">
+          <span className="inline-flex h-4.5 items-center rounded-full bg-brand-100 px-1.75 text-[0.6875rem] font-semibold text-brand-700">
             {t("pro")}
           </span>
         </div>
-        <p className="mt-1 text-[13px] leading-normal text-neutral-600">{t("helper")}</p>
+        <p className="mt-1 text-[0.8125rem] leading-normal text-neutral-600">{t("helper")}</p>
         {(logoUrl || pending) && (
           <div className="mt-2.5 flex flex-wrap items-center gap-2">
             {pending ? (
-              <span className="text-[13px] text-neutral-600">{t("uploading")}</span>
+              <span className="text-[0.8125rem] text-neutral-600">{t("uploading")}</span>
             ) : (
               <Button variant="ghost" size="sm" onClick={remove}>
                 {t("remove")}

@@ -57,7 +57,7 @@ export function VotesPerDayChart({
     <section className={CARD}>
       <div className={CARD_HEAD}>
         <h2 className={CARD_TITLE}>{labels.dayChart}</h2>
-        <span className="inline-flex items-center gap-1.5 text-[12.5px] text-neutral-600">
+        <span className="inline-flex items-center gap-1.5 text-[0.78125rem] text-neutral-600">
           <span className="size-2.25 rounded-[2px] bg-brand-700" />
           {labels.dayLegend}
         </span>
@@ -148,14 +148,14 @@ export function TurnoutDonut({
                       <tspan
                         x={viewBox.cx}
                         y={viewBox.cy}
-                        className="fill-neutral-800 font-heading text-[32px] font-bold"
+                        className="fill-neutral-800 font-heading text-[2rem] font-bold"
                       >
                         {nf.format(votesCast)}
                       </tspan>
                       <tspan
                         x={viewBox.cx}
                         y={(viewBox.cy ?? 0) + 24}
-                        className="fill-neutral-600 text-[12.5px]"
+                        className="fill-neutral-600 text-[0.78125rem]"
                       >
                         {labels.donutCast}
                       </tspan>
@@ -190,7 +190,7 @@ function LegendItem({ color, label }: { color: string; label: string }) {
         style={{ background: color }}
         aria-hidden
       />
-      <span className="text-[13px] text-neutral-600">{label}</span>
+      <span className="text-[0.8125rem] text-neutral-600">{label}</span>
     </div>
   );
 }

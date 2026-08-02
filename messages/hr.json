@@ -1215,6 +1215,27 @@
     "settings": {
       "title": "Postavke",
       "subtitle": "Pristupačnost, plan, podaci i upravljanje računom.",
+      "accessibility": {
+        "title": "Pristupačnost",
+        "subtitle": "Odnosi se samo na vašu nadzornu ploču — birači vlastite postavke biraju na glasačkom listiću. Uskoro stižu i druge mogućnosti.",
+        "reduceMotion": {
+          "label": "Manje animacija",
+          "description": "Smanjuje animacije i prijelaze u cijeloj nadzornoj ploči."
+        },
+        "highContrast": {
+          "label": "Jači kontrast",
+          "description": "Izraženiji obrubi i kontrast teksta na svim površinama."
+        },
+        "largerText": {
+          "label": "Veći tekst",
+          "description": "Povećava osnovnu veličinu teksta u tablicama, obrascima i rezultatima."
+        },
+        "focusOutlines": {
+          "label": "Uvijek prikaži obrub fokusa",
+          "description": "Zadržava vidljiv prsten fokusa na svakoj kontroli, ne samo pri kretanju tabulatorom."
+        },
+        "error": "Postavku nije bilo moguće spremiti. Pokušajte ponovno."
+      },
       "customizations": {
         "title": "Prilagodbe nadzorne ploče",
         "subtitle": "Prilagodite što nadzorna ploča prikazuje i kako.",

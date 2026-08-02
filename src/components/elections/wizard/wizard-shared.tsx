@@ -55,10 +55,10 @@ export type StepProps = {
 };
 
 export const INPUT_CLASS =
-  "w-full rounded-md border border-border bg-white px-3.5 text-[15px] text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-brand-700 focus:shadow-focus";
+  "w-full rounded-md border border-border bg-white px-3.5 text-[0.9375rem] text-neutral-950 outline-none transition-[border-color,box-shadow] placeholder:text-neutral-400 focus:border-brand-700 focus:shadow-focus";
 
 export const FIELD_LABEL =
-  "mb-1.5 block text-[13px] font-semibold text-muted-foreground";
+  "mb-1.5 block text-[0.8125rem] font-semibold text-muted-foreground";
 
 export function StepCard({
   children,
@@ -85,7 +85,7 @@ export function StepHeading({ title, sub }: { title: string; sub: string }) {
       <h1 className="font-heading text-2xl font-semibold text-neutral-800">
         {title}
       </h1>
-      <p className="mt-2 mb-7 text-[15px] leading-normal text-muted-foreground">
+      <p className="mt-2 mb-7 text-[0.9375rem] leading-normal text-muted-foreground">
         {sub}
       </p>
     </>
@@ -94,7 +94,7 @@ export function StepHeading({ title, sub }: { title: string; sub: string }) {
 
 export function ProBadge() {
   return (
-    <span className="inline-flex h-4.5 items-center rounded-full bg-[#F5F3FF] px-1.75 text-[10px] font-bold tracking-wide text-[#6D28D9]">
+    <span className="inline-flex h-4.5 items-center rounded-full bg-[#F5F3FF] px-1.75 text-[0.625rem] font-bold tracking-wide text-[#6D28D9]">
       PRO
     </span>
   );
@@ -135,7 +135,7 @@ export function SelectCard({
         <span className="inline-flex items-center gap-1.75">
           <span
             className={cn(
-              "font-heading text-[15px] font-semibold",
+              "font-heading text-[0.9375rem] font-semibold",
               disabled
                 ? "text-neutral-400"
                 : selected
@@ -155,7 +155,7 @@ export function SelectCard({
       </div>
       <div
         className={cn(
-          "mt-1.5 text-[13px] leading-snug",
+          "mt-1.5 text-[0.8125rem] leading-snug",
           disabled ? "text-neutral-400/70" : "text-muted-foreground",
         )}
       >
@@ -284,10 +284,10 @@ export function CsvDropZone({
       <span className="flex size-10 items-center justify-center rounded-full bg-brand-50 text-brand-700">
         <Upload className="size-5" />
       </span>
-      <span className="text-[15px] font-semibold text-neutral-800">
+      <span className="text-[0.9375rem] font-semibold text-neutral-800">
         {title}
       </span>
-      <span className="text-[13px] text-neutral-400">{hint}</span>
+      <span className="text-[0.8125rem] text-neutral-400">{hint}</span>
       <input
         ref={inputRef}
         type="file"

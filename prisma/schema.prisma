@@ -103,6 +103,15 @@ model User {
   stripeCustomerId     String? @unique
   stripeSubscriptionId String? @unique
 
+  // Pristupačnost — po osobi, ne po organizaciji. Čita ih requireSession(),
+  // primjenjuje ih CSS preko data-atributa na ljusci.
+  // ponytail: četiri stupca jer četiri booleana ne trebaju parsiranje ni zod;
+  // prefs Json tek preko ~6 preferencija.
+  reduceMotion  Boolean @default(false)
+  highContrast  Boolean @default(false)
+  largerText    Boolean @default(false)
+  focusOutlines Boolean @default(true) // uključeno po dizajnu
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

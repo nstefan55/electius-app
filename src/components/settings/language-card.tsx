@@ -78,7 +78,7 @@ export function LanguageCard() {
               </span>
               <span className="min-w-0 flex-1">
                 <span
-                  className={`block text-[15px] font-semibold ${
+                  className={`block text-[0.9375rem] font-semibold ${
                     available ? "text-brand-900" : "text-neutral-400"
                   }`}
                 >
@@ -95,7 +95,7 @@ export function LanguageCard() {
                 )}
               </span>
               {!available && (
-                <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-neutral-100 px-2 text-[11px] font-semibold text-neutral-600">
+                <span className="inline-flex h-5 shrink-0 items-center rounded-full bg-neutral-100 px-2 text-[0.6875rem] font-semibold text-neutral-600">
                   {t("soon")}
                 </span>
               )}

@@ -50,7 +50,7 @@ export function WizardSuccess({
         <div className="mx-auto mb-5.5 flex size-18 items-center justify-center rounded-full bg-success-50 text-[#16A34A]">
           <CircleCheckBig className="size-9" />
         </div>
-        <h1 className="font-heading text-[26px] leading-tight font-bold text-neutral-800">
+        <h1 className="font-heading text-[1.625rem] leading-tight font-bold text-neutral-800">
           {t("title")}
         </h1>
         <p className="mt-2.5 text-base leading-normal text-muted-foreground">
@@ -87,15 +87,15 @@ export function WizardSuccess({
             <span className="mt-2 inline-flex h-5.5 items-center rounded-full bg-brand-50 px-2.5 text-xs font-semibold text-brand-700">
               {t1(`types.${data.electionType}.label`)}
             </span>
-            <div className="mt-3 text-[13.5px] leading-normal text-muted-foreground">
+            <div className="mt-3 text-[0.84375rem] leading-normal text-muted-foreground">
               {t1(`methods.${data.votingType}.label`)} ·{" "}
               {t5("voterCount", { count: data.voters.length })} · {t("closes")}{" "}
               {closeText}
             </div>
-            <div className="mt-3.5 max-w-full rounded-md border border-border bg-neutral-50 px-3.5 py-2.5 font-mono text-[12.5px] break-all text-neutral-800">
+            <div className="mt-3.5 max-w-full rounded-md border border-border bg-neutral-50 px-3.5 py-2.5 font-mono text-[0.78125rem] break-all text-neutral-800">
               {qrUrl}
             </div>
-            <p className="mt-3.5 max-w-80 text-[12.5px] leading-normal text-neutral-600">
+            <p className="mt-3.5 max-w-80 text-[0.78125rem] leading-normal text-neutral-600">
               {t("qrCaption")}
             </p>
           </div>
@@ -105,7 +105,7 @@ export function WizardSuccess({
           <button
             type="button"
             onClick={onCreateAnother}
-            className="h-12 rounded-md border border-border bg-white px-5.5 text-[15px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
+            className="h-12 rounded-md border border-border bg-white px-5.5 text-[0.9375rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
           >
             {t("createAnother")}
           </button>
@@ -113,14 +113,14 @@ export function WizardSuccess({
             type="button"
             aria-expanded={qrShown}
             onClick={() => setQrShown((s) => !s)}
-            className="inline-flex h-12 items-center gap-2 rounded-md border border-[#BFDBFE] bg-white px-5 text-[15px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            className="inline-flex h-12 items-center gap-2 rounded-md border border-[#BFDBFE] bg-white px-5 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
             <QrCode className="size-4.5" />
             {t(qrShown ? "qrHide" : "qrShow")}
           </button>
           <Link
             href={`/elections/${createdId}`}
-            className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-6 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+            className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-6 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
           >
             {t("goToElection")}
             <ChevronRight className="size-4.5" />

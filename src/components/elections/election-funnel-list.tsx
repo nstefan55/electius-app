@@ -48,10 +48,10 @@ export function ElectionFunnelList({
                   className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-brand-50"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
+                    <div className="truncate font-heading text-[0.9375rem] font-semibold text-neutral-800">
                       {e.name}
                     </div>
-                    <div className="mt-0.5 text-[13px] text-muted-foreground">
+                    <div className="mt-0.5 text-[0.8125rem] text-muted-foreground">
                       {formatVotingDate(e.opens, locale)} –{" "}
                       {formatVotingDate(e.closes, locale)} · {e.voted}/
                       {e.voters} ({pct}%)

@@ -130,7 +130,7 @@ export function SignupForm() {
         {t("google")}
       </Button>
 
-      <div className="flex items-center gap-3 text-[13px] whitespace-nowrap text-neutral-400">
+      <div className="flex items-center gap-3 text-[0.8125rem] whitespace-nowrap text-neutral-400">
         <span className="h-px flex-1 bg-neutral-200" />
         {t("or")}
         <span className="h-px flex-1 bg-neutral-200" />

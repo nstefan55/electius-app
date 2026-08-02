@@ -37,7 +37,7 @@ export async function DashboardCustomizationsCard() {
             <div className="text-sm font-medium text-neutral-800">
               {t(`${row}.label`)}
             </div>
-            <div className="mt-0.5 text-[13px] text-neutral-600">
+            <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
               {t(`${row}.description`)}
             </div>
           </div>
@@ -47,7 +47,7 @@ export async function DashboardCustomizationsCard() {
             aria-hidden
             className="relative inline-block h-6.5 w-11 shrink-0 rounded-full bg-neutral-200"
           >
-            <span className="absolute top-[3px] left-[3px] size-5 rounded-full bg-white shadow-xs" />
+            <span className="absolute top-0.75 left-0.75 size-5 rounded-full bg-white shadow-xs" />
           </span>
         </div>
       ))}

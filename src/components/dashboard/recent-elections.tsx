@@ -159,7 +159,7 @@ export function RecentElections({
           <h3 className="font-heading text-xl font-semibold text-neutral-800">
             {t("list.title")}
           </h3>
-          <p className="mt-1 text-[13px] text-muted-foreground">
+          <p className="mt-1 text-[0.8125rem] text-muted-foreground">
             {t("list.count", { count: rows.length, active: activeCount })}
           </p>
         </div>
@@ -194,7 +194,7 @@ export function RecentElections({
               (col) => (
                 <span
                   key={col}
-                  className="font-heading text-[13px] font-semibold text-muted-foreground"
+                  className="font-heading text-[0.8125rem] font-semibold text-muted-foreground"
                 >
                   {t(`list.columns.${col}`)}
                 </span>
@@ -234,11 +234,11 @@ export function RecentElections({
                         }}
                         onBlur={() => commitRename(e.id)}
                         aria-label={t("actions.renamePlaceholder")}
-                        className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[15px] font-semibold text-neutral-800 shadow-focus outline-none"
+                        className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[0.9375rem] font-semibold text-neutral-800 shadow-focus outline-none"
                       />
                     ) : (
                       <>
-                        <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
+                        <div className="truncate font-heading text-[0.9375rem] font-semibold text-neutral-800">
                           {/* Stretched link — after:inset-0 makes the whole row (the
                               relative <li>) navigate; positioned siblings (⋯ menu)
                               stack above it, and rename mode never renders it. */}
@@ -249,7 +249,7 @@ export function RecentElections({
                             {e.name}
                           </Link>
                         </div>
-                        <div className="mt-0.5 text-[13px] text-muted-foreground">
+                        <div className="mt-0.5 text-[0.8125rem] text-muted-foreground">
                           {e.type}
                         </div>
                       </>
@@ -280,13 +280,13 @@ export function RecentElections({
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="min-w-13.5 text-[13px] font-semibold text-neutral-800">
+                    <span className="min-w-13.5 text-[0.8125rem] font-semibold text-neutral-800">
                       {e.voters > 0 ? `${pct}%` : "—"}
                     </span>
                   </div>
 
                   {/* Voting window */}
-                  <div className="text-[13px] text-muted-foreground">
+                  <div className="text-[0.8125rem] text-muted-foreground">
                     {formatVotingDate(e.opens, locale)} –{" "}
                     {formatVotingDate(e.closes, locale)}
                   </div>
@@ -383,13 +383,13 @@ export function RecentElections({
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
+              <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[0.9375rem] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
                 {t("actions.cancel")}
               </AlertDialog.Close>
               <button
                 type="button"
                 onClick={onConfirmDelete}
-                className="inline-flex h-11 items-center rounded-md bg-error-700 px-5.5 text-[15px] font-semibold text-white transition-colors hover:bg-error-500"
+                className="inline-flex h-11 items-center rounded-md bg-error-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-error-500"
               >
                 {t("actions.confirmDelete")}
               </button>

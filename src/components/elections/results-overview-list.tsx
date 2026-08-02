@@ -64,17 +64,17 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
     <div>
       <header className="mb-6 flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
-          <h1 className="font-heading text-[28px] leading-tight font-bold tracking-[-0.01em] text-neutral-800">
+          <h1 className="font-heading text-[1.75rem] leading-tight font-bold tracking-[-0.01em] text-neutral-800">
             {t("title")}
           </h1>
-          <p className="mt-2 text-[15px] text-neutral-600">
+          <p className="mt-2 text-[0.9375rem] text-neutral-600">
             {t("summary", { count: rows.length })}
           </p>
         </div>
 
         {rows.length > 0 && (
           <div className="flex items-center gap-2.5">
-            <span className="text-[12.5px] font-semibold text-neutral-600">
+            <span className="text-[0.78125rem] font-semibold text-neutral-600">
               {t("layout")}
             </span>
             <div className="flex items-center gap-0.5 rounded-[9px] border border-neutral-200 bg-white p-[3px]">
@@ -137,7 +137,7 @@ function LayoutButton({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 items-center gap-[7px] rounded-md px-[13px] text-[13px] font-semibold transition-colors",
+        "inline-flex h-8 items-center gap-[7px] rounded-md px-[13px] text-[0.8125rem] font-semibold transition-colors",
         active
           ? "bg-brand-700 text-white"
           : "text-neutral-600 hover:bg-neutral-100",
@@ -177,7 +177,7 @@ function StatusChip({
       className={cn(
         "inline-flex flex-shrink-0 items-center gap-1.5 rounded-full font-semibold whitespace-nowrap",
         style.badge,
-        compact ? "h-[22px] px-2.5 text-[11.5px]" : "h-6 px-[11px] text-xs",
+        compact ? "h-[22px] px-2.5 text-[0.71875rem]" : "h-6 px-[11px] text-xs",
       )}
     >
       <span
@@ -206,7 +206,7 @@ function ExportButtons({ row }: { row: ResultsRow }) {
   // whitespace-nowrap: oznaka se nikad ne smije prelomiti — u uskoj kartici
   // "PDF izvještaj" bi inače pao u dva reda.
   const base =
-    "relative z-10 inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 text-[13px] font-semibold whitespace-nowrap transition-colors";
+    "relative z-10 inline-flex h-9 items-center gap-2 rounded-md border border-neutral-200 bg-white px-4 text-[0.8125rem] font-semibold whitespace-nowrap transition-colors";
   const DISABLED = "cursor-not-allowed text-neutral-400 opacity-50";
   const ENABLED =
     "text-neutral-800 hover:border-[#C7D7EF] hover:bg-brand-50 hover:text-brand-700";
@@ -297,13 +297,13 @@ function ResultsCard({
     <div className="group relative flex flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-[22px] shadow-sm transition-[border-color,box-shadow,transform] hover:-translate-y-px hover:border-[#C7D7EF] hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11.5px] font-bold tracking-[0.06em] text-neutral-600 uppercase">
+          <div className="text-[0.71875rem] font-bold tracking-[0.06em] text-neutral-600 uppercase">
             {t("resultsOf")}
           </div>
           <OpenTarget
             row={row}
             onSealed={onSealed}
-            className="mt-1 block font-heading text-[17px] leading-snug font-semibold text-neutral-800 outline-none focus-visible:underline"
+            className="mt-1 block font-heading text-[1.0625rem] leading-snug font-semibold text-neutral-800 outline-none focus-visible:underline"
           >
             {row.name}
           </OpenTarget>
@@ -311,14 +311,14 @@ function ResultsCard({
         <StatusChip row={row} />
       </div>
 
-      <div className="flex items-center gap-2 text-[13.5px] text-neutral-600">
+      <div className="flex items-center gap-2 text-[0.84375rem] text-neutral-600">
         <Icon className={cn("size-[15px] flex-shrink-0", style.line)} />
         {line}
       </div>
 
       <div className="mt-0.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t border-neutral-100 pt-4">
         <ExportButtons row={row} />
-        <span className="ml-auto inline-flex items-center gap-1 text-[13px] font-semibold whitespace-nowrap text-neutral-600 transition-colors group-hover:text-brand-700">
+        <span className="ml-auto inline-flex items-center gap-1 text-[0.8125rem] font-semibold whitespace-nowrap text-neutral-600 transition-colors group-hover:text-brand-700">
           {t("viewResults")}
           <ChevronRight className="size-4" />
         </span>
@@ -350,7 +350,7 @@ function ResultsRowItem({
           </OpenTarget>
           <StatusChip row={row} compact />
         </div>
-        <div className="mt-[5px] flex items-center gap-[7px] text-[13px] text-neutral-600">
+        <div className="mt-[5px] flex items-center gap-[7px] text-[0.8125rem] text-neutral-600">
           <Icon className={cn("size-[15px] flex-shrink-0", style.line)} />
           {line}
         </div>
@@ -396,7 +396,7 @@ function SealedDialog({
             </div>
           </div>
           <div className="mt-6 flex justify-end">
-            <Dialog.Close className="h-11 rounded-md bg-brand-700 px-[22px] text-[15px] font-semibold text-white transition-colors hover:bg-brand-600">
+            <Dialog.Close className="h-11 rounded-md bg-brand-700 px-[22px] text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600">
               {t("close")}
             </Dialog.Close>
           </div>

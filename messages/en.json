@@ -1215,6 +1215,27 @@
     "settings": {
       "title": "Settings",
       "subtitle": "Accessibility, plan, data and account controls.",
+      "accessibility": {
+        "title": "Accessibility",
+        "subtitle": "Applies to your dashboard only — voters set their own preferences on the ballot. More options are on the way.",
+        "reduceMotion": {
+          "label": "Reduce motion",
+          "description": "Minimize animations and transitions across the dashboard."
+        },
+        "highContrast": {
+          "label": "High contrast",
+          "description": "Stronger borders and text contrast on all surfaces."
+        },
+        "largerText": {
+          "label": "Larger text",
+          "description": "Increase the base text size for tables, forms and results."
+        },
+        "focusOutlines": {
+          "label": "Always show focus outlines",
+          "description": "Keep the keyboard focus ring visible on every control, not just when tabbing."
+        },
+        "error": "Couldn't save that setting. Please try again."
+      },
       "customizations": {
         "title": "Dashboard customizations",
         "subtitle": "Personalize what your dashboard shows and how.",

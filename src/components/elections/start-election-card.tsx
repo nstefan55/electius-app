@@ -130,7 +130,7 @@ export function StartElectionCard({
                 className="mt-0.5 size-4.5 shrink-0 text-warning-700"
                 aria-hidden
               />
-              <p className="text-[13px] leading-normal text-warning-700">
+              <p className="text-[0.8125rem] leading-normal text-warning-700">
                 {t("success.windowOverNote")}
               </p>
             </div>
@@ -142,14 +142,14 @@ export function StartElectionCard({
                 aria-hidden
               />
               <div className="min-w-0">
-                <p className="text-[13px] leading-normal text-warning-700">
+                <p className="text-[0.8125rem] leading-normal text-warning-700">
                   {t("success.failedNote", { count: sendReport.failed })}
                 </p>
                 <button
                   type="button"
                   onClick={handleRetry}
                   disabled={pending}
-                  className="mt-2 inline-flex h-9 cursor-pointer items-center gap-2 rounded-md bg-warning-700 px-4 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="mt-2 inline-flex h-9 cursor-pointer items-center gap-2 rounded-md bg-warning-700 px-4 text-[0.8125rem] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <RefreshCw
                     className={`size-3.5${pending ? " animate-spin" : ""}`}
@@ -163,14 +163,14 @@ export function StartElectionCard({
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <Link
               href="/elections"
-              className="inline-flex h-12 items-center rounded-md border border-neutral-200 bg-white px-5 text-[15px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
+              className="inline-flex h-12 items-center rounded-md border border-neutral-200 bg-white px-5 text-[0.9375rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
             >
               {t("success.back")}
             </Link>
             <button
               type="button"
               onClick={() => router.refresh()}
-              className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+              className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-6 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600"
             >
               {t("success.view")}
               <ChevronRight className="size-4.5" aria-hidden />
@@ -192,7 +192,7 @@ export function StartElectionCard({
           <h2 className="font-heading text-2xl font-bold text-neutral-800">
             {t("title")}
           </h2>
-          <p className="mt-2 text-[15px] text-neutral-600">{t("body")}</p>
+          <p className="mt-2 text-[0.9375rem] text-neutral-600">{t("body")}</p>
         </div>
 
         <div className="mt-7 rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-1.5">
@@ -218,7 +218,7 @@ export function StartElectionCard({
           </span>
           <div className="min-w-0">
             <p className="text-sm font-bold text-warning-700">{t("warnTitle")}</p>
-            <p className="mt-1 text-[13px] leading-normal text-warning-700">
+            <p className="mt-1 text-[0.8125rem] leading-normal text-warning-700">
               {t("warnBody", { count: voters })}
             </p>
           </div>
@@ -227,7 +227,7 @@ export function StartElectionCard({
         <div className="mt-6 flex flex-wrap justify-end gap-3">
           <Link
             href="/elections"
-            className="inline-flex h-12 items-center rounded-md border border-neutral-200 bg-white px-5 text-[15px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
+            className="inline-flex h-12 items-center rounded-md border border-neutral-200 bg-white px-5 text-[0.9375rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
           >
             {t("cancel")}
           </Link>
@@ -235,7 +235,7 @@ export function StartElectionCard({
             type="button"
             onClick={handleStart}
             disabled={pending}
-            className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+            className="inline-flex h-12 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-6 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Play className="size-4.5 fill-current" aria-hidden />
             {t("startCta")}

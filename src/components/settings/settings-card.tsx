@@ -24,7 +24,7 @@ export function SettingsCard({
           <h2 className="font-heading text-xl font-semibold text-neutral-800">
             {title}
           </h2>
-          <p className="mt-1 text-[13px] text-neutral-600">{subtitle}</p>
+          <p className="mt-1 text-[0.8125rem] text-neutral-600">{subtitle}</p>
         </div>
         {headerAside}
       </div>

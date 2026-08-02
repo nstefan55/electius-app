@@ -26,7 +26,7 @@ export function InitialsAvatar({
     <span
       aria-hidden
       className={cn(
-        "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[15px] font-semibold text-white",
+        "flex size-9.5 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[0.9375rem] font-semibold text-white",
         className,
       )}
     >

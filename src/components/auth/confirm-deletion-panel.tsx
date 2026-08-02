@@ -166,7 +166,7 @@ function Notice({
 
       <Link
         href={signIn ? "/login" : "/home"}
-        className="inline-flex h-11 w-full items-center justify-center rounded-md bg-brand-700 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+        className="inline-flex h-11 w-full items-center justify-center rounded-md bg-brand-700 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600"
       >
         {t(signIn ? "signIn" : "back")}
       </Link>

@@ -97,11 +97,11 @@ export function SetupForm({
             className="object-contain"
             priority
           />
-          <span className="font-heading text-[19px] font-bold tracking-tight text-brand-900">
+          <span className="font-heading text-[1.1875rem] font-bold tracking-tight text-brand-900">
             Electius
           </span>
         </div>
-        <div className="flex items-center gap-4 text-[13px]">
+        <div className="flex items-center gap-4 text-[0.8125rem]">
           <span className="hidden text-neutral-600 sm:inline">{email}</span>
           <button
             type="button"
@@ -122,7 +122,7 @@ export function SetupForm({
             <h1 className="font-heading text-2xl font-semibold text-neutral-800">
               {t("title")}
             </h1>
-            <p className="text-[14.5px] leading-normal text-neutral-600">
+            <p className="text-[0.90625rem] leading-normal text-neutral-600">
               {t("subtitle")}
             </p>
           </div>
@@ -146,7 +146,7 @@ export function SetupForm({
               <span className="text-sm font-semibold text-neutral-800">
                 {image ? t("photo.googleTitle") : t("photo.initialsTitle")}
               </span>
-              <span className="text-[13px] leading-normal text-neutral-600">
+              <span className="text-[0.8125rem] leading-normal text-neutral-600">
                 {image ? t("photo.googleNote") : t("photo.initialsNote")}
               </span>
             </div>
@@ -252,14 +252,14 @@ export function SetupForm({
               </button>
             </p>
 
-            <p className="text-center text-[13px] text-neutral-600">
+            <p className="text-center text-[0.8125rem] text-neutral-600">
               {t("form.changeLater")}
             </p>
           </div>
         </div>
       </main>
 
-      <footer className="flex shrink-0 flex-wrap justify-center gap-x-5 gap-y-2 px-6 pt-4 pb-6 text-[13px]">
+      <footer className="flex shrink-0 flex-wrap justify-center gap-x-5 gap-y-2 px-6 pt-4 pb-6 text-[0.8125rem]">
         <a href="#" className="text-neutral-600 hover:underline">
           {tFooter("privacy")}
         </a>

@@ -16,6 +16,10 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { AppToaster } from "@/components/ui/app-toaster";
+import {
+  accessibilityAttributes,
+  type AccessibilityPrefs,
+} from "@/lib/accessibility";
 
 type CrumbKey =
   | "sidebar.nav.dashboard"
@@ -53,9 +57,11 @@ export interface ShellUser {
 
 export function DashboardShell({
   user,
+  accessibility,
   children,
 }: {
   user: ShellUser;
+  accessibility: AccessibilityPrefs;
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -64,7 +70,12 @@ export function DashboardShell({
   const crumbKey = crumbLabelKey(usePathname());
 
   return (
-    <div className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible">
+    // Atributi pristupačnosti: CSS ih hvata preko `html:has([data-…])`, pa
+    // vrijede i za portale (dijalozi, izbornici, toastovi) izvan ove ljuske.
+    <div
+      {...accessibilityAttributes(accessibility)}
+      className="flex h-screen overflow-hidden print:block print:h-auto print:overflow-visible"
+    >
       {/* Desktop sidebar*/}
       <aside
         className={cn(

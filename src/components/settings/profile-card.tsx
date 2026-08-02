@@ -240,13 +240,13 @@ export function ProfileCard({
           <div className="truncate font-heading text-lg font-semibold text-neutral-800">
             {fullName}
           </div>
-          <div className="mt-0.5 text-[13px] text-neutral-600">
+          <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
             {t(viaGoogle ? "providerGoogle" : "providerEmail")}
           </div>
           {(image || avatarPending) && (
             <div className="mt-1.5">
               {avatarPending ? (
-                <span className="text-[13px] text-neutral-600">
+                <span className="text-[0.8125rem] text-neutral-600">
                   {avatarLabels.uploading}
                 </span>
               ) : (
@@ -271,7 +271,7 @@ export function ProfileCard({
               <div className="text-sm font-semibold text-warning-700">
                 {t("unverified.title")}
               </div>
-              <p className="mt-0.5 text-[13px] text-warning-700">
+              <p className="mt-0.5 text-[0.8125rem] text-warning-700">
                 {t("unverified.body")}
               </p>
             </div>
@@ -279,7 +279,7 @@ export function ProfileCard({
               type="button"
               onClick={resendVerification}
               disabled={sending}
-              className="h-8.5 shrink-0 rounded-md border border-[#FDE68A] px-3.5 text-[13px] font-semibold text-warning-700 transition-colors hover:bg-[#FEF3C7] disabled:opacity-60"
+              className="h-8.5 shrink-0 rounded-md border border-[#FDE68A] px-3.5 text-[0.8125rem] font-semibold text-warning-700 transition-colors hover:bg-[#FEF3C7] disabled:opacity-60"
             >
               {t("unverified.resend")}
             </button>
@@ -331,7 +331,7 @@ export function ProfileCard({
             {t("form.email")}
           </label>
           {emailVerified && (
-            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-success-50 px-2 text-[11px] font-semibold text-success-700">
+            <span className="inline-flex h-5 items-center gap-1 rounded-full bg-success-50 px-2 text-[0.6875rem] font-semibold text-success-700">
               <Check className="size-2.75" strokeWidth={3} />
               {t("form.verified")}
             </span>
@@ -351,7 +351,7 @@ export function ProfileCard({
       </div>
 
       {/* Member since */}
-      <div className="flex items-center gap-2 text-[13px] text-neutral-600">
+      <div className="flex items-center gap-2 text-[0.8125rem] text-neutral-600">
         <Calendar className="size-3.75 shrink-0" aria-hidden />
         {t.rich("memberSince", {
           date: memberSince,

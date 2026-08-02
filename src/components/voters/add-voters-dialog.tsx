@@ -207,7 +207,7 @@ export function AddVotersDialog({
                   <button
                     type="button"
                     onClick={() => setRows([])}
-                    className="text-[13px] font-semibold text-neutral-400 transition-colors hover:text-brand-700"
+                    className="text-[0.8125rem] font-semibold text-neutral-400 transition-colors hover:text-brand-700"
                   >
                     {t("clearAll")}
                   </button>
@@ -229,7 +229,7 @@ export function AddVotersDialog({
                           <span className="text-sm font-semibold text-neutral-800">
                             {r.name}
                           </span>
-                          <span className="font-mono text-[13px] text-muted-foreground">
+                          <span className="font-mono text-[0.8125rem] text-muted-foreground">
                             {r.email}
                           </span>
                         </div>
@@ -258,7 +258,7 @@ export function AddVotersDialog({
                   className="mt-0.5 size-5 shrink-0 text-warning-700"
                   aria-hidden
                 />
-                <div className="text-[13.5px] leading-relaxed text-warning-700">
+                <div className="text-[0.84375rem] leading-relaxed text-warning-700">
                   <p className="font-semibold">{t("activeWarnTitle")}</p>
                   <p className="mt-0.5">{t("activeWarnBody")}</p>
                 </div>
@@ -267,14 +267,14 @@ export function AddVotersDialog({
           </div>
 
           <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
-            <Dialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
+            <Dialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[0.9375rem] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
               {t("cancel")}
             </Dialog.Close>
             <button
               type="button"
               onClick={submit}
               disabled={rows.length === 0 || pending}
-              className="inline-flex h-11 items-center rounded-md bg-primary px-5.5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-11 items-center rounded-md bg-primary px-5.5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {isActive
                 ? t("submitInvite", { count: rows.length })

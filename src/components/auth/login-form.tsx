@@ -96,7 +96,7 @@ export function LoginForm() {
         {t("google")}
       </Button>
 
-      <div className="flex items-center gap-3 text-[13px] whitespace-nowrap text-neutral-400">
+      <div className="flex items-center gap-3 text-[0.8125rem] whitespace-nowrap text-neutral-400">
         <span className="h-px flex-1 bg-neutral-200" />
         {t("or")}
         <span className="h-px flex-1 bg-neutral-200" />
@@ -127,7 +127,7 @@ export function LoginForm() {
             </label>
             <Link
               href="/forgot-password"
-              className="text-[13px] text-brand-700 hover:underline"
+              className="text-[0.8125rem] text-brand-700 hover:underline"
             >
               {t("forgotPassword")}
             </Link>

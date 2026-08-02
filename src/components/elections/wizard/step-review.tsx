@@ -46,7 +46,7 @@ function ReviewCard({
         <button
           type="button"
           onClick={onEdit}
-          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-white px-3 text-[0.8125rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
         >
           <SquarePen className="size-3.5" />
           {editLabel}
@@ -100,7 +100,7 @@ export function StepReview({
       <h1 className="font-heading text-2xl font-semibold text-neutral-800">
         {t("title")}
       </h1>
-      <p className="mt-2 mb-7 text-[15px] leading-normal text-muted-foreground">
+      <p className="mt-2 mb-7 text-[0.9375rem] leading-normal text-muted-foreground">
         {t("sub")}
       </p>
 
@@ -144,7 +144,7 @@ export function StepReview({
             >
               <InitialsAvatar
                 name={c.name}
-                className="size-6 bg-brand-50 text-[11px] text-brand-700"
+                className="size-6 bg-brand-50 text-[0.6875rem] text-brand-700"
               />
               <span className="text-sm font-medium text-neutral-800">
                 {c.name}
@@ -153,7 +153,7 @@ export function StepReview({
           ))}
         </div>
         {data.allowAbstain && (
-          <div className="mt-3 text-[13px] text-muted-foreground">
+          <div className="mt-3 text-[0.8125rem] text-muted-foreground">
             {t("abstainEnabled")}
           </div>
         )}
@@ -189,7 +189,7 @@ export function StepReview({
           <span className={ROW_LABEL}>{t("labels.enabled")}</span>
           <span className="flex flex-wrap gap-1.5">
             {enabled.length === 0 ? (
-              <span className="text-[13px] text-neutral-400">
+              <span className="text-[0.8125rem] text-neutral-400">
                 {t("defaultsOnly")}
               </span>
             ) : (

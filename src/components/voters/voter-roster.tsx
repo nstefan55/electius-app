@@ -199,7 +199,7 @@ export function VoterRoster({
           </button>
         )}
 
-        <div className="ml-auto self-center text-[13px] text-muted-foreground">
+        <div className="ml-auto self-center text-[0.8125rem] text-muted-foreground">
           {filtering
             ? t("filters.showing", { shown: matched, total: counts.total })
             : t("filters.count", { total: counts.total })}
@@ -217,7 +217,7 @@ export function VoterRoster({
                 <button
                   type="button"
                   onClick={() => setAddOpen(true)}
-                  className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+                  className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
                 >
                   <Plus className="size-4.5" />
                   {t("add.button")}
@@ -238,12 +238,12 @@ export function VoterRoster({
               {(["name", "email", "status"] as const).map((col) => (
                 <span
                   key={col}
-                  className="font-heading text-[13px] font-semibold text-muted-foreground"
+                  className="font-heading text-[0.8125rem] font-semibold text-muted-foreground"
                 >
                   {t(`columns.${col}`)}
                 </span>
               ))}
-              <span className="text-right font-heading text-[13px] font-semibold text-muted-foreground">
+              <span className="text-right font-heading text-[0.8125rem] font-semibold text-muted-foreground">
                 {t("columns.actions")}
               </span>
             </div>
@@ -262,14 +262,14 @@ export function VoterRoster({
                       GRID,
                     )}
                   >
-                    <div className="min-w-0 pr-10 font-heading text-[15px] font-semibold text-neutral-800 md:pr-0">
+                    <div className="min-w-0 pr-10 font-heading text-[0.9375rem] font-semibold text-neutral-800 md:pr-0">
                       {fullName || (
                         <span className="font-body font-normal text-neutral-400">
                           {t("noName")}
                         </span>
                       )}
                     </div>
-                    <div className="min-w-0 truncate font-mono text-[13px] text-muted-foreground">
+                    <div className="min-w-0 truncate font-mono text-[0.8125rem] text-muted-foreground">
                       {v.email}
                     </div>
                     <div>
@@ -349,7 +349,7 @@ export function VoterRoster({
       {/* Stranicanje */}
       {pageCount > 1 && (
         <div className="flex items-center justify-between">
-          <span className="text-[13px] text-muted-foreground">
+          <span className="text-[0.8125rem] text-muted-foreground">
             {t("pagination.page", { page, pages: pageCount })}
           </span>
           <div className="flex gap-2">
@@ -535,7 +535,7 @@ function EditNameDialog({
           <Dialog.Title className="font-heading text-xl font-semibold text-neutral-800">
             {t("title")}
           </Dialog.Title>
-          <Dialog.Description className="mt-1.5 font-mono text-[13px] text-muted-foreground">
+          <Dialog.Description className="mt-1.5 font-mono text-[0.8125rem] text-muted-foreground">
             {voter?.email}
           </Dialog.Description>
 
@@ -564,18 +564,18 @@ function EditNameDialog({
               />
             </label>
           </div>
-          <p className="mt-3 text-[13px] text-muted-foreground">
+          <p className="mt-3 text-[0.8125rem] text-muted-foreground">
             {t("emailNote")}
           </p>
 
           <div className="mt-6 flex justify-end gap-3">
-            <Dialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
+            <Dialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[0.9375rem] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
               {t("cancel")}
             </Dialog.Close>
             <button
               type="button"
               onClick={() => onSave(first.trim(), last.trim())}
-              className="inline-flex h-11 items-center rounded-md bg-primary px-5.5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+              className="inline-flex h-11 items-center rounded-md bg-primary px-5.5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
             >
               {t("save")}
             </button>
@@ -636,14 +636,14 @@ function ConfirmDialog({
             </div>
           </div>
           <div className="mt-6 flex justify-end gap-3">
-            <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
+            <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[0.9375rem] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
               {cancel}
             </AlertDialog.Close>
             <button
               type="button"
               onClick={onConfirm}
               className={cn(
-                "inline-flex h-11 items-center rounded-md px-5.5 text-[15px] font-semibold text-white transition-colors",
+                "inline-flex h-11 items-center rounded-md px-5.5 text-[0.9375rem] font-semibold text-white transition-colors",
                 isError
                   ? "bg-error-700 hover:bg-error-500"
                   : "bg-brand-700 hover:bg-brand-600",
