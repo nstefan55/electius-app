@@ -101,14 +101,16 @@ describe("windowOver", () => {
 });
 
 describe("mintTokensForPendingVoters", () => {
+  // Fixture se i čita (election.endsAt), pa tip ostaje — `as never` ide na mockove.
   const election = {
     startsAt: new Date("2026-07-24T00:00:00Z"),
     endsAt: new Date("2026-07-30T00:00:00Z"),
   };
+  // Prisma `select` sužava povratni tip; fixture nosi samo polja koja servis čita.
   const voters = [
     { id: "v1", email: "a@example.com", firstName: "Ana" },
     { id: "v2", email: "b@example.com", firstName: null },
-  ];
+  ] as never;
 
   it("returns [] without touching tokens when the election is missing", async () => {
     vi.mocked(prisma.election.findUnique).mockResolvedValue(null);
@@ -117,14 +119,14 @@ describe("mintTokensForPendingVoters", () => {
   });
 
   it("returns [] without a transaction when no voters are PENDING", async () => {
-    vi.mocked(prisma.election.findUnique).mockResolvedValue(election);
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(election as never);
     vi.mocked(prisma.voter.findMany).mockResolvedValue([]);
     expect(await mintTokensForPendingVoters("el_1")).toEqual([]);
     expect(prisma.$transaction).not.toHaveBeenCalled();
   });
 
   it("deletes leftover tokens and mints fresh ones for every PENDING voter", async () => {
-    vi.mocked(prisma.election.findUnique).mockResolvedValue(election);
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(election as never);
     vi.mocked(prisma.voter.findMany).mockResolvedValue(voters);
 
     const minted = await mintTokensForPendingVoters("el_1");
@@ -134,7 +136,7 @@ describe("mintTokensForPendingVoters", () => {
       where: { voterId: { in: ["v1", "v2"] } },
     });
 
-    const createArg = vi.mocked(prisma.voterToken.createMany).mock.calls[0][0];
+    const createArg = vi.mocked(prisma.voterToken.createMany).mock.calls[0]![0]!;
     const rows = createArg.data as {
       hash: string;
       voterId: string;
@@ -154,7 +156,7 @@ describe("mintTokensForPendingVoters", () => {
   });
 
   it("only PENDING voters are targeted", async () => {
-    vi.mocked(prisma.election.findUnique).mockResolvedValue(election);
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(election as never);
     vi.mocked(prisma.voter.findMany).mockResolvedValue([]);
     await mintTokensForPendingVoters("el_1");
     expect(prisma.voter.findMany).toHaveBeenCalledWith({
@@ -164,7 +166,7 @@ describe("mintTokensForPendingVoters", () => {
   });
 
   it("never passes a raw token to Prisma (hash-only storage)", async () => {
-    vi.mocked(prisma.election.findUnique).mockResolvedValue(election);
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(election as never);
     vi.mocked(prisma.voter.findMany).mockResolvedValue(voters);
 
     const minted = await mintTokensForPendingVoters("el_1");

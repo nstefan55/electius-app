@@ -25,6 +25,12 @@ const session = {
     isPro: false,
   },
   organizationId: "org_1",
+  accessibility: {
+    reduceMotion: false,
+    highContrast: false,
+    largerText: false,
+    focusOutlines: true,
+  },
 };
 
 const basePayload = {
@@ -105,12 +111,12 @@ describe("createElection", () => {
     expect(arg.data.status).toBe("DRAFT");
     expect(arg.data.organizationId).toBe("org_1");
     expect(arg.data.createdById).toBe("user_1");
-    expect(arg.data.options.create).toEqual([
+    expect(arg.data.options!.create).toEqual([
       { text: "Ana", description: null, orderIndex: 0 },
       { text: "Marko", description: "2nd year", orderIndex: 1 },
     ]);
     // dupe email dropped; "Petra Novak" split into first/last
-    expect(arg.data.voters.create).toEqual([
+    expect(arg.data.voters!.create).toEqual([
       { email: "petra@unizg.hr", firstName: "Petra", lastName: "Novak" },
       { email: "luka@unizg.hr", firstName: "Luka", lastName: null },
     ]);

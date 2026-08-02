@@ -64,7 +64,8 @@ const mintedVoter = (i: number) => ({
 
 beforeEach(() => {
   vi.mocked(prisma.election.findUnique).mockReset();
-  vi.mocked(prisma.election.findUnique).mockResolvedValue(election);
+  // Prisma `select` sužava povratni tip; fixture nosi samo polja koja servis čita.
+  vi.mocked(prisma.election.findUnique).mockResolvedValue(election as never);
   vi.mocked(prisma.voter.updateMany).mockReset();
   vi.mocked(prisma.voter.updateMany).mockResolvedValue({ count: 0 });
   vi.mocked(prisma.voter.findFirst).mockReset();
@@ -141,13 +142,12 @@ describe("publishElection", () => {
     // INVITED flip ran for chunks 1 and 3 only — chunk 2 voters stay PENDING.
     const updates = vi.mocked(prisma.voter.updateMany).mock.calls;
     expect(updates).toHaveLength(2);
-    expect(updates[0][0].where.id.in).toEqual(
-      minted.slice(0, 100).map((m) => m.voterId),
-    );
-    expect(updates[1][0].where.id.in).toEqual(
-      minted.slice(200).map((m) => m.voterId),
-    );
-    expect(updates[0][0].data).toEqual({ status: "INVITED" });
+    // `where.id` je unija string | StringFilter — suzi na oblik koji servis šalje.
+    const flippedIds = (i: number) =>
+      (updates[i]![0].where!.id as { in: string[] }).in;
+    expect(flippedIds(0)).toEqual(minted.slice(0, 100).map((m) => m.voterId));
+    expect(flippedIds(1)).toEqual(minted.slice(200).map((m) => m.voterId));
+    expect(updates[0]![0].data).toEqual({ status: "INVITED" });
   });
 
   it("passes election title + org name to the invitation sender", async () => {
@@ -171,7 +171,7 @@ describe("resendVoterLink", () => {
     vi.mocked(prisma.election.findUnique).mockResolvedValueOnce({
       ...election,
       status: "CLOSED",
-    });
+    } as never);
     await resendVoterLink("el_1", "a@example.com");
 
     expect(prisma.voter.findFirst).not.toHaveBeenCalled();
@@ -200,7 +200,7 @@ describe("resendVoterLink", () => {
     vi.mocked(prisma.voter.findFirst).mockResolvedValue({
       id: "v_1",
       status: "INVITED",
-    });
+    } as never);
     vi.mocked(mintTokenForVoter).mockResolvedValue(mintedVoter(1));
 
     await resendVoterLink("el_1", "Voter1@Example.com");
@@ -226,7 +226,7 @@ describe("resendVoterLink", () => {
     vi.mocked(prisma.voter.findFirst).mockResolvedValue({
       id: "v_2",
       status: "PENDING",
-    });
+    } as never);
     vi.mocked(mintTokenForVoter).mockResolvedValue(mintedVoter(2));
 
     await resendVoterLink("el_1", "voter2@example.com");
@@ -241,7 +241,7 @@ describe("resendVoterLink", () => {
     vi.mocked(prisma.voter.findFirst).mockResolvedValue({
       id: "v_3",
       status: "PENDING",
-    });
+    } as never);
     vi.mocked(mintTokenForVoter).mockResolvedValue(mintedVoter(3));
     vi.mocked(sendInvitationEmails).mockRejectedValue(new Error("resend: boom"));
 
@@ -322,7 +322,7 @@ describe("getReminderTargets", () => {
     vi.mocked(windowOver).mockReturnValue(true);
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
       { id: "a", status: "INVITED", token: null },
-    ]);
+    ] as never);
 
     const result = await getReminderTargets("el_1");
 
@@ -345,7 +345,7 @@ describe("sendReminders", () => {
       { id: "a", status: "INVITED", token: { expiresAt: FUTURE } },
       { id: "b", status: "VOTED", token: { expiresAt: FUTURE } },
       { id: "c", status: "PENDING", token: null },
-    ]);
+    ] as never);
     vi.mocked(mintTokensForVoters).mockResolvedValue([
       mintedVoter(1),
       mintedVoter(2),
@@ -366,7 +366,7 @@ describe("sendReminders", () => {
   it("sends nothing when everyone has voted", async () => {
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
       { id: "a", status: "VOTED", token: { expiresAt: FUTURE } },
-    ]);
+    ] as never);
 
     const result = await sendReminders("el_1");
 
@@ -378,7 +378,7 @@ describe("sendReminders", () => {
   it("flips reminded voters to INVITED so a PENDING one stops looking unsent", async () => {
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
       { id: "c", status: "PENDING", token: null },
-    ]);
+    ] as never);
     vi.mocked(mintTokensForVoters).mockResolvedValue([mintedVoter(3)]);
 
     await sendReminders("el_1");
@@ -392,7 +392,7 @@ describe("sendReminders", () => {
   it("counts a failed chunk as failed instead of throwing", async () => {
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
       { id: "a", status: "INVITED", token: { expiresAt: FUTURE } },
-    ]);
+    ] as never);
     vi.mocked(mintTokensForVoters).mockResolvedValue([mintedVoter(1)]);
     vi.mocked(sendInvitationEmails).mockRejectedValue(new Error("resend: boom"));
 

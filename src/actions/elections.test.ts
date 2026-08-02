@@ -45,6 +45,12 @@ const {
 const session = {
   user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
   organizationId: "org_1",
+  accessibility: {
+    reduceMotion: false,
+    highContrast: false,
+    largerText: false,
+    focusOutlines: true,
+  },
 };
 
 beforeEach(() => {
@@ -239,7 +245,7 @@ describe("resendInvitations", () => {
   });
 
   it("re-publishes an owned ACTIVE election and returns the numbers", async () => {
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" } as never);
     vi.mocked(publishElection).mockResolvedValue({ sent: 2, failed: 0 });
 
     const result = await resendInvitations("el_1");
@@ -249,7 +255,7 @@ describe("resendInvitations", () => {
   });
 
   it("reports failure when the pipeline throws", async () => {
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" } as never);
     vi.mocked(publishElection).mockRejectedValue(new Error("boom"));
 
     const result = await resendInvitations("el_1");
@@ -278,7 +284,7 @@ describe("reminderPreview", () => {
   });
 
   it("returns the counts the modal renders", async () => {
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" } as never);
     vi.mocked(getReminderTargets).mockResolvedValue({
       recipients: ["a", "b", "c"],
       alreadyVoted: 7,
@@ -321,7 +327,7 @@ describe("sendElectionReminders", () => {
   });
 
   it("sends and reports the real numbers", async () => {
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" } as never);
     vi.mocked(sendReminders).mockResolvedValue({ sent: 12, failed: 1 });
 
     const result = await sendElectionReminders("el_1");
@@ -332,7 +338,7 @@ describe("sendElectionReminders", () => {
   });
 
   it("reports failure when the pipeline throws", async () => {
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({ id: "el_1" } as never);
     vi.mocked(sendReminders).mockRejectedValue(new Error("boom"));
 
     const result = await sendElectionReminders("el_1");

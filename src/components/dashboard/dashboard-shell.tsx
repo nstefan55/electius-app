@@ -41,10 +41,6 @@ function crumbLabelKey(pathname: string): CrumbKey {
       return `sidebar.account.${key}`;
     }
   }
-  //TODO: Add support for election details and results pages
-  // if (pathname.startsWith("/elections/" || pathname.startsWith("/results/")) {
-  //   return "sidebar.elections.details";
-  // }
   // "/" (host-root rewrite) or "/home"
   return "sidebar.nav.dashboard";
 }

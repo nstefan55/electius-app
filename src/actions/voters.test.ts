@@ -38,6 +38,12 @@ const session = {
     isPro: false,
   },
   organizationId: "org_1",
+  accessibility: {
+    reduceMotion: false,
+    highContrast: false,
+    largerText: false,
+    focusOutlines: true,
+  },
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -73,7 +79,7 @@ describe("addVoters", () => {
     const result = await addVoters({ electionId: "e1", rows });
 
     expect(result).toEqual({ success: false, error: "invalidStatus" });
-    const where = vi.mocked(prisma.election.findFirst).mock.calls[0][0].where;
+    const where = vi.mocked(prisma.election.findFirst).mock.calls[0]![0]!.where;
     expect(where).toMatchObject({ id: "e1", organizationId: "org_1" });
     expect(where?.status).toEqual({
       in: ["DRAFT", "SCHEDULED", "ACTIVE"],
@@ -93,7 +99,7 @@ describe("addVoters", () => {
     });
 
     expect(result).toMatchObject({ success: true, added: 1, skipped: 1 });
-    const data = vi.mocked(prisma.voter.createMany).mock.calls[0][0].data;
+    const data = vi.mocked(prisma.voter.createMany).mock.calls[0]![0]!.data;
     expect(data).toEqual([
       {
         electionId: "e1",
@@ -139,7 +145,7 @@ describe("addVoters", () => {
       ],
     });
 
-    expect(vi.mocked(prisma.voter.createMany).mock.calls[0][0].data).toEqual([
+    expect(vi.mocked(prisma.voter.createMany).mock.calls[0]![0]!.data).toEqual([
       {
         electionId: "e1",
         email: "a@example.com",
@@ -216,7 +222,7 @@ describe("updateVoterName", () => {
     });
 
     expect(result).toEqual({ success: true });
-    expect(vi.mocked(prisma.voter.updateMany).mock.calls[0][0]).toEqual({
+    expect(vi.mocked(prisma.voter.updateMany).mock.calls[0]![0]!).toEqual({
       where: { id: "v1", election: { organizationId: "org_1" } },
       data: { firstName: "Ana", lastName: "Horvat" },
     });
@@ -227,7 +233,7 @@ describe("updateVoterName", () => {
 
     await updateVoterName({ voterId: "v1", firstName: "Ana", lastName: "  " });
 
-    expect(vi.mocked(prisma.voter.updateMany).mock.calls[0][0].data).toEqual({
+    expect(vi.mocked(prisma.voter.updateMany).mock.calls[0]![0]!.data).toEqual({
       firstName: "Ana",
       lastName: null,
     });
@@ -249,7 +255,7 @@ describe("removeVoter", () => {
     const result = await removeVoter("v1");
 
     expect(result).toEqual({ success: true });
-    expect(vi.mocked(prisma.voter.deleteMany).mock.calls[0][0].where).toEqual({
+    expect(vi.mocked(prisma.voter.deleteMany).mock.calls[0]![0]!.where).toEqual({
       id: "v1",
       status: { not: "VOTED" },
       election: {
@@ -294,7 +300,7 @@ describe("resendVoterInvite", () => {
     const result = await resendVoterInvite("v1");
 
     expect(result).toEqual({ success: true });
-    expect(vi.mocked(prisma.voter.findFirst).mock.calls[0][0].where).toEqual({
+    expect(vi.mocked(prisma.voter.findFirst).mock.calls[0]![0]!.where).toEqual({
       id: "v1",
       status: { not: "VOTED" },
       election: { organizationId: "org_1", status: "ACTIVE" },
