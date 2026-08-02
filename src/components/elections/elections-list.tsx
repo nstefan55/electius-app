@@ -34,6 +34,9 @@ import {
   deleteElection,
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import { Pagination } from "@/components/ui/pagination";
+import { ELECTIONS_PER_PAGE } from "@/lib/constants/pagination";
+import { usePagination } from "@/lib/use-pagination";
 import { cn } from "@/lib/utils";
 
 // Shared grid track so the column header and body rows line up (design: Elections.dc.html)
@@ -129,7 +132,18 @@ export function ElectionsList({
       matchesTurnout(e, turnoutFilter) &&
       matchesWindow(e, windowFilter),
   );
+  // Godine se izvode iz CIJELOG skupa, ne iz stranice — inače bi padajući
+  // izbornik nudio samo godine prisutne na trenutnoj stranici.
   const years = windowYears(rows);
+
+  // Stranicanje ide NAKON filtriranja: `take` u upitu bi pretvorio filtar u
+  // filtar prve stranice. Potpis filtara vraća na 1. stranicu — dodaš li četvrti
+  // filtar, dodaj ga i ovdje.
+  const { page, pageCount, setPage, pageItems } = usePagination(
+    filtered,
+    ELECTIONS_PER_PAGE,
+    `${statusFilter}|${turnoutFilter}|${windowFilter}`,
+  );
 
   const run = (fn: () => Promise<{ success: boolean }>, onOk: () => void) =>
     startTransition(async () => {
@@ -315,7 +329,7 @@ export function ElectionsList({
             </div>
 
             <ul aria-busy={isPending}>
-              {filtered.map((e) => {
+              {pageItems.map((e) => {
                 const style = STATUS_STYLES[e.status];
                 const pct =
                   e.voters > 0 ? Math.round((e.voted / e.voters) * 100) : 0;
@@ -479,6 +493,8 @@ export function ElectionsList({
           </>
         )}
       </div>
+
+      <Pagination page={page} pageCount={pageCount} onPageChange={setPage} />
 
       {/* Delete confirmation */}
       <AlertDialog.Root

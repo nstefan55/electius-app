@@ -9,8 +9,6 @@ import { Dialog } from "@base-ui/react/dialog";
 import toast from "react-hot-toast";
 import {
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
   MoreVertical,
   Pencil,
   Plus,
@@ -27,6 +25,7 @@ import {
   updateVoterName,
 } from "@/actions/voters";
 import { AddVotersDialog } from "@/components/voters/add-voters-dialog";
+import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "@/i18n/navigation";
 import type { RosterVoter, VoterRoster as Roster } from "@/lib/db/voters";
 import type { ElectionStatus } from "@/lib/elections-view";
@@ -346,29 +345,12 @@ export function VoterRoster({
         )}
       </div>
 
-      {/* Stranicanje */}
-      {pageCount > 1 && (
-        <div className="flex items-center justify-between">
-          <span className="text-[0.8125rem] text-muted-foreground">
-            {t("pagination.page", { page, pages: pageCount })}
-          </span>
-          <div className="flex gap-2">
-            <PageButton
-              disabled={page <= 1}
-              onClick={() => setParams({ page: String(page - 1) })}
-              label={t("pagination.prev")}
-              icon={<ChevronLeft className="size-4" />}
-            />
-            <PageButton
-              disabled={page >= pageCount}
-              onClick={() => setParams({ page: String(page + 1) })}
-              label={t("pagination.next")}
-              icon={<ChevronRight className="size-4" />}
-              trailing
-            />
-          </div>
-        </div>
-      )}
+      {/* Stranicanje — brojevi iz upita; setParams čuva q i status u URL-u. */}
+      <Pagination
+        page={page}
+        pageCount={pageCount}
+        onPageChange={(next) => setParams({ page: String(next) })}
+      />
 
       <AddVotersDialog
         electionId={electionId}
@@ -467,33 +449,6 @@ function Empty({
       <div className="mt-1.5 text-sm text-muted-foreground">{body}</div>
       {action}
     </div>
-  );
-}
-
-function PageButton({
-  disabled,
-  onClick,
-  label,
-  icon,
-  trailing,
-}: {
-  disabled: boolean;
-  onClick: () => void;
-  label: string;
-  icon: React.ReactNode;
-  trailing?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className="inline-flex h-10 items-center gap-1.5 rounded-md border border-border bg-white px-3.5 text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      {!trailing && icon}
-      {label}
-      {trailing && icon}
-    </button>
   );
 }
 

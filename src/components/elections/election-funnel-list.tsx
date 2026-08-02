@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
+import { UrlPagination } from "@/components/ui/pagination";
 import {
   formatVotingDate,
   type DashboardElection,
@@ -10,18 +11,27 @@ import {
 // Cross-election list scaffold whose rows deep-link into a nested facet
 // (/elections/[id]/results or /voters). Shared by the /results and /voters pages;
 // rich list UI/filters are owned by the respective content specs.
+//
+// Stranicanje je poslužiteljsko: ovu listu ništa ne filtrira na klijentu, pa
+// `skip`/`take` ne može sakriti podudaranje (pagination-spec).
 export function ElectionFunnelList({
   title,
   subtitle,
   empty,
   elections,
   hrefFor,
+  page,
+  pageCount,
+  basePath,
 }: {
   title: string;
   subtitle: string;
   empty: string;
   elections: DashboardElection[];
   hrefFor: (id: string) => string;
+  page: number;
+  pageCount: number;
+  basePath: string;
 }) {
   const locale = useLocale();
   return (
@@ -65,6 +75,13 @@ export function ElectionFunnelList({
           })}
         </ul>
       )}
+
+      <UrlPagination
+        page={page}
+        pageCount={pageCount}
+        basePath={basePath}
+        className="mt-6"
+      />
     </div>
   );
 }

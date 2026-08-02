@@ -27,6 +27,10 @@ import {
   deleteElection,
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import {
+  DASHBOARD_RECENT_ELECTIONS_LIMIT,
+  DASHBOARD_RECENT_STEP,
+} from "@/lib/constants/pagination";
 import { cn } from "@/lib/utils";
 
 // Shared grid track so the column header and body rows line up
@@ -68,6 +72,13 @@ export function RecentElections({
   const cancelRename = useRef(false); // Escape sets this so the blur-commit is skipped
 
   const activeCount = rows.filter((e) => e.status === "ACTIVE").length;
+
+  // Prikazna granica, NE granica upita: getDashboardData hrani i statistike i
+  // oba grafikona, pa bi `take` tiho iskrivio te brojke. Redci su već ovdje —
+  // gumb ih samo otkriva.
+  const [visible, setVisible] = useState(DASHBOARD_RECENT_ELECTIONS_LIMIT);
+  const shown = rows.slice(0, visible);
+  const remaining = rows.length - shown.length;
 
   const run = <T extends { success: boolean }>(
     fn: () => Promise<T>,
@@ -204,7 +215,7 @@ export function RecentElections({
           </div>
 
           <ul aria-busy={isPending}>
-            {rows.map((e) => {
+            {shown.map((e) => {
               const style = STATUS_STYLES[e.status];
               const pct =
                 e.voters > 0 ? Math.round((e.voted / e.voters) * 100) : 0;
@@ -358,6 +369,21 @@ export function RecentElections({
               );
             })}
           </ul>
+
+          {remaining > 0 && (
+            <div className="border-t border-border p-4 text-center">
+              <button
+                type="button"
+                onClick={() => setVisible((v) => v + DASHBOARD_RECENT_STEP)}
+                className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-md border border-border bg-white px-4.5 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 focus-visible:shadow-focus focus-visible:outline-none"
+              >
+                {t("list.loadMore")}
+                <span className="text-[0.8125rem] font-normal text-muted-foreground">
+                  {t("list.loadMoreRemaining", { count: remaining })}
+                </span>
+              </button>
+            </div>
+          )}
         </>
       )}
 

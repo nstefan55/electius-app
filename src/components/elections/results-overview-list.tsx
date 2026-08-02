@@ -14,11 +14,14 @@ import {
   Rows2,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
+import { Pagination } from "@/components/ui/pagination";
 import {
   formatVotingDateTime,
   type ResultsAccess,
   type ResultsRow,
 } from "@/lib/elections-view";
+import { RESULTS_PER_PAGE } from "@/lib/constants/pagination";
+import { usePagination } from "@/lib/use-pagination";
 import { cn } from "@/lib/utils";
 
 // Popis rezultata po izborima (dizajn: Results Overview.dc.html).
@@ -58,6 +61,15 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
   // Preferencija prikaza, ne filtar — lokalno stanje, ne URL parametar.
   const [layout, setLayout] = useState<Layout>("cards");
   const [sealed, setSealed] = useState<ResultsRow | null>(null);
+
+  // Klijentsko stranicanje: resultsRows() dohvaća SVE statuse pa u JS-u odbacuje
+  // DRAFT/SCHEDULED/ARCHIVED — uz `take: 12` u upitu stranica bi nakon odbacivanja
+  // prikazala četiri retka i i dalje tvrdila da ima sljedeću (pagination-spec).
+  // Prebacivanje kartica/redaka nije filtar, pa ne vraća na prvu stranicu.
+  const { page, pageCount, setPage, pageItems } = usePagination(
+    rows,
+    RESULTS_PER_PAGE,
+  );
 
   // Širinu i padding daje DashboardShell (max-w-content) — bez vlastitog okvira.
   return (
@@ -101,17 +113,24 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
         </p>
       ) : layout === "cards" ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-[18px]">
-          {rows.map((row) => (
+          {pageItems.map((row) => (
             <ResultsCard key={row.id} row={row} onSealed={setSealed} />
           ))}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
-          {rows.map((row) => (
+          {pageItems.map((row) => (
             <ResultsRowItem key={row.id} row={row} onSealed={setSealed} />
           ))}
         </div>
       )}
+
+      <Pagination
+        page={page}
+        pageCount={pageCount}
+        onPageChange={setPage}
+        className="mt-6"
+      />
 
       <p className="mt-5 px-0.5 text-xs text-neutral-600">{t("footnote")}</p>
 
