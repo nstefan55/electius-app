@@ -18,12 +18,12 @@ export default async function AccountDeletedPage() {
         <h1 className="font-heading mt-5 text-2xl font-bold text-neutral-800">
           {t("title")}
         </h1>
-        <p className="mt-3 text-[15px] leading-relaxed text-neutral-600">
+        <p className="mt-3 text-[0.9375rem] leading-relaxed text-neutral-600">
           {t("body")}
         </p>
         <a
           href={marketingHomeUrl()}
-          className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-700 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+          className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-700 px-6 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600"
         >
           {t("home")}
         </a>

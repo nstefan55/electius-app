@@ -127,7 +127,7 @@ export function StepCandidates({ data, patch }: StepProps) {
         )}
 
         {csvError && (
-          <div className="mt-4 rounded-md border border-[#FECACA] bg-error-50 px-3.5 py-3 text-[13.5px] leading-relaxed text-[#991B1B]">
+          <div className="mt-4 rounded-md border border-[#FECACA] bg-error-50 px-3.5 py-3 text-[0.84375rem] leading-relaxed text-[#991B1B]">
             {csvError}
           </div>
         )}
@@ -141,7 +141,7 @@ export function StepCandidates({ data, patch }: StepProps) {
               </span>
               <ProBadge />
             </div>
-            <div className="mt-0.75 text-[13px] text-muted-foreground">
+            <div className="mt-0.75 text-[0.8125rem] text-muted-foreground">
               {t("allowAbstainDesc")}
             </div>
           </div>
@@ -173,10 +173,10 @@ export function StepCandidates({ data, patch }: StepProps) {
                     className="size-9 bg-brand-50 text-sm text-brand-700"
                   />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate text-[15px] font-semibold text-neutral-800">
+                    <div className="truncate text-[0.9375rem] font-semibold text-neutral-800">
                       {c.name}
                     </div>
-                    <div className="text-[13px] text-muted-foreground">
+                    <div className="text-[0.8125rem] text-muted-foreground">
                       {c.role || "—"}
                     </div>
                   </div>

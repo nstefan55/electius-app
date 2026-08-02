@@ -33,7 +33,7 @@ import type { ArchivedElection } from "@/lib/db/elections";
 // winnerOutcome, turnoutPct): arhivirani izbori ne smiju prijaviti drugog
 // pobjednika ni drugi postotak od vlastite stranice rezultata.
 const ACTION =
-  "inline-flex h-9.5 shrink-0 cursor-pointer items-center justify-center gap-1.75 rounded-md border border-border bg-white px-3.5 text-[13.5px] font-semibold text-neutral-600 transition-colors hover:border-brand-100 hover:bg-brand-50 hover:text-brand-700";
+  "inline-flex h-9.5 shrink-0 cursor-pointer items-center justify-center gap-1.75 rounded-md border border-border bg-white px-3.5 text-[0.84375rem] font-semibold text-neutral-600 transition-colors hover:border-brand-100 hover:bg-brand-50 hover:text-brand-700";
 
 export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
   const t = useTranslations("dashboard.election.lists.archive");
@@ -65,7 +65,7 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
               onChange={(e) => setQuery(e.target.value)}
               aria-label={t("searchLabel")}
               placeholder={t("searchPlaceholder")}
-              className="h-full min-w-0 flex-1 bg-transparent text-[14.5px] text-neutral-800 outline-none placeholder:text-neutral-400 [&::-webkit-search-cancel-button]:hidden"
+              className="h-full min-w-0 flex-1 bg-transparent text-[0.90625rem] text-neutral-800 outline-none placeholder:text-neutral-400 [&::-webkit-search-cancel-button]:hidden"
             />
             {hasQuery && (
               <button
@@ -87,7 +87,7 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
         </p>
       ) : (
         <>
-          <p className="mb-4 text-[13px] text-neutral-600">
+          <p className="mb-4 text-[0.8125rem] text-neutral-600">
             {hasQuery
               ? t("resultFiltered", {
                   count: rows.length,
@@ -101,7 +101,7 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
               <div className="mx-auto mb-4.5 flex size-13 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
                 <Search className="size-6" />
               </div>
-              <p className="font-heading text-[17px] font-semibold text-neutral-800">
+              <p className="font-heading text-[1.0625rem] font-semibold text-neutral-800">
                 {t("emptyTitle", { query: query.trim() })}
               </p>
               <p className="mt-1.5 text-sm text-neutral-600">{t("emptyBody")}</p>
@@ -149,10 +149,10 @@ function ArchiveCard({
   return (
     <li className="flex flex-col gap-4 rounded-xl border border-border bg-white p-5.5 shadow-sm transition-shadow hover:shadow-md">
       <div className="min-w-0">
-        <h2 className="font-heading text-[17px] leading-snug font-semibold text-neutral-800">
+        <h2 className="font-heading text-[1.0625rem] leading-snug font-semibold text-neutral-800">
           {e.name}
         </h2>
-        <p className="mt-1.5 flex items-center gap-1.75 text-[13px] text-neutral-600">
+        <p className="mt-1.5 flex items-center gap-1.75 text-[0.8125rem] text-neutral-600">
           <Calendar className="size-3.5 shrink-0" aria-hidden />
           <span className="min-w-0">
             {formatVotingDateTime(e.opens, locale)} –{" "}
@@ -189,7 +189,7 @@ function ArchiveCard({
       <div className="flex items-center gap-2.5">
         <Link
           href={`/elections/${e.id}/results`}
-          className="inline-flex h-9.5 flex-1 items-center justify-center gap-1.75 rounded-md border border-brand-700 bg-white px-3 text-[13.5px] font-semibold text-brand-700 transition-colors hover:bg-brand-700 hover:text-white"
+          className="inline-flex h-9.5 flex-1 items-center justify-center gap-1.75 rounded-md border border-brand-700 bg-white px-3 text-[0.84375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-700 hover:text-white"
         >
           <Eye className="size-3.75" aria-hidden />
           {t("view")}
@@ -220,7 +220,7 @@ function Winner({ election: e }: { election: ArchivedElection }) {
           <Badge tone="neutral">
             <Trophy className="size-3.5" aria-hidden />
           </Badge>
-          <span className="min-w-0 truncate text-[14.5px] font-semibold text-neutral-600">
+          <span className="min-w-0 truncate text-[0.90625rem] font-semibold text-neutral-600">
             {tr("winnerNone")}
           </span>
         </div>
@@ -237,7 +237,7 @@ function Winner({ election: e }: { election: ArchivedElection }) {
         <Badge tone="gold">
           <Trophy className="size-3.5" aria-hidden />
         </Badge>
-        <span className="min-w-0 truncate text-[14.5px] font-semibold text-neutral-800">
+        <span className="min-w-0 truncate text-[0.90625rem] font-semibold text-neutral-800">
           {tie ? tr("winnerTie") : lead.text}
         </span>
       </div>
@@ -252,7 +252,7 @@ function Winner({ election: e }: { election: ArchivedElection }) {
 
 function Label({ children }: { children: React.ReactNode }) {
   return (
-    <div className="text-[11.5px] font-semibold tracking-[0.03em] text-neutral-600 uppercase">
+    <div className="text-[0.71875rem] font-semibold tracking-[0.03em] text-neutral-600 uppercase">
       {children}
     </div>
   );
@@ -316,23 +316,23 @@ function AuditDialog({
               )}
             </span>
             <div className="min-w-0">
-              <Dialog.Title className="font-heading text-[18px] font-semibold text-neutral-800">
+              <Dialog.Title className="font-heading text-[1.125rem] font-semibold text-neutral-800">
                 {tr("auditTitle")}
               </Dialog.Title>
-              <Dialog.Description className="mt-0.25 truncate text-[13px] text-neutral-600">
+              <Dialog.Description className="mt-0.25 truncate text-[0.8125rem] text-neutral-600">
                 {e?.name ?? ""}
               </Dialog.Description>
             </div>
           </div>
 
           <div className="px-6 py-5.5">
-            <p className="text-[14.5px] leading-relaxed text-neutral-800">
+            <p className="text-[0.90625rem] leading-relaxed text-neutral-800">
               {treport("auditBody")}
             </p>
             {/* Jača tvrdnja samo kad pečat postoji — nezapečaćena arhiva je
                 trajno stanje, ne skela. */}
             {sealed && (
-              <p className="mt-3 text-[14.5px] leading-relaxed text-neutral-800">
+              <p className="mt-3 text-[0.90625rem] leading-relaxed text-neutral-800">
                 {treport("auditSealedBody")}
               </p>
             )}
@@ -352,7 +352,7 @@ function AuditDialog({
                   <div className="rounded-md border border-[#E5EAF2] bg-[#F3F6FB] px-3.5 py-3 font-mono text-xs break-all text-brand-900">
                     {sealed.merkleRoot}
                   </div>
-                  <p className="mt-2 text-[12.5px] text-neutral-600">
+                  <p className="mt-2 text-[0.78125rem] text-neutral-600">
                     {t("sealedAt", {
                       date: formatVotingDateTime(sealed.createdAt, locale),
                     })}
@@ -360,10 +360,10 @@ function AuditDialog({
                 </>
               ) : (
                 <>
-                  <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3.5 py-3 font-mono text-[12.5px] text-neutral-400">
+                  <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3.5 py-3 font-mono text-[0.78125rem] text-neutral-400">
                     {tr("merkleUnavailable")}
                   </div>
-                  <p className="mt-2 text-[12.5px] leading-relaxed text-neutral-600">
+                  <p className="mt-2 text-[0.78125rem] leading-relaxed text-neutral-600">
                     {tr("auditPendingBody")}
                   </p>
                 </>
@@ -375,7 +375,7 @@ function AuditDialog({
             <button
               type="button"
               onClick={onClose}
-              className="h-11 cursor-pointer rounded-md bg-brand-700 px-5.5 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+              className="h-11 cursor-pointer rounded-md bg-brand-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600"
             >
               {t("close")}
             </button>

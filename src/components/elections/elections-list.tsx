@@ -241,7 +241,7 @@ export function ElectionsList({
               {t("filters.clear")}
             </button>
           )}
-          <div className="ml-auto self-center text-[13px] text-muted-foreground">
+          <div className="ml-auto self-center text-[0.8125rem] text-muted-foreground">
             {anyFilter
               ? t("filters.showing", {
                   shown: filtered.length,
@@ -263,7 +263,7 @@ export function ElectionsList({
             </div>
             <Link
               href="/elections/new"
-              className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[15px] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-md bg-primary px-5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600"
             >
               <Plus className="size-4.5" />
               {tp("newElection")}
@@ -298,18 +298,18 @@ export function ElectionsList({
               {(["election", "status"] as const).map((col) => (
                 <span
                   key={col}
-                  className="font-heading text-[13px] font-semibold text-muted-foreground"
+                  className="font-heading text-[0.8125rem] font-semibold text-muted-foreground"
                 >
                   {tp(`list.columns.${col}`)}
                 </span>
               ))}
-              <span className="font-heading text-[13px] font-semibold text-muted-foreground">
+              <span className="font-heading text-[0.8125rem] font-semibold text-muted-foreground">
                 {t("columns.turnout")}
               </span>
-              <span className="font-heading text-[13px] font-semibold text-muted-foreground">
+              <span className="font-heading text-[0.8125rem] font-semibold text-muted-foreground">
                 {tp("list.columns.window")}
               </span>
-              <span className="text-right font-heading text-[13px] font-semibold text-muted-foreground">
+              <span className="text-right font-heading text-[0.8125rem] font-semibold text-muted-foreground">
                 {t("columns.actions")}
               </span>
             </div>
@@ -345,11 +345,11 @@ export function ElectionsList({
                           }}
                           onBlur={() => commitRename(e.id)}
                           aria-label={tp("actions.renamePlaceholder")}
-                          className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[15px] font-semibold text-neutral-800 shadow-focus outline-none"
+                          className="w-full rounded-md border border-brand-700 bg-white px-2.5 py-1.5 font-heading text-[0.9375rem] font-semibold text-neutral-800 shadow-focus outline-none"
                         />
                       ) : (
                         <>
-                          <div className="truncate font-heading text-[15px] font-semibold text-neutral-800">
+                          <div className="truncate font-heading text-[0.9375rem] font-semibold text-neutral-800">
                             {/* Stretched link — after:inset-0 makes the whole row (the
                                 relative <li>) navigate; positioned siblings (⋯ menu)
                                 stack above it, and rename mode never renders it. */}
@@ -360,7 +360,7 @@ export function ElectionsList({
                               {e.name}
                             </Link>
                           </div>
-                          <div className="mt-0.5 text-[13px] text-muted-foreground">
+                          <div className="mt-0.5 text-[0.8125rem] text-muted-foreground">
                             {e.type}
                           </div>
                         </>
@@ -385,7 +385,7 @@ export function ElectionsList({
                     {/* Turnout — % + votes-of label above the bar (design) */}
                     <div>
                       <div className="flex items-baseline gap-2">
-                        <span className="font-heading text-[15px] font-semibold text-neutral-800">
+                        <span className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
                           {e.voters > 0 ? `${pct}%` : "—"}
                         </span>
                         <span className="text-xs text-muted-foreground">
@@ -407,7 +407,7 @@ export function ElectionsList({
 
                     {/* Voting window — schema requires startsAt/endsAt, so drafts carry
                       placeholder dates; "not scheduled" is a display rule on DRAFT. */}
-                    <div className="text-[13px] text-muted-foreground">
+                    <div className="text-[0.8125rem] text-muted-foreground">
                       {e.status === "DRAFT"
                         ? t("notScheduled")
                         : `${formatVotingDate(e.opens, locale)} – ${formatVotingDate(e.closes, locale)}`}
@@ -502,13 +502,13 @@ export function ElectionsList({
               </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
-              <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[15px] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
+              <AlertDialog.Close className="inline-flex h-11 items-center rounded-md px-5 text-[0.9375rem] font-medium text-muted-foreground transition-colors hover:bg-neutral-100">
                 {tp("actions.cancel")}
               </AlertDialog.Close>
               <button
                 type="button"
                 onClick={onConfirmDelete}
-                className="inline-flex h-11 items-center rounded-md bg-error-700 px-5.5 text-[15px] font-semibold text-white transition-colors hover:bg-error-500"
+                className="inline-flex h-11 items-center rounded-md bg-error-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-error-500"
               >
                 {tp("actions.confirmDelete")}
               </button>

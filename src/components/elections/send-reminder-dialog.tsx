@@ -108,16 +108,16 @@ function SentPanel({ count, onClose }: { count: number; onClose: () => void }) {
       <div className="mx-auto mb-4.5 flex size-16 items-center justify-center rounded-full bg-success-50 text-success-700">
         <CircleCheckBig className="size-8" aria-hidden />
       </div>
-      <Dialog.Title className="font-heading text-[20px] font-bold text-neutral-800">
+      <Dialog.Title className="font-heading text-[1.25rem] font-bold text-neutral-800">
         {t("sentTitle")}
       </Dialog.Title>
-      <Dialog.Description className="mt-2.5 text-[14.5px] leading-relaxed text-neutral-600">
+      <Dialog.Description className="mt-2.5 text-[0.90625rem] leading-relaxed text-neutral-600">
         {t("sentBody", { count })}
       </Dialog.Description>
       <button
         type="button"
         onClick={onClose}
-        className="mt-6 h-11.5 w-full cursor-pointer rounded-md bg-brand-700 text-[15px] font-semibold text-white transition-colors hover:bg-brand-600"
+        className="mt-6 h-11.5 w-full cursor-pointer rounded-md bg-brand-700 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600"
       >
         {t("done")}
       </button>
@@ -147,10 +147,10 @@ function ReviewPanel({
           <Mail className="size-5.5" aria-hidden />
         </span>
         <div>
-          <Dialog.Title className="font-heading text-[19px] font-semibold text-neutral-800">
+          <Dialog.Title className="font-heading text-[1.1875rem] font-semibold text-neutral-800">
             {t("title")}
           </Dialog.Title>
-          <Dialog.Description className="mt-1.5 text-[13.5px] leading-relaxed text-neutral-600">
+          <Dialog.Description className="mt-1.5 text-[0.84375rem] leading-relaxed text-neutral-600">
             {t("body")}
           </Dialog.Description>
         </div>
@@ -158,7 +158,7 @@ function ReviewPanel({
 
       <div className="px-6.5 pt-4.5">
         {failedToLoad ? (
-          <p className="rounded-[10px] border border-error-500 bg-error-50 px-4 py-3 text-[13.5px] text-error-700">
+          <p className="rounded-[10px] border border-error-500 bg-error-50 px-4 py-3 text-[0.84375rem] text-error-700">
             {t("loadFailed")}
           </p>
         ) : preview === null ? (
@@ -186,7 +186,7 @@ function ReviewPanel({
 
             <div className="mt-3.5 flex items-start gap-2.25 rounded-[10px] border border-brand-100 bg-brand-50 px-3.5 py-3">
               <Info className="mt-px size-4 shrink-0 text-brand-700" aria-hidden />
-              <span className="text-[12.5px] leading-relaxed text-brand-700">
+              <span className="text-[0.78125rem] leading-relaxed text-brand-700">
                 {t("note")}
               </span>
             </div>
@@ -198,7 +198,7 @@ function ReviewPanel({
         <button
           type="button"
           onClick={onCancel}
-          className="h-11.5 cursor-pointer rounded-md border border-border bg-white px-4.5 text-[14.5px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
+          className="h-11.5 cursor-pointer rounded-md border border-border bg-white px-4.5 text-[0.90625rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-50"
         >
           {t("cancel")}
         </button>
@@ -207,7 +207,7 @@ function ReviewPanel({
           onClick={onSend}
           // Nothing to send is not an error state — the button simply can't fire.
           disabled={pending || !preview || preview.recipients === 0}
-          className="inline-flex h-11.5 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-5 text-[14.5px] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="inline-flex h-11.5 cursor-pointer items-center gap-2 rounded-md bg-brand-700 px-5 text-[0.90625rem] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Send className="size-4.25" aria-hidden />
           {pending
@@ -234,7 +234,7 @@ function SummaryRow({
     <div
       className={`flex items-center justify-between gap-4 py-3 ${last ? "" : "border-b border-neutral-100"}`}
     >
-      <dt className="text-[13.5px] text-neutral-600">{label}</dt>
+      <dt className="text-[0.84375rem] text-neutral-600">{label}</dt>
       <dd
         className={`text-sm text-neutral-800 ${strong ? "font-bold" : "font-semibold"}`}
       >

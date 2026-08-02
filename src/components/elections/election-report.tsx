@@ -143,10 +143,10 @@ export async function ElectionReport({
           <div className="text-xs font-bold tracking-[0.18em] text-brand-700 uppercase">
             {t("official")}
           </div>
-          <h2 className="mt-3 font-heading text-[27px] leading-tight font-bold text-brand-900">
+          <h2 className="mt-3 font-heading text-[1.6875rem] leading-tight font-bold text-brand-900">
             {title}
           </h2>
-          <div className="mt-1.5 text-[15px] text-neutral-600 italic">
+          <div className="mt-1.5 text-[0.9375rem] text-neutral-600 italic">
             {orgName}
           </div>
         </div>
@@ -165,7 +165,7 @@ export async function ElectionReport({
                 height={48}
                 className="h-12 w-auto"
               />
-              <span className="font-heading text-[15px] font-bold text-brand-900">
+              <span className="font-heading text-[0.9375rem] font-bold text-brand-900">
                 Electius
               </span>
             </>
@@ -192,7 +192,7 @@ export async function ElectionReport({
           rezultata jer mijenja značenje svega ispod. */}
       {preliminary && (
         <div className="mt-6 rounded-md border-l-[3px] border-warning-500 bg-warning-50 px-5 py-4 break-inside-avoid">
-          <div className="font-heading text-[15px] font-bold text-warning-700">
+          <div className="font-heading text-[0.9375rem] font-bold text-warning-700">
             {t("preliminaryTitle")}
           </div>
           <p className="mt-1 text-sm text-warning-700">
@@ -203,8 +203,8 @@ export async function ElectionReport({
           <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
             {figures.map((f) => (
               <div key={f.label}>
-                <dt className="text-[11.5px] text-neutral-600">{f.label}</dt>
-                <dd className="font-heading text-[19px] leading-tight font-bold text-brand-900">
+                <dt className="text-[0.71875rem] text-neutral-600">{f.label}</dt>
+                <dd className="font-heading text-[1.1875rem] leading-tight font-bold text-brand-900">
                   {nf.format(f.value)}
                 </dd>
               </div>
@@ -254,7 +254,7 @@ export async function ElectionReport({
                   {ranked.indexOf(c) + 1}
                 </span>
                 <div className="min-w-0">
-                  <span className="text-[14.5px] font-semibold text-neutral-800">
+                  <span className="text-[0.90625rem] font-semibold text-neutral-800">
                     {c.text}
                   </span>
                   {/* Razmak je doslovan: bez njega čitač zaslona spaja ime i
@@ -262,7 +262,7 @@ export async function ElectionReport({
                   {c.description && (
                     <>
                       {" "}
-                      <span className="ml-1 text-[12.5px] text-neutral-400">
+                      <span className="ml-1 text-[0.78125rem] text-neutral-400">
                         {c.description}
                       </span>
                     </>
@@ -273,7 +273,7 @@ export async function ElectionReport({
                 <span className="text-sm text-neutral-600">
                   {tr("votesN", { count: c.votes })}
                 </span>
-                <span className="inline-block min-w-11 font-heading text-[15px] font-bold text-neutral-800">
+                <span className="inline-block min-w-11 font-heading text-[0.9375rem] font-bold text-neutral-800">
                   {c.pct}%
                 </span>
               </div>
@@ -321,10 +321,10 @@ export async function ElectionReport({
                 {t("auditSealedBody")}
               </p>
               <div className="mt-2.5">
-                <div className="mb-1 text-[11.5px] font-bold text-neutral-600">
+                <div className="mb-1 text-[0.71875rem] font-bold text-neutral-600">
                   {tr("merkleRoot")}
                 </div>
-                <div className="rounded-md border border-[#D6F0DE] bg-white px-3 py-2 font-mono text-[11.5px] break-all text-brand-900">
+                <div className="rounded-md border border-[#D6F0DE] bg-white px-3 py-2 font-mono text-[0.71875rem] break-all text-brand-900">
                   {sealed.merkleRoot}
                 </div>
               </div>
@@ -337,7 +337,7 @@ export async function ElectionReport({
         </div>
       </div>
 
-      <footer className="mt-8.5 flex items-center justify-between border-t border-border pt-4 text-[11.5px] text-neutral-400">
+      <footer className="mt-8.5 flex items-center justify-between border-t border-border pt-4 text-[0.71875rem] text-neutral-400">
         <span>{t("footerBrand")}</span>
         {/* Broj stranice namjerno izostaje: ispisni motor preglednika ga dodaje
             sam, a "1 / 1" bi na dužem izvještaju bila neistina. */}
@@ -348,7 +348,7 @@ export async function ElectionReport({
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="mt-8 font-heading text-[13px] font-bold tracking-widest text-neutral-600 uppercase">
+    <h3 className="mt-8 font-heading text-[0.8125rem] font-bold tracking-widest text-neutral-600 uppercase">
       {children}
     </h3>
   );
@@ -372,7 +372,7 @@ function WinnerBlock({
   if (outcome.kind === "none") {
     return (
       <div className="mt-4 rounded-[10px] border border-border border-l-4 border-l-neutral-400 bg-neutral-50 px-6 py-5 break-inside-avoid">
-        <div className="font-heading text-[17px] font-bold text-neutral-800">
+        <div className="font-heading text-[1.0625rem] font-bold text-neutral-800">
           {labels.none}
         </div>
         <p className="mt-1 text-sm text-neutral-600">{labels.noneBody}</p>
@@ -392,7 +392,7 @@ function WinnerBlock({
           </span>
         )}
         <div className="min-w-0">
-          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-[0.08em] text-warning-700 uppercase">
+          <div className="inline-flex items-center gap-1.5 text-[0.6875rem] font-bold tracking-[0.08em] text-warning-700 uppercase">
             <Trophy className="size-3.25" aria-hidden />
             {tie ? labels.tie : labels.winner}
           </div>
@@ -400,13 +400,13 @@ function WinnerBlock({
             <ul className="mt-1.5 flex flex-col gap-1.5">
               {outcome.candidates.map((c) => (
                 <li key={c.id}>
-                  <span className="font-heading text-[17px] leading-tight font-bold text-brand-900">
+                  <span className="font-heading text-[1.0625rem] leading-tight font-bold text-brand-900">
                     {c.text}
                   </span>
                   {c.description && (
                     <>
                       {" "}
-                      <span className="ml-1 text-[13px] text-neutral-600">
+                      <span className="ml-1 text-[0.8125rem] text-neutral-600">
                         {c.description}
                       </span>
                     </>
@@ -416,11 +416,11 @@ function WinnerBlock({
             </ul>
           ) : (
             <>
-              <div className="mt-0.75 font-heading text-[19px] leading-tight font-bold text-brand-900">
+              <div className="mt-0.75 font-heading text-[1.1875rem] leading-tight font-bold text-brand-900">
                 {lead.text}
               </div>
               {lead.description && (
-                <div className="mt-px text-[13px] text-neutral-600">
+                <div className="mt-px text-[0.8125rem] text-neutral-600">
                   {lead.description}
                 </div>
               )}
@@ -431,15 +431,15 @@ function WinnerBlock({
 
       <div className="shrink-0 text-right">
         {/* Izjednačeni dijele isti broj glasova — ispisuje se jednom. */}
-        <div className="font-heading text-[26px] leading-none font-bold text-brand-900">
+        <div className="font-heading text-[1.625rem] leading-none font-bold text-brand-900">
           {nf.format(lead.votes)}
         </div>
-        <div className="mt-1 text-[12.5px] text-neutral-600">
+        <div className="mt-1 text-[0.78125rem] text-neutral-600">
           {share(lead.votes)}
         </div>
         {quorumPill && (
           <div
-            className={`mt-2 inline-flex h-5.5 items-center rounded-full px-2.5 text-[11.5px] font-bold ${
+            className={`mt-2 inline-flex h-5.5 items-center rounded-full px-2.5 text-[0.71875rem] font-bold ${
               quorumPill.met
                 ? "bg-success-50 text-success-700"
                 : "bg-warning-50 text-warning-700"

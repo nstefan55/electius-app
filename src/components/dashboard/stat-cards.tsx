@@ -63,7 +63,7 @@ export function StatCards({ stats }: { stats: DashboardStats }) {
           className="rounded-lg border border-border bg-card px-6 py-5.5 shadow-sm"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[13px] font-medium text-muted-foreground">
+            <span className="text-[0.8125rem] font-medium text-muted-foreground">
               {c.label}
             </span>
             <span
@@ -75,10 +75,10 @@ export function StatCards({ stats }: { stats: DashboardStats }) {
               <c.icon className="size-4.25" />
             </span>
           </div>
-          <div className="mt-3.5 font-heading text-[34px] leading-none font-bold text-neutral-800">
+          <div className="mt-3.5 font-heading text-[2.125rem] leading-none font-bold text-neutral-800">
             {c.value}
           </div>
-          <div className={cn("mt-2 text-[13px]", c.hintClass)}>{c.hint}</div>
+          <div className={cn("mt-2 text-[0.8125rem]", c.hintClass)}>{c.hint}</div>
         </div>
       ))}
     </div>

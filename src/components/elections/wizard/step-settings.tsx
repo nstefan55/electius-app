@@ -148,7 +148,7 @@ export function StepSettings({ data, patch }: StepProps) {
                   </span>
                   {pro && <ProBadge />}
                 </div>
-                <div className="mt-0.75 text-[13px] leading-relaxed text-muted-foreground">
+                <div className="mt-0.75 text-[0.8125rem] leading-relaxed text-muted-foreground">
                   {t(`toggles.${key}.desc`)}
                 </div>
               </div>
@@ -160,7 +160,7 @@ export function StepSettings({ data, patch }: StepProps) {
             </div>
             {key === "quorum" && data.quorum && (
               <div className="mt-3.5 flex items-center gap-2.5 rounded-[10px] border border-border bg-neutral-50 p-3.5">
-                <span className="text-[13px] font-semibold text-neutral-800">
+                <span className="text-[0.8125rem] font-semibold text-neutral-800">
                   {t("quorumInput")}
                 </span>
                 <span className="ml-auto flex items-center gap-1.5">
@@ -179,7 +179,7 @@ export function StepSettings({ data, patch }: StepProps) {
                     aria-label={t("quorumInput")}
                     className={`${INPUT_CLASS} h-9.5 w-19 px-2.5 text-right`}
                   />
-                  <span className="text-[15px] font-semibold text-muted-foreground">
+                  <span className="text-[0.9375rem] font-semibold text-muted-foreground">
                     %
                   </span>
                 </span>

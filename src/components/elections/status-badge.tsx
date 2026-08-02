@@ -20,7 +20,7 @@ export function StatusBadge({
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full font-medium",
-        md ? "h-7.5 px-3.5 text-[13px] font-semibold" : "h-5.5 px-2.5 text-xs",
+        md ? "h-7.5 px-3.5 text-[0.8125rem] font-semibold" : "h-5.5 px-2.5 text-xs",
         style.badge,
       )}
     >

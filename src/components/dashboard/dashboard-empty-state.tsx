@@ -33,10 +33,10 @@ export function DashboardEmptyState() {
           <CircleCheckBig className="size-9 sm:size-11" strokeWidth={2} />
         </span>
 
-        <h1 className="font-heading text-[26px] leading-tight font-bold tracking-tight text-neutral-800 sm:text-[32px]">
+        <h1 className="font-heading text-[1.625rem] leading-tight font-bold tracking-tight text-neutral-800 sm:text-[2rem]">
           {t("title")}
         </h1>
-        <p className="mx-auto mt-3.5 max-w-lg text-[15px] leading-relaxed text-muted-foreground sm:text-base">
+        <p className="mx-auto mt-3.5 max-w-lg text-[0.9375rem] leading-relaxed text-muted-foreground sm:text-base">
           {t("subtitle")}
         </p>
 
@@ -67,16 +67,16 @@ export function DashboardEmptyState() {
                 </span>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-heading text-[15px] font-semibold text-neutral-800">
+                    <span className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
                       {t(`features.${key}.title`)}
                     </span>
                     {pro && (
-                      <span className="inline-flex h-4.5 items-center rounded-full bg-violet-50 px-1.75 text-[10px] font-bold tracking-wide text-violet-700">
+                      <span className="inline-flex h-4.5 items-center rounded-full bg-violet-50 px-1.75 text-[0.625rem] font-bold tracking-wide text-violet-700">
                         PRO
                       </span>
                     )}
                   </div>
-                  <p className="mt-1.5 text-[13px] leading-normal text-muted-foreground">
+                  <p className="mt-1.5 text-[0.8125rem] leading-normal text-muted-foreground">
                     {t(`features.${key}.desc`)}
                   </p>
                 </div>

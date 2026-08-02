@@ -82,7 +82,7 @@ export function StepBasicInfo({ data, patch }: StepProps) {
               selected={data.electionType === type}
               badge={
                 type === "STANDARD" ? (
-                  <span className="inline-flex h-4.25 items-center rounded-full bg-neutral-100 px-1.5 text-[9.5px] font-bold tracking-wide text-neutral-600">
+                  <span className="inline-flex h-4.25 items-center rounded-full bg-neutral-100 px-1.5 text-[0.59375rem] font-bold tracking-wide text-neutral-600">
                     {t("defaultBadge")}
                   </span>
                 ) : undefined
@@ -123,7 +123,7 @@ export function StepBasicInfo({ data, patch }: StepProps) {
             }}
           />
         </div>
-        <p className="mt-3 text-[12.5px] text-neutral-400">{methodNote}</p>
+        <p className="mt-3 text-[0.78125rem] text-neutral-400">{methodNote}</p>
       </StepCard>
     </div>
   );

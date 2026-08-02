@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Prisma } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
+import { ACCESSIBILITY_KEYS } from "@/lib/accessibility";
 
 // Settings mutations (profile-settings phase 1). requireSession() first, then
 // writes scoped to the session's own user/organization — a foreign id can
@@ -27,6 +28,32 @@ export async function updateProfile(input: unknown): Promise<ActionResult> {
     await prisma.user.update({
       where: { email: session.user.email },
       data: { name },
+    });
+    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
+// Jedna akcija za sve četiri preferencije, ne četiri. `key` je zatvorena
+// unija, pa dinamički `data: { [key]: value }` nikad ne može pisati u
+// proizvoljan stupac — to je jedino što ovaj oblik čini sigurnim.
+const accessibilitySchema = z.object({
+  key: z.enum(ACCESSIBILITY_KEYS),
+  value: z.boolean(),
+});
+
+export async function setAccessibilityPref(
+  input: unknown,
+): Promise<ActionResult> {
+  const parsed = accessibilitySchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid" };
+
+  const session = await requireSession();
+  try {
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { [parsed.data.key]: parsed.data.value },
     });
     return { success: true };
   } catch {

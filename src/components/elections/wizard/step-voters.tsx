@@ -131,7 +131,7 @@ export function StepVoters({ data, patch }: StepProps) {
         )}
 
         {csvError && (
-          <div className="mt-4 rounded-md border border-[#FECACA] bg-error-50 px-3.5 py-3 text-[13.5px] leading-relaxed text-[#991B1B]">
+          <div className="mt-4 rounded-md border border-[#FECACA] bg-error-50 px-3.5 py-3 text-[0.84375rem] leading-relaxed text-[#991B1B]">
             {csvError}
           </div>
         )}
@@ -146,7 +146,7 @@ export function StepVoters({ data, patch }: StepProps) {
               <button
                 type="button"
                 onClick={() => patch({ voters: [] })}
-                className="text-[13px] font-semibold text-neutral-400 transition-colors hover:text-brand-700"
+                className="text-[0.8125rem] font-semibold text-neutral-400 transition-colors hover:text-brand-700"
               >
                 {t("removeAll")}
               </button>
@@ -172,7 +172,7 @@ export function StepVoters({ data, patch }: StepProps) {
                       <span className="text-sm font-semibold text-neutral-800">
                         {v.name}
                       </span>
-                      <span className="font-mono text-[13px] text-muted-foreground">
+                      <span className="font-mono text-[0.8125rem] text-muted-foreground">
                         {v.email}
                       </span>
                     </div>

@@ -8,7 +8,7 @@ import { requireSession } from "@/lib/auth/require-session";
 export default async function AppLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { user } = await requireSession();
+  const { user, accessibility } = await requireSession();
   // Explicit projection — TS types don't strip runtime fields; without this the
   // full user (email, isPro) would be serialized into the RSC payload. `image`
   // is listed by name, not waved through: it is a public URL the admin uploads
@@ -18,5 +18,11 @@ export default async function AppLayout({
     image: user.image,
     organization: user.organization,
   };
-  return <DashboardShell user={shellUser}>{children}</DashboardShell>;
+  // Preferencije se poslužuju sa servera, pa nema bljeska neprimijenjenog
+  // stila — zato se ne čitaju na klijentu pri montiranju.
+  return (
+    <DashboardShell user={shellUser} accessibility={accessibility}>
+      {children}
+    </DashboardShell>
+  );
 }

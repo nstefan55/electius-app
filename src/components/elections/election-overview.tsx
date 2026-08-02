@@ -207,17 +207,17 @@ function StatCard({
   return (
     <div className={`${CARD} px-6 py-5.5`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[13px] font-medium text-neutral-600">{label}</span>
+        <span className="text-[0.8125rem] font-medium text-neutral-600">{label}</span>
         <span
           className={`flex size-8.5 shrink-0 items-center justify-center rounded-full ${tint}`}
         >
           {icon}
         </span>
       </div>
-      <div className="mt-3.5 font-heading text-[34px] leading-none font-bold text-neutral-800">
+      <div className="mt-3.5 font-heading text-[2.125rem] leading-none font-bold text-neutral-800">
         {value}
       </div>
-      <div className={`mt-2 text-[13px] ${subClass}`}>{sub}</div>
+      <div className={`mt-2 text-[0.8125rem] ${subClass}`}>{sub}</div>
     </div>
   );
 }
@@ -308,17 +308,17 @@ function TurnoutCard({
           </span>
         </div>
         {pulsing && (
-          <span className="rounded-full border border-warning-500/40 px-2 py-0.5 text-[10px] font-bold tracking-[0.06em] text-warning-500">
+          <span className="rounded-full border border-warning-500/40 px-2 py-0.5 text-[0.625rem] font-bold tracking-[0.06em] text-warning-500">
             PRO
           </span>
         )}
       </div>
 
       <div className="mt-4">
-        <div className="font-heading text-[64px] leading-none font-bold tracking-tight">
+        <div className="font-heading text-[4rem] leading-none font-bold tracking-tight">
           {pct}%
         </div>
-        <div className="mt-1 text-[13px] text-white/60">{t("caption")}</div>
+        <div className="mt-1 text-[0.8125rem] text-white/60">{t("caption")}</div>
       </div>
 
       <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/15">
@@ -327,7 +327,7 @@ function TurnoutCard({
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="mt-2.5 text-[13.5px] text-white/85">
+      <p className="mt-2.5 text-[0.84375rem] text-white/85">
         <span className="font-bold text-white">
           {voted.toLocaleString("en-US")}
         </span>{" "}
@@ -337,13 +337,13 @@ function TurnoutCard({
       {quorumThreshold != null && required != null && (
         <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/12 pt-3.5">
           <div className="min-w-0">
-            <div className="text-[12.5px] text-white/60">{t("quorumLabel")}</div>
+            <div className="text-[0.78125rem] text-white/60">{t("quorumLabel")}</div>
             <div className="mt-0.5 text-sm font-semibold text-white">
               {t("quorumReq", { pct: quorumThreshold, voters: required })}
             </div>
           </div>
           <span
-            className={`inline-flex h-7 shrink-0 items-center rounded-full px-3 text-[12.5px] font-bold ${met ? "bg-success-500/20 text-success-500" : "bg-error-500/20 text-error-500"}`}
+            className={`inline-flex h-7 shrink-0 items-center rounded-full px-3 text-[0.78125rem] font-bold ${met ? "bg-success-500/20 text-success-500" : "bg-error-500/20 text-error-500"}`}
           >
             {t(met ? "met" : "notMet")}
           </span>
@@ -419,8 +419,8 @@ function ConfigCard({
             key={label}
             className={`flex items-center justify-between gap-4 py-3.25 ${i < rows.length - 1 ? "border-b border-neutral-100" : ""}`}
           >
-            <dt className="text-[13.5px] text-neutral-600">{label}</dt>
-            <dd className="text-right text-[13.5px] font-semibold text-neutral-800">
+            <dt className="text-[0.84375rem] text-neutral-600">{label}</dt>
+            <dd className="text-right text-[0.84375rem] font-semibold text-neutral-800">
               {value}
             </dd>
           </div>
@@ -446,7 +446,7 @@ function ActionsCard({ id, status }: { id: string; status: ElectionStatus }) {
           // Only an open election can be reminded about — the action itself
           // enforces ACTIVE, this just stops the dead click.
           disabled={status !== "ACTIVE"}
-          className="flex h-12 cursor-pointer items-center gap-3 rounded-md bg-brand-700 px-4.5 text-left text-[15px] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex h-12 cursor-pointer items-center gap-3 rounded-md bg-brand-700 px-4.5 text-left text-[0.9375rem] font-semibold text-white transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Mail className="size-4.75" aria-hidden />
           {t("sendReminder")}
@@ -519,10 +519,10 @@ function QrDialog({
         <Dialog.Popup className="fixed top-1/2 left-1/2 z-50 max-h-[calc(100dvh-3rem)] w-[calc(100%-2rem)] max-w-100 -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl bg-white shadow-lg outline-none">
           <div className="flex items-start justify-between gap-3 px-6 pt-6">
             <div>
-              <Dialog.Title className="font-heading text-[19px] font-semibold text-neutral-800">
+              <Dialog.Title className="font-heading text-[1.1875rem] font-semibold text-neutral-800">
                 {t("title")}
               </Dialog.Title>
-              <Dialog.Description className="mt-1.5 text-[13.5px] leading-relaxed text-neutral-600">
+              <Dialog.Description className="mt-1.5 text-[0.84375rem] leading-relaxed text-neutral-600">
                 {t("body")}
               </Dialog.Description>
             </div>
@@ -540,13 +540,13 @@ function QrDialog({
             </div>
 
             <div className="mt-4 flex items-center gap-2 rounded-md border border-border bg-neutral-50 px-3 py-2.5">
-              <span className="min-w-0 flex-1 truncate text-left font-mono text-[12.5px] text-neutral-600">
+              <span className="min-w-0 flex-1 truncate text-left font-mono text-[0.78125rem] text-neutral-600">
                 {url}
               </span>
               <button
                 type="button"
                 onClick={copy}
-                className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-border bg-white px-3 text-[13px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+                className="inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-border bg-white px-3 text-[0.8125rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
               >
                 <Copy className="size-3.5" aria-hidden />
                 {t("copy")}
@@ -555,7 +555,7 @@ function QrDialog({
 
             <div className="mt-3.5 flex items-start gap-2.25 rounded-lg border border-brand-100 bg-brand-50 px-3.5 py-3 text-left">
               <Info className="mt-px size-4 shrink-0 text-brand-700" aria-hidden />
-              <span className="text-[12.5px] leading-relaxed text-brand-700">
+              <span className="text-[0.78125rem] leading-relaxed text-brand-700">
                 {t("note")}
               </span>
             </div>
@@ -621,7 +621,7 @@ function ActivityCard({
               <div className="text-sm font-semibold text-neutral-800">
                 {it.title}
               </div>
-              <div className="mt-0.5 text-[13px] text-neutral-600">
+              <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
                 {it.meta}
               </div>
             </div>
@@ -635,7 +635,7 @@ function ActivityCard({
 function CardHeader({ children }: { children: React.ReactNode }) {
   return (
     <div className="border-b border-border px-6 py-4.5">
-      <h2 className="font-heading text-[17px] font-semibold text-neutral-800">
+      <h2 className="font-heading text-[1.0625rem] font-semibold text-neutral-800">
         {children}
       </h2>
     </div>

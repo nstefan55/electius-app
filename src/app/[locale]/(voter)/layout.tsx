@@ -18,7 +18,7 @@ export default function VoterLayout({
           className="object-contain"
           priority
         />
-        <span className="font-heading text-[19px] font-bold tracking-tight text-brand-900">
+        <span className="font-heading text-[1.1875rem] font-bold tracking-tight text-brand-900">
           Electius
         </span>
       </header>

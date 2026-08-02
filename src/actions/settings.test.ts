@@ -13,13 +13,18 @@ vi.mock("@/lib/auth/require-session", () => ({
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
-const { updateProfile, updateOrganization } = await import(
-  "@/actions/settings"
-);
+const { updateProfile, updateOrganization, setAccessibilityPref } =
+  await import("@/actions/settings");
 
 const session = {
   user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
   organizationId: "org_1",
+  accessibility: {
+    reduceMotion: false,
+    highContrast: false,
+    largerText: false,
+    focusOutlines: true,
+  },
 };
 
 beforeEach(() => {
@@ -70,5 +75,66 @@ describe("updateOrganization", () => {
     });
 
     expect(result).toEqual({ success: false, error: "emailTaken" });
+  });
+});
+
+describe("setAccessibilityPref", () => {
+  // Akcija piše dinamički `data: { [key]: value }`. Zatvorena unija je jedino
+  // što sprječava upis u proizvoljan stupac — ovaj test to pribija.
+  it("refuses a key outside the closed union", async () => {
+    // beforeEach samo prespaja mock, ne briše brojač poziva iz ranijih testova.
+    vi.mocked(requireSession).mockClear();
+
+    for (const key of ["isPro", "email", "stripeCustomerId", "__proto__"]) {
+      const result = await setAccessibilityPref({ key, value: true });
+      expect(result).toEqual({ success: false, error: "invalid" });
+    }
+    expect(requireSession).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a non-boolean value", async () => {
+    const result = await setAccessibilityPref({
+      key: "reduceMotion",
+      value: "true",
+    });
+    expect(result).toEqual({ success: false, error: "invalid" });
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("writes exactly the one column, scoped to the session email", async () => {
+    vi.mocked(prisma.user.update).mockResolvedValue({} as never);
+
+    const result = await setAccessibilityPref({
+      key: "highContrast",
+      value: true,
+    });
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { email: "admin@example.com" },
+      data: { highContrast: true },
+    });
+  });
+
+  it("persists false — turning a preference off is a write, not a no-op", async () => {
+    vi.mocked(prisma.user.update).mockResolvedValue({} as never);
+
+    await setAccessibilityPref({ key: "focusOutlines", value: false });
+
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { email: "admin@example.com" },
+      data: { focusOutlines: false },
+    });
+  });
+
+  it("reports failure without leaking the DB error", async () => {
+    vi.mocked(prisma.user.update).mockRejectedValue(new Error("db down"));
+
+    const result = await setAccessibilityPref({
+      key: "largerText",
+      value: true,
+    });
+    expect(result).toEqual({ success: false, error: "failed" });
   });
 });

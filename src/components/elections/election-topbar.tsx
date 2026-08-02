@@ -148,7 +148,7 @@ export function ElectionTopbar({
           <h1 className="truncate font-heading text-xl font-semibold text-neutral-800">
             {title}
           </h1>
-          <p className="mt-0.75 text-[13px] text-neutral-600">{subtitle}</p>
+          <p className="mt-0.75 text-[0.8125rem] text-neutral-600">{subtitle}</p>
         </div>
 
         <div className="flex shrink-0 flex-wrap items-center gap-2.5">
@@ -320,7 +320,7 @@ function ReportTopbar({
           <h1 className="font-heading text-xl font-semibold text-neutral-800">
             {t("title")}
           </h1>
-          <p className="mt-0.75 truncate text-[13px] text-neutral-600">
+          <p className="mt-0.75 truncate text-[0.8125rem] text-neutral-600">
             {title}
           </p>
         </div>
@@ -394,11 +394,11 @@ function BallotPreview({
           </div>
 
           <div className="px-5.5 py-6">
-            <p className="text-[12.5px] text-neutral-600">{orgName}</p>
+            <p className="text-[0.78125rem] text-neutral-600">{orgName}</p>
             <Dialog.Title className="font-heading text-lg leading-snug font-semibold text-neutral-800">
               {title}
             </Dialog.Title>
-            <Dialog.Description className="mt-2 mb-4.5 text-[13.5px] leading-relaxed text-neutral-600">
+            <Dialog.Description className="mt-2 mb-4.5 text-[0.84375rem] leading-relaxed text-neutral-600">
               {t(multiChoice ? "promptMulti" : "promptSingle")}
             </Dialog.Description>
 
@@ -417,11 +417,11 @@ function BallotPreview({
                       className={`size-5.5 shrink-0 border-2 border-neutral-200 ${multiChoice ? "rounded-sm" : "rounded-full"}`}
                     />
                     <div className="min-w-0">
-                      <div className="text-[14.5px] font-semibold text-neutral-800">
+                      <div className="text-[0.90625rem] font-semibold text-neutral-800">
                         {o.text}
                       </div>
                       {o.description && (
-                        <div className="text-[12.5px] text-neutral-600">
+                        <div className="text-[0.78125rem] text-neutral-600">
                           {o.description}
                         </div>
                       )}
@@ -435,11 +435,11 @@ function BallotPreview({
             <button
               type="button"
               disabled
-              className="mt-5 h-12 w-full cursor-not-allowed rounded-lg bg-brand-700 text-[15px] font-semibold text-white opacity-85"
+              className="mt-5 h-12 w-full cursor-not-allowed rounded-lg bg-brand-700 text-[0.9375rem] font-semibold text-white opacity-85"
             >
               {t("submit")}
             </button>
-            <p className="mt-3.5 text-center text-[11.5px] leading-relaxed text-neutral-600">
+            <p className="mt-3.5 text-center text-[0.71875rem] leading-relaxed text-neutral-600">
               {t("trust")}
             </p>
           </div>
@@ -486,14 +486,14 @@ function ConfirmDialog({
             {body}
           </AlertDialog.Description>
           <div className="mt-6 flex gap-3">
-            <AlertDialog.Close className="inline-flex h-11.5 flex-1 cursor-pointer items-center justify-center rounded-md border border-border bg-white text-[14.5px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100">
+            <AlertDialog.Close className="inline-flex h-11.5 flex-1 cursor-pointer items-center justify-center rounded-md border border-border bg-white text-[0.90625rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100">
               {cancel}
             </AlertDialog.Close>
             <button
               type="button"
               onClick={onConfirm}
               disabled={pending}
-              className="inline-flex h-11.5 flex-1 cursor-pointer items-center justify-center rounded-md bg-error-700 text-[14.5px] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex h-11.5 flex-1 cursor-pointer items-center justify-center rounded-md bg-error-700 text-[0.90625rem] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {confirm}
             </button>

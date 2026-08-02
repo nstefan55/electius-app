@@ -79,10 +79,10 @@ export function AuthSplitLayout({
         <div className="flex flex-1 items-center justify-center py-10">
           <div className="flex w-full max-w-100 flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <h1 className="font-heading text-[28px] font-semibold text-neutral-800">
+              <h1 className="font-heading text-[1.75rem] font-semibold text-neutral-800">
                 {title}
               </h1>
-              <p className="text-[15px] leading-normal text-neutral-600">
+              <p className="text-[0.9375rem] leading-normal text-neutral-600">
                 {subtitle}
               </p>
             </div>
@@ -91,7 +91,7 @@ export function AuthSplitLayout({
         </div>
 
         {/* Mobile footer — the brand panel (with its own footer) is hidden below lg. */}
-        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 pt-4 text-[13px] lg:hidden">
+        <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 pt-4 text-[0.8125rem] lg:hidden">
           <FooterLinks variant="light" />
         </div>
       </div>
@@ -100,7 +100,7 @@ export function AuthSplitLayout({
       <div className="hidden min-w-0 flex-1 flex-col bg-brand-900 px-16 pt-16 pb-10 lg:flex">
         <div className="my-auto flex max-w-115 flex-col gap-10">
           <div className="flex flex-col gap-3">
-            <h2 className="font-heading text-[32px] leading-tight font-semibold text-white">
+            <h2 className="font-heading text-[2rem] leading-tight font-semibold text-white">
               {brand.title}
             </h2>
             <p className="text-base leading-relaxed text-white/75">
@@ -114,7 +114,7 @@ export function AuthSplitLayout({
                   <Icon className="size-5 text-brand-500" aria-hidden />
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[15px] font-semibold text-white">
+                  <span className="text-[0.9375rem] font-semibold text-white">
                     {featureTitle}
                   </span>
                   <span className="text-sm leading-relaxed text-white/70">
@@ -125,7 +125,7 @@ export function AuthSplitLayout({
             ))}
           </div>
         </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[0.8125rem]">
           <FooterLinks variant="dark" />
         </div>
       </div>

@@ -163,13 +163,13 @@ export function ElectionWizard() {
             <div className="truncate font-heading text-lg leading-tight font-semibold text-neutral-800">
               {t("title")}
             </div>
-            <div className="mt-px text-[13px] text-muted-foreground">
+            <div className="mt-px text-[0.8125rem] text-muted-foreground">
               {stepLabel}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-4.5">
-          <span className="hidden items-center gap-1.5 text-[13px] text-neutral-400 md:flex">
+          <span className="hidden items-center gap-1.5 text-[0.8125rem] text-neutral-400 md:flex">
             <Eye className="size-3.75" />
             {t("trustLine")}
           </span>
@@ -177,7 +177,7 @@ export function ElectionWizard() {
             type="button"
             onClick={saveDraft}
             disabled={isPending}
-            className="inline-flex h-10 items-center gap-1.75 px-1.5 text-[15px] font-semibold text-muted-foreground transition-colors hover:text-brand-700 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-1.75 px-1.5 text-[0.9375rem] font-semibold text-muted-foreground transition-colors hover:text-brand-700 disabled:opacity-50"
           >
             <Save className="size-4.25" />
             {t("saveDraft")}
@@ -254,12 +254,12 @@ export function ElectionWizard() {
             type="button"
             onClick={() => setStep((s) => Math.max(1, s - 1))}
             disabled={step === 1}
-            className="inline-flex h-11.5 items-center gap-2 rounded-md border border-border bg-white px-5 text-[15px] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-white"
+            className="inline-flex h-11.5 items-center gap-2 rounded-md border border-border bg-white px-5 text-[0.9375rem] font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:text-neutral-300 disabled:hover:bg-white"
           >
             <ChevronLeft className="size-4.5" />
             {t("back")}
           </button>
-          <span className="hidden text-[13px] text-neutral-400 sm:inline">
+          <span className="hidden text-[0.8125rem] text-neutral-400 sm:inline">
             {stepLabel}
           </span>
           {step === 5 ? (
@@ -267,7 +267,7 @@ export function ElectionWizard() {
               type="button"
               onClick={submit}
               disabled={isPending}
-              className="inline-flex h-11.5 items-center gap-2 rounded-md bg-primary px-6 text-[15px] font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600 disabled:opacity-60"
+              className="inline-flex h-11.5 items-center gap-2 rounded-md bg-primary px-6 text-[0.9375rem] font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600 disabled:opacity-60"
             >
               <Check className="size-4.5" strokeWidth={2.4} />
               {isPending ? t("creating") : t("create")}
@@ -276,7 +276,7 @@ export function ElectionWizard() {
             <button
               type="button"
               onClick={next}
-              className="inline-flex h-11.5 items-center gap-2 rounded-md bg-primary px-6 text-[15px] font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600"
+              className="inline-flex h-11.5 items-center gap-2 rounded-md bg-primary px-6 text-[0.9375rem] font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600"
             >
               {t("continue")}
               <ChevronRight className="size-4.5" />

@@ -143,7 +143,7 @@ export async function ElectionResults({
           <section className={CARD}>
             <div className={CARD_HEAD}>
               <h2 className={CARD_TITLE}>{t("distribution")}</h2>
-              <span className="text-[13px] text-neutral-600">
+              <span className="text-[0.8125rem] text-neutral-600">
                 {t("candidatesCount", { count: ranked.length })}
               </span>
             </div>
@@ -245,7 +245,7 @@ function StatCard({
   return (
     <div className={cn(CARD, "px-5.5 py-5")}>
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[13px] font-medium text-neutral-600">{label}</span>
+        <span className="text-[0.8125rem] font-medium text-neutral-600">{label}</span>
         <span
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-full",
@@ -264,9 +264,9 @@ function StatCard({
         >
           {value}
         </span>
-        {hint && <span className="text-[13px] text-neutral-600">{hint}</span>}
+        {hint && <span className="text-[0.8125rem] text-neutral-600">{hint}</span>}
       </div>
-      {sub && <div className="mt-1.5 text-[12.5px] text-neutral-600">{sub}</div>}
+      {sub && <div className="mt-1.5 text-[0.78125rem] text-neutral-600">{sub}</div>}
     </div>
   );
 }
@@ -309,7 +309,7 @@ async function WinnerCard({
     <section className="flex flex-wrap items-center justify-between gap-7 rounded-xl bg-brand-900 px-7 py-6 shadow-md">
       <div className="flex min-w-0 items-center gap-5">
         {!tie && (
-          <span className="flex size-19 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[28px] font-bold text-white shadow-[inset_0_0_0_3px_rgba(255,255,255,0.18)]">
+          <span className="flex size-19 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[1.75rem] font-bold text-white shadow-[inset_0_0_0_3px_rgba(255,255,255,0.18)]">
             {candidateInitials(lead.text)}
           </span>
         )}
@@ -323,7 +323,7 @@ async function WinnerCard({
             <ul className="mt-2 flex flex-col gap-2">
               {outcome.candidates.map((c) => (
                 <li key={c.id} className="flex items-center gap-3">
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[13px] font-bold text-white">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-500 font-heading text-[0.8125rem] font-bold text-white">
                     {candidateInitials(c.text)}
                   </span>
                   <span className="min-w-0">
@@ -331,7 +331,7 @@ async function WinnerCard({
                       {c.text}
                     </span>
                     {c.description && (
-                      <span className="block text-[13px] text-white/70">
+                      <span className="block text-[0.8125rem] text-white/70">
                         {c.description}
                       </span>
                     )}
@@ -341,7 +341,7 @@ async function WinnerCard({
             </ul>
           ) : (
             <>
-              <div className="mt-1.25 font-heading text-[26px] leading-tight font-bold text-white">
+              <div className="mt-1.25 font-heading text-[1.625rem] leading-tight font-bold text-white">
                 {lead.text}
               </div>
               {lead.description && (
@@ -355,10 +355,10 @@ async function WinnerCard({
       </div>
 
       <div className="text-right">
-        <div className="font-heading text-[42px] leading-none font-bold text-white">
+        <div className="font-heading text-[2.625rem] leading-none font-bold text-white">
           {nf.format(lead.votes)}
         </div>
-        <div className="mt-1.5 text-[13.5px] text-white/65">
+        <div className="mt-1.5 text-[0.84375rem] text-white/65">
           {t("winnerShare", { pct: share })}
         </div>
       </div>
@@ -382,23 +382,23 @@ function CandidateRow({
       <div className="mb-2.5 flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-2.75">
           <span
-            className="flex size-8 shrink-0 items-center justify-center rounded-full font-heading text-[12.5px] font-bold text-white"
+            className="flex size-8 shrink-0 items-center justify-center rounded-full font-heading text-[0.78125rem] font-bold text-white"
             style={{ background: avatarColor(candidate, index) }}
           >
             {candidateInitials(candidate.text)}
           </span>
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-[15px] font-semibold text-neutral-800">
+            <div className="flex items-center gap-2 text-[0.9375rem] font-semibold text-neutral-800">
               <span className="truncate">{candidate.text}</span>
               {candidate.isWinner && (
-                <span className="inline-flex h-4.75 shrink-0 items-center gap-1 rounded-full bg-[#FEF9C3] px-2 text-[10.5px] font-bold tracking-[0.03em] text-[#A16207]">
+                <span className="inline-flex h-4.75 shrink-0 items-center gap-1 rounded-full bg-[#FEF9C3] px-2 text-[0.65625rem] font-bold tracking-[0.03em] text-[#A16207]">
                   <Trophy className="size-2.75" aria-hidden />
                   {winnerTag}
                 </span>
               )}
             </div>
             {candidate.description && (
-              <div className="truncate text-[12.5px] text-neutral-600">
+              <div className="truncate text-[0.78125rem] text-neutral-600">
                 {candidate.description}
               </div>
             )}
@@ -408,7 +408,7 @@ function CandidateRow({
           <span className="font-heading text-base font-bold text-neutral-800">
             {candidate.pct}%
           </span>
-          <span className="ml-1.5 text-[13px] text-neutral-600">
+          <span className="ml-1.5 text-[0.8125rem] text-neutral-600">
             {votesLabel}
           </span>
         </div>
@@ -429,8 +429,8 @@ function CandidateRow({
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-neutral-100 py-3.25 last:border-b-0">
-      <span className="text-[13.5px] text-neutral-600">{label}</span>
-      <span className="text-right text-[13.5px] font-semibold text-neutral-800">
+      <span className="text-[0.84375rem] text-neutral-600">{label}</span>
+      <span className="text-right text-[0.84375rem] font-semibold text-neutral-800">
         {value}
       </span>
     </div>
@@ -459,7 +459,7 @@ async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
             <h2 className="font-heading text-base font-semibold text-neutral-800">
               {t("auditTitle")}
             </h2>
-            <div className="mt-0.25 text-[12.5px] text-neutral-600">
+            <div className="mt-0.25 text-[0.78125rem] text-neutral-600">
               {t("auditSealed")}
             </div>
           </div>
@@ -468,10 +468,10 @@ async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
           <div className="mb-1.5 text-xs font-semibold text-neutral-600">
             {t("merkleRoot")}
           </div>
-          <div className="rounded-md border border-[#E5EAF2] bg-[#F3F6FB] px-3 py-2.5 font-mono text-[12.5px] break-all text-brand-900">
+          <div className="rounded-md border border-[#E5EAF2] bg-[#F3F6FB] px-3 py-2.5 font-mono text-[0.78125rem] break-all text-brand-900">
             {sealed.merkleRoot}
           </div>
-          <p className="mt-3 text-[12.5px] leading-relaxed text-neutral-600">
+          <p className="mt-3 text-[0.78125rem] leading-relaxed text-neutral-600">
             {treport("auditSealedBody")}
           </p>
         </div>
@@ -489,7 +489,7 @@ async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
           <h2 className="font-heading text-base font-semibold text-neutral-800">
             {t("auditTitle")}
           </h2>
-          <div className="mt-0.25 text-[12.5px] text-neutral-600">
+          <div className="mt-0.25 text-[0.78125rem] text-neutral-600">
             {t("auditPending")}
           </div>
         </div>
@@ -498,10 +498,10 @@ async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
         <div className="mb-1.5 text-xs font-semibold text-neutral-600">
           {t("merkleRoot")}
         </div>
-        <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3 py-2.5 font-mono text-[12.5px] text-neutral-400">
+        <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3 py-2.5 font-mono text-[0.78125rem] text-neutral-400">
           {t("merkleUnavailable")}
         </div>
-        <p className="mt-3 text-[12.5px] leading-relaxed text-neutral-600">
+        <p className="mt-3 text-[0.78125rem] leading-relaxed text-neutral-600">
           {t("auditPendingBody")}
         </p>
       </div>

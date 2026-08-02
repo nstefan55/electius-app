@@ -24,7 +24,7 @@ export default async function ElectionsPage() {
           <h1 className="font-heading text-3xl font-bold tracking-tight text-neutral-800">
             {t("title")}
           </h1>
-          <p className="mt-1.5 text-[15px] text-muted-foreground">
+          <p className="mt-1.5 text-[0.9375rem] text-muted-foreground">
             {t("summary", { total: elections.length, closed, archived })}
           </p>
         </div>

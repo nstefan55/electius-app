@@ -39,7 +39,7 @@ export function AccountManagementCard({
     >
       <div className="min-w-0">
         <div className="text-sm font-medium text-neutral-800">{t("deleteLabel")}</div>
-        <div className="mt-0.5 text-[13px] text-neutral-600">
+        <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
           {t("deleteDescription")}
         </div>
       </div>
@@ -48,12 +48,12 @@ export function AccountManagementCard({
         // Blokada se provjerava i na poslužitelju (beforeDelete) — ovo je samo
         // objašnjenje, ne zaštita.
         <div className="flex shrink-0 flex-col items-end gap-1.5">
-          <p className="max-w-64 text-right text-[13px] text-neutral-600">
+          <p className="max-w-64 text-right text-[0.8125rem] text-neutral-600">
             {t("subscriptionBlocked")}
           </p>
           <Link
             href="/settings"
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-brand-700 hover:underline"
+            className="inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-brand-700 hover:underline"
           >
             <CreditCard className="size-3.5" />
             {t("manageBilling")}
@@ -139,14 +139,14 @@ function DeleteAccountDialog({
               </Dialog.Description>
               {/* Faza 6 (izvoz podataka) nije isporučena — rečenica o izvozu
                   namjerno izostaje umjesto poveznice u prazno (spec §1). */}
-              <p className="mt-2 text-[13px] leading-relaxed text-neutral-600">
+              <p className="mt-2 text-[0.8125rem] leading-relaxed text-neutral-600">
                 {t("modalGdpr")}
               </p>
 
               <div className="mt-4">
                 <label
                   htmlFor="delete-confirm"
-                  className="mb-1.5 block text-[13px] font-medium text-neutral-800"
+                  className="mb-1.5 block text-[0.8125rem] font-medium text-neutral-800"
                 >
                   {t.rich("confirmLabel", {
                     word: () => (
@@ -161,7 +161,7 @@ function DeleteAccountDialog({
                   value={typed}
                   onChange={(e) => setTyped(e.target.value)}
                   autoComplete="off"
-                  className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 font-mono text-[15px] text-neutral-950 outline-none focus:border-error-500 focus:shadow-[0_0_0_3px_rgba(185,28,28,0.20)]"
+                  className="h-11 w-full rounded-md border border-neutral-200 bg-white px-3 font-mono text-[0.9375rem] text-neutral-950 outline-none focus:border-error-500 focus:shadow-[0_0_0_3px_rgba(185,28,28,0.20)]"
                 />
               </div>
             </div>
@@ -171,7 +171,7 @@ function DeleteAccountDialog({
             <button
               type="button"
               onClick={() => close(false)}
-              className="h-11 cursor-pointer rounded-md px-5 text-[15px] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+              className="h-11 cursor-pointer rounded-md px-5 text-[0.9375rem] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
             >
               {t("keepAccount")}
             </button>
@@ -179,7 +179,7 @@ function DeleteAccountDialog({
               type="button"
               onClick={confirm}
               disabled={!armed || pending}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-error-700 px-5.5 text-[15px] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-error-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:bg-neutral-200 disabled:text-neutral-400"
             >
               {pending && (
                 <Spinner

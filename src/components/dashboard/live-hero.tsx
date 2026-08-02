@@ -82,17 +82,17 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
         </div>
         <div className="flex items-center justify-between gap-4 sm:flex-col sm:items-end sm:justify-start sm:gap-3.5">
           <div className="text-left sm:text-right">
-            <div className="font-heading text-5xl leading-none font-bold sm:text-[56px]">
+            <div className="font-heading text-5xl leading-none font-bold sm:text-[3.5rem]">
               {pct}%
             </div>
-            <div className="mt-1 text-[13px] text-white/60">
+            <div className="mt-1 text-[0.8125rem] text-white/60">
               {t("live.turnoutLabel")}
             </div>
           </div>
           <Link
             href={`/elections/${hero.id}/results`}
             type="submit"
-            className="inline-flex h-10 items-center rounded-md bg-white px-4.5 sm:py-10 lg:py-6 text-[15px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            className="inline-flex h-10 items-center rounded-md bg-white px-4.5 sm:py-10 lg:py-6 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
             {t("live.viewResults")}
             <ChevronRight className="sm:size-10 lg:size-5" />

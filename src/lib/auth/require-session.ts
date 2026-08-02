@@ -7,6 +7,7 @@ import { getLocale } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { routing } from "@/i18n/routing";
+import type { AccessibilityPrefs } from "@/lib/accessibility";
 
 // Auth guard seam — the single authorization choke point for the (app) shell
 // (domain-architecture-spec §5, decision B). Real BetterAuth session as of
@@ -29,6 +30,8 @@ export interface Session {
     isPro: boolean;
   };
   organizationId: string;
+  // Preferencije pristupačnosti — ljuska ih pretvara u data-atribute.
+  accessibility: AccessibilityPrefs;
 }
 
 export const requireSession = cache(async (): Promise<Session> => {
@@ -47,6 +50,10 @@ export const requireSession = cache(async (): Promise<Session> => {
       image: true,
       organizationId: true,
       organization: { select: { name: true, logoUrl: true } },
+      reduceMotion: true,
+      highContrast: true,
+      largerText: true,
+      focusOutlines: true,
     },
   });
   if (!admin?.organizationId || !admin.organization) {
@@ -65,6 +72,12 @@ export const requireSession = cache(async (): Promise<Session> => {
       isPro: admin.isPro,
     },
     organizationId: admin.organizationId,
+    accessibility: {
+      reduceMotion: admin.reduceMotion,
+      highContrast: admin.highContrast,
+      largerText: admin.largerText,
+      focusOutlines: admin.focusOutlines,
+    },
   };
 });
 

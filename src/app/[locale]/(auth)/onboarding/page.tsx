@@ -65,7 +65,7 @@ export default async function OnboardingPage() {
             className="object-contain"
             priority
           />
-          <span className="font-heading text-[19px] font-bold tracking-tight text-brand-900">
+          <span className="font-heading text-[1.1875rem] font-bold tracking-tight text-brand-900">
             Electius
           </span>
         </div>
@@ -81,14 +81,14 @@ export default async function OnboardingPage() {
       <div className="mx-auto max-w-250 px-6 pt-13 pb-18 sm:px-8">
         {/* Hero */}
         <div className="mx-auto max-w-170 text-center">
-          <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-brand-50 px-3.5 text-[12.5px] font-bold tracking-wider text-brand-700 uppercase">
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-brand-50 px-3.5 text-[0.78125rem] font-bold tracking-wider text-brand-700 uppercase">
             <Star className="size-3.5" aria-hidden />
             {t("welcomePill")}
           </span>
           <h1 className="mt-4.5 font-heading text-3xl leading-tight font-bold tracking-tight text-neutral-800 sm:text-4xl">
             {t("heroTitle", { name: firstName })}
           </h1>
-          <p className="mt-3.5 text-[17px] leading-relaxed text-neutral-600">
+          <p className="mt-3.5 text-[1.0625rem] leading-relaxed text-neutral-600">
             {t("heroSub")}
           </p>
         </div>
@@ -103,12 +103,12 @@ export default async function OnboardingPage() {
               <div className="text-xs font-bold tracking-widest text-neutral-400 uppercase">
                 {t("admin.eyebrow")}
               </div>
-              <h2 className="mt-0.5 font-heading text-[22px] font-bold text-neutral-800">
+              <h2 className="mt-0.5 font-heading text-[1.375rem] font-bold text-neutral-800">
                 {t("admin.title")}
               </h2>
             </div>
           </div>
-          <p className="mb-5.5 text-[15px] text-neutral-600">{t("admin.sub")}</p>
+          <p className="mb-5.5 text-[0.9375rem] text-neutral-600">{t("admin.sub")}</p>
 
           <div className="grid grid-cols-[repeat(auto-fill,minmax(290px,1fr))] gap-4.5">
             {ADMIN_CARDS.map(({ key, icon: Icon, chip }) => (
@@ -121,7 +121,7 @@ export default async function OnboardingPage() {
                 >
                   <Icon className="size-5.5" aria-hidden />
                 </span>
-                <h3 className="mt-4 font-heading text-[16.5px] leading-snug font-semibold text-neutral-800">
+                <h3 className="mt-4 font-heading text-[1.03125rem] leading-snug font-semibold text-neutral-800">
                   {t(`admin.cards.${key}.title`)}
                 </h3>
                 <p className="mt-1.5 text-sm leading-normal text-neutral-600">
@@ -142,12 +142,12 @@ export default async function OnboardingPage() {
               <div className="text-xs font-bold tracking-widest text-neutral-400 uppercase">
                 {t("voter.eyebrow")}
               </div>
-              <h2 className="mt-0.5 font-heading text-[22px] font-bold text-neutral-800">
+              <h2 className="mt-0.5 font-heading text-[1.375rem] font-bold text-neutral-800">
                 {t("voter.title")}
               </h2>
             </div>
           </div>
-          <p className="mb-5.5 text-[15px] text-neutral-600">{t("voter.sub")}</p>
+          <p className="mb-5.5 text-[0.9375rem] text-neutral-600">{t("voter.sub")}</p>
 
           {/* Delivery highlight — magic links + QR */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -156,10 +156,10 @@ export default async function OnboardingPage() {
                 <Mail className="size-5" aria-hidden />
               </span>
               <div className="min-w-0">
-                <div className="font-heading text-[15px] font-semibold text-neutral-800">
+                <div className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
                   {t("voter.magicTitle")}
                 </div>
-                <div className="mt-0.5 text-[13.5px] leading-normal text-neutral-600">
+                <div className="mt-0.5 text-[0.84375rem] leading-normal text-neutral-600">
                   {t("voter.magicDesc")}
                 </div>
               </div>
@@ -169,10 +169,10 @@ export default async function OnboardingPage() {
                 <QrCode className="size-5" aria-hidden />
               </span>
               <div className="min-w-0">
-                <div className="font-heading text-[15px] font-semibold text-neutral-800">
+                <div className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
                   {t("voter.qrTitle")}
                 </div>
-                <div className="mt-0.5 text-[13.5px] leading-normal text-neutral-600">
+                <div className="mt-0.5 text-[0.84375rem] leading-normal text-neutral-600">
                   {t("voter.qrDesc")}
                 </div>
               </div>
@@ -192,13 +192,13 @@ export default async function OnboardingPage() {
                   >
                     <Icon className="size-5.5" aria-hidden />
                   </span>
-                  <span className="-mt-2.5 flex size-5.5 items-center justify-center rounded-full border-2 border-white bg-neutral-800 font-heading text-[11px] font-bold text-white">
+                  <span className="-mt-2.5 flex size-5.5 items-center justify-center rounded-full border-2 border-white bg-neutral-800 font-heading text-[0.6875rem] font-bold text-white">
                     {i + 1}
                   </span>
-                  <h3 className="mt-2.5 font-heading text-[15px] font-semibold text-neutral-800">
+                  <h3 className="mt-2.5 font-heading text-[0.9375rem] font-semibold text-neutral-800">
                     {t(`voter.steps.${key}.title`)}
                   </h3>
-                  <p className="mt-1 text-[13px] leading-normal text-neutral-600">
+                  <p className="mt-1 text-[0.8125rem] leading-normal text-neutral-600">
                     {t(`voter.steps.${key}.desc`)}
                   </p>
                 </div>
@@ -218,7 +218,7 @@ export default async function OnboardingPage() {
 
         {/* CTA panel */}
         <div className="mt-13 rounded-2xl bg-brand-900 p-8 text-center shadow-lg sm:p-10">
-          <h2 className="font-heading text-[26px] leading-tight font-bold text-white">
+          <h2 className="font-heading text-[1.625rem] leading-tight font-bold text-white">
             {t("cta.title")}
           </h2>
           <p className="mx-auto mt-3 max-w-130 text-base leading-normal text-white/70">

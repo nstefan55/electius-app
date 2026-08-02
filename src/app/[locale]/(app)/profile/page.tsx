@@ -42,7 +42,7 @@ export default async function ProfilePage() {
         <h1 className="font-heading text-3xl font-bold tracking-tight text-neutral-800">
           {t("title")}
         </h1>
-        <p className="mt-1.5 text-[15px] text-neutral-600">{t("subtitle")}</p>
+        <p className="mt-1.5 text-[0.9375rem] text-neutral-600">{t("subtitle")}</p>
       </div>
 
       <ProfileCard

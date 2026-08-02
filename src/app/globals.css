@@ -143,6 +143,67 @@
   }
 }
 
+/* ───────── Pristupačnost (profile-settings faza 5) ─────────
+   Četiri preferencije admina, sve u CSS-u — bez JS-a, bez konteksta, bez
+   propa po komponenti. Ljuska (app) ispisuje data-atribute sa servera.
+
+   Zašto `html:has([data-…])`, a ne selektor na samoj ljusci: dijalozi,
+   izbornici i toastovi se montiraju u portalima na <body>, izvan ljuske.
+   Provjerom na <html> obuhvaćen je i portal, bez `container` propa na
+   dvadesetak mjesta poziva.
+
+   Sve je u `@media screen`: izvještaj se renderira ispisnim motorom, a
+   pohranjeni PDF ne smije naslijediti tuđu osobnu preferenciju. */
+
+/* Zahtjev na razini OS-a vrijedi bez obzira je li admin ikad otvorio karticu. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media screen {
+  /* Manje animacija */
+  html:has([data-reduce-motion]) *,
+  html:has([data-reduce-motion]) *::before,
+  html:has([data-reduce-motion]) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Jači kontrast — samo tokeni. Svaka komponenta ih već troši, pa jedan
+     blok prebojava cijelu ljusku; klase komponenti se ne diraju. */
+  html:has([data-high-contrast]) {
+    --color-neutral-100: #d1d5db; /* jedva vidljive crte → vidljive */
+    --color-neutral-200: #6b7280; /* obrubi: 1.4:1 → 4.8:1 */
+    --color-neutral-400: #4b5563; /* rezervirani tekst: pao je AA */
+    --color-neutral-600: #1f2937; /* pomoćni tekst: 5.9:1 → 12.6:1 */
+    --border: #6b7280;
+    --input: #6b7280;
+    --muted-foreground: #1f2937;
+  }
+
+  /* Veći tekst — korijenska veličina, pa rem ljestvica ide za njom.
+     Zato su proizvoljne px veličine prevedene u rem u ovoj fazi. */
+  html:has([data-larger-text]) {
+    font-size: 18px;
+  }
+
+  /* Uvijek vidljiv fokus — mijenja KADA se prsten pokazuje, nikad KAKAV je.
+     `:focus:not(:focus-visible)` pokriva točno slučaj koji preglednik
+     inače preskače (fokus mišem); vlastita pravila komponenti ostaju. */
+  html:has([data-focus-outlines]) :focus:not(:focus-visible) {
+    box-shadow: var(--shadow-focus);
+  }
+}
+
 /* Ispis — PDF izvještaj se isporučuje ispisnim motorom preglednika.
    Skrivanje ljuske rješavaju `print:` varijante u komponentama; ovdje ostaje
    samo ono što Tailwind ne izražava: margine stranice i bijela podloga. */
