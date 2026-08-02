@@ -1165,7 +1165,25 @@
     },
     "settings": {
       "title": "Postavke",
-      "subtitle": "Pristupačnost, plan, podaci i upravljanje računom."
+      "subtitle": "Pristupačnost, plan, podaci i upravljanje računom.",
+      "customizations": {
+        "title": "Prilagodbe nadzorne ploče",
+        "subtitle": "Prilagodite što nadzorna ploča prikazuje i kako.",
+        "pro": "Pro",
+        "soon": "Uskoro",
+        "density": {
+          "label": "Kompaktan prikaz",
+          "description": "Uži retci i kartice na cijeloj nadzornoj ploči."
+        },
+        "stats": {
+          "label": "Preraspored statistike",
+          "description": "Odaberite koje se statistike prikazuju prve."
+        },
+        "hero": {
+          "label": "Sakrij istaknutu izlaznost",
+          "description": "Uklonite istaknuti panel aktivnih izbora."
+        }
+      }
     }
   },
   "marketing": {

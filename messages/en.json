@@ -1165,7 +1165,25 @@
     },
     "settings": {
       "title": "Settings",
-      "subtitle": "Accessibility, plan, data and account controls."
+      "subtitle": "Accessibility, plan, data and account controls.",
+      "customizations": {
+        "title": "Dashboard customizations",
+        "subtitle": "Personalize what your dashboard shows and how.",
+        "pro": "Pro",
+        "soon": "Coming soon",
+        "density": {
+          "label": "Compact density",
+          "description": "Tighter rows and cards across the dashboard."
+        },
+        "stats": {
+          "label": "Reorder summary stats",
+          "description": "Choose which stats appear first."
+        },
+        "hero": {
+          "label": "Hide live turnout hero",
+          "description": "Remove the highlighted active-election panel."
+        }
+      }
     }
   },
   "marketing": {
