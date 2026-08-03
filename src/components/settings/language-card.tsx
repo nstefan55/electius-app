@@ -79,17 +79,15 @@ export function LanguageCard() {
               <span className="min-w-0 flex-1">
                 <span
                   className={`block text-[0.9375rem] font-semibold ${
-                    available ? "text-brand-900" : "text-neutral-400"
+                    available ? "text-brand-900" : "text-neutral-600"
                   }`}
                 >
                   {tCommon(code)}
                 </span>
+                {/* Objasnjenje zasto je jezik nedostupan mora ostati citljivo
+                    — inace ga onaj kome je namijenjeno ne moze procitati. */}
                 {helper && (
-                  <span
-                    className={`mt-0.5 block text-xs ${
-                      available ? "text-neutral-600" : "text-neutral-400"
-                    }`}
-                  >
+                  <span className="mt-0.5 block text-xs text-neutral-600">
                     {helper}
                   </span>
                 )}

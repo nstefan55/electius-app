@@ -22,7 +22,7 @@ import { BallotDemo } from "@/components/marketing/ballot-demo";
 import { DemoTrigger } from "@/components/marketing/demo-trigger";
 import { IconCard, SectionHeader } from "@/components/marketing/section";
 import { LOCALES } from "@/i18n/config";
-import { CONTACT_EMAIL, signUpUrl } from "@/lib/urls";
+import { APEX_ORIGIN, CONTACT_EMAIL, signUpUrl } from "@/lib/urls";
 
 // Apex odredišna stranica — vlasnik pravog "/" (sudar korijena: marketing drži /,
 // pregled nadzorne ploče ostaje /home — domain-architecture-spec §3).
@@ -46,6 +46,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // Bez metadataBase Next ne moze pretvoriti relativne og/canonical putanje
+    // u apsolutne, a skeneri drustvenih mreza primaju samo apsolutne.
+    ...(APEX_ORIGIN ? { metadataBase: new URL(APEX_ORIGIN) } : {}),
     alternates: {
       canonical: `/${locale}`,
       languages: Object.fromEntries(LOCALES.map((l) => [l, `/${l}`])),
@@ -55,7 +58,11 @@ export async function generateMetadata({
       title,
       description,
       locale,
-      images: [{ url: "/marketing/hero-banner.png", width: 3168, height: 1344 }],
+      // .webp, ne .png: PNG izvornik nikad nije zavrsio u public/ pa je
+      // svaka podijeljena kartica bila 404. Dimenzije su stvarne.
+      images: [
+        { url: "/marketing/hero-banner.webp", width: 2560, height: 1086 },
+      ],
     },
   };
 }

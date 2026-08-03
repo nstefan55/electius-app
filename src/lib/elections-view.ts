@@ -235,6 +235,12 @@ export const formatVotingDate = (iso: string, locale: string) =>
     timeZone: "UTC",
   }).format(new Date(iso));
 
+// Razdjelnik tisućica po lokalizaciji: hr "3.244" · en "3,244".
+// Isti DATE_LOCALE zemljovid — jedno mjesto, da se format brojeva i datuma
+// ne raziđu.
+export const formatCount = (n: number, locale: string) =>
+  n.toLocaleString(DATE_LOCALE[locale] ?? locale);
+
 // Full window instant: "9. srp 2026. · 18:00" / "Jul 9, 2026 · 6:00 PM".
 // Used where a bare day+month would be ambiguous — the start screen's review
 // row and the close-early confirmation. Same UTC determinism as above.

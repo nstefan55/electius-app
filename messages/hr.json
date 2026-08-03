@@ -402,7 +402,10 @@
         "meta": "{type} · Zatvara se {closes}",
         "progress": "{voted} od {total} glasača dalo je svoj glas",
         "turnoutLabel": "izlaznost uživo",
-        "viewResults": "Pogledaj rezultate uživo"
+        "viewResults": "Pogledaj rezultate uživo",
+        "badgeAuto": "Ažurira se automatski",
+        "turnoutLabelAuto": "izlaznost",
+        "viewElection": "Prikaži izbore"
       },
       "list": {
         "title": "Nedavni izbori",

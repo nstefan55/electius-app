@@ -1,4 +1,4 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   CheckCircle2,
   Users,
@@ -7,11 +7,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { DashboardStats } from "@/lib/db/elections";
+import { formatCount } from "@/lib/elections-view";
 import { cn } from "@/lib/utils";
 
 // Four summary stat cards: active elections, total voters, avg turnout, archived.
 export function StatCards({ stats }: { stats: DashboardStats }) {
   const t = useTranslations("dashboard.page");
+  const locale = useLocale();
 
   const cards: {
     label: string;
@@ -33,7 +35,7 @@ export function StatCards({ stats }: { stats: DashboardStats }) {
       label: t("stats.totalVoters"),
       hint: t("stats.totalVotersHint"),
       hintClass: "text-muted-foreground",
-      value: stats.totalVoters.toLocaleString("en-US"),
+      value: formatCount(stats.totalVoters, locale),
       icon: Users,
       iconClass: "bg-brand-50 text-brand-700",
     },

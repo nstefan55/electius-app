@@ -24,6 +24,7 @@ import { SendReminderDialog } from "@/components/elections/send-reminder-dialog"
 import { Link } from "@/i18n/navigation";
 import { electionVoteUrl } from "@/lib/urls";
 import {
+  formatCount,
   formatVotingDateTime,
   quorumRequiredVoters,
   timeLeftParts,
@@ -117,7 +118,7 @@ export function ElectionOverview({
     voted: live.voted,
   });
   const pct = turnoutPct(voted, total);
-  const num = (n: number) => n.toLocaleString(locale === "hr" ? "hr-HR" : "en-US");
+  const num = (n: number) => formatCount(n, locale);
 
   return (
     <div className="pb-4">
@@ -276,6 +277,7 @@ function TurnoutCard({
   quorumThreshold: number | null;
 }) {
   const t = useTranslations("dashboard.election.overview.turnout");
+  const locale = useLocale();
   const active = status === "ACTIVE";
   // The badge must never claim "live" on an election that cannot move.
   const badge = !active
@@ -329,7 +331,7 @@ function TurnoutCard({
       </div>
       <p className="mt-2.5 text-[0.84375rem] text-white/85">
         <span className="font-bold text-white">
-          {voted.toLocaleString("en-US")}
+          {formatCount(voted, locale)}
         </span>{" "}
         {t("progress", { voters })}
       </p>

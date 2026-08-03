@@ -3,6 +3,7 @@ import {
   durationParts,
   elapsedParts,
   foldForSearch,
+  formatCount,
   formatVotingDate,
   formatVotingDateTime,
   matchesQuery,
@@ -138,6 +139,23 @@ describe("formatVotingDate", () => {
     // 23:30 UTC must not roll into the next day on a CET/CEST server.
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "en")).toBe("May 4");
     expect(formatVotingDate("2026-05-04T23:30:00.000Z", "hr")).toBe("4. svi");
+  });
+});
+
+describe("formatCount", () => {
+  // Bug koji ovo pina: hardkodirani "en-US" je na hrvatskoj nadzornoj ploci
+  // ispisivao "3,244" umjesto "3.244".
+  it("uses the Croatian thousands separator", () => {
+    expect(formatCount(3244, "hr")).toBe("3.244");
+  });
+
+  it("keeps the English thousands separator", () => {
+    expect(formatCount(3244, "en")).toBe("3,244");
+  });
+
+  it("leaves sub-thousand values without a separator in both locales", () => {
+    expect(formatCount(164, "hr")).toBe("164");
+    expect(formatCount(164, "en")).toBe("164");
   });
 });
 

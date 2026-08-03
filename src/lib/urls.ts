@@ -22,6 +22,10 @@ export const signUpUrl = () => `${APP}/signup`;
 // Dashboard-host auth pages → apex marketing landing (logo click-through).
 export const marketingHomeUrl = () => `${APEX}/`;
 
+// Goli apex origin za Next metadataBase (og:image, canonical). Prazan string
+// ako varijabla nije postavljena — pozivatelj tada preskace metadataBase.
+export const APEX_ORIGIN = APEX;
+
 // Voter magic link AND the QR payload — one identical apex URL, no token variant (decision D).
 export const voteUrl = (token: string) => `${APEX}/vote/${token}`;
 
