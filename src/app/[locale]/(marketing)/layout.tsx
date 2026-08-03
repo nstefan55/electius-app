@@ -1,52 +1,9 @@
-import Image from "next/image";
-import { useTranslations } from "next-intl";
-import { signInUrl, signUpUrl } from "@/lib/urls";
-import { Link } from "@/i18n/navigation";
-
-// (marketing) chrome — the THIRD chrome (apex host), distinct from the admin shell
-// (design-system §8.1) and the voter chrome (§8.2). SCAFFOLD: minimal header + footer only;
-// full copy/visual design is owned by the marketing-landing spec. No sidebar, no auth,
-// no session read. Cross-host CTAs go through src/lib/urls.ts (never a hardcoded host).
+// (marketing) chrome — TREĆA ljuska (apex host), odvojena od admin ljuske
+// (design-system §8.1) i ljuske za glasače (§8.2). Navigacija i podnožje sada
+// žive u samoj stranici jer su dio dizajna odredišne stranice, pa ovdje ostaje
+// samo podloga. Bez sesije, bez sidebara.
 export default function MarketingLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const t = useTranslations("marketing");
-  return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="flex h-20 items-center justify-between border-b border-neutral-200 bg-white px-6">
-        <Link href="/" className="flex items-center gap-2.5">
-          <Image
-            src="/logo/logo-mark-light.png"
-            alt="Electius"
-            width={40}
-            height={40}
-            className="object-contain"
-            priority
-          />
-          <span className="font-heading text-xl font-bold tracking-tight text-neutral-800">
-            Electius
-          </span>
-        </Link>
-        <nav className="flex items-center gap-4">
-          <a
-            href={signInUrl()}
-            className="text-sm font-medium text-brand-700 hover:underline"
-          >
-            {t("signIn")}
-          </a>
-          <a
-            href={signUpUrl()}
-            className="rounded-md bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-600"
-          >
-            {t("signUp")}
-          </a>
-        </nav>
-      </header>
-      <main className="flex-1">{children}</main>
-      {/* SCAFFOLD — footer content owned by the marketing-landing spec. */}
-      <footer className="border-t border-neutral-200 px-6 py-8 text-center text-xs text-neutral-600">
-        © Electius
-      </footer>
-    </div>
-  );
+  return <div className="bg-white text-neutral-950">{children}</div>;
 }

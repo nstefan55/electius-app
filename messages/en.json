@@ -1287,11 +1287,405 @@
     }
   },
   "marketing": {
-    "signIn": "Sign in",
-    "signUp": "Sign up",
+    "meta": {
+      "title": "Electius — Secure, verifiable online voting for organizations",
+      "description": "Run your organization’s entire election in one place — anonymous ballots, verifiable receipts and a permanent audit trail. Free for elections up to 50 voters."
+    },
+    "nav": {
+      "how": "How it works",
+      "pricing": "Pricing",
+      "contact": "Contact",
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu",
+      "label": "Main"
+    },
     "hero": {
-      "title": "Secure electronic voting for organizations",
-      "subtitle": "Prepare, run, and archive elections — no technical knowledge required."
+      "badge": "END-TO-END VERIFIABLE VOTING",
+      "title": "Secure Electronic Voting System For Organizations",
+      "subtitle": "Run the entire election — from setup to anonymous ballots, certified results and a permanent audit trail — in one place your members can actually trust.",
+      "cta": "Start voting inside your organization",
+      "demo": "See a 60-sec ballot demo",
+      "trustedBy": "BUILT FOR",
+      "unions": "Unions",
+      "universities": "Universities",
+      "boards": "Boards & co-ops",
+      "card": {
+        "election": "2025 Board Election",
+        "choose": "Choose one candidate",
+        "live": "Live",
+        "cand1": "Dr. Amara Osei",
+        "cand1Platform": "Continuity & Reform",
+        "cand2": "Liam Becker",
+        "cand2Platform": "New Direction",
+        "receipt": "Your verifiable receipt",
+        "votes": "1,284 votes",
+        "verified": "All cryptographically verified"
+      }
+    },
+    "problem": {
+      "kicker": "The problem",
+      "title": "Running a vote shouldn’t feel like a liability.",
+      "subtitle": "Most organizations are stuck between tools that were never built for elections — and systems too heavy to actually use.",
+      "paper": {
+        "title": "Paper & email ballots",
+        "body": "Manual counting, lost envelopes and no real anonymity. One disputed result and the whole election is in question."
+      },
+      "forms": {
+        "title": "Google Forms & survey tools",
+        "body": "Every response is tied to an identity, anyone with access can edit results, and there’s nothing a voter can verify."
+      },
+      "enterprise": {
+        "title": "Enterprise election systems",
+        "body": "Powerful, but priced and engineered for governments — weeks of setup and a budget no association wants to defend."
+      }
+    },
+    "story": {
+      "kicker": "Why we built Electius",
+      "title": "One home for the entire election — not five tools stitched together.",
+      "p1": "We kept watching organizations run consequential votes on paper, email and spreadsheets — or pay for systems so complex they needed a consultant to start.",
+      "p2a": "There was no accessible platform that covered the ",
+      "lifecycle": "whole lifecycle",
+      "p2b": " — preparation, voting, results and archiving — with real guarantees of anonymity, integrity and an audit trail you can hand to any member who asks.",
+      "chip1": "Anonymity guaranteed",
+      "chip2": "Integrity provable",
+      "chip3": "Everything archived"
+    },
+    "placeholder": {
+      "stats": [
+        {
+          "num": "2.4M+",
+          "label": "Votes cast securely"
+        },
+        {
+          "num": "850+",
+          "label": "Organizations onboard"
+        },
+        {
+          "num": "99.99%",
+          "label": "Election-day uptime"
+        },
+        {
+          "num": "100%",
+          "label": "Ballots independently verifiable"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "Our annual board election used to take a committee three days to count. With Electius results were certified the moment voting closed — and nobody questioned them.",
+          "name": "Renata Kovač",
+          "initials": "RK",
+          "role": "Secretary, National Trade Union"
+        },
+        {
+          "quote": "Student turnout jumped because voting took two minutes on a phone. The verifiable receipt ended every ‘was my vote counted?’ email overnight.",
+          "name": "Daniel Mendez",
+          "initials": "DM",
+          "role": "President, Student Union"
+        },
+        {
+          "quote": "The full audit trail satisfied our legal review on the first pass. Every resolution we’ve passed since lives in one searchable archive.",
+          "name": "Sofia Oduya",
+          "initials": "SO",
+          "role": "Board Chair, Housing Co-op"
+        }
+      ]
+    },
+    "features": {
+      "kicker": "What’s inside",
+      "title": "Everything an election needs, nothing it doesn’t.",
+      "subtitle": "Built around the guarantees that make a result hold up: anonymity, integrity, and a record anyone can check.",
+      "verifiability": {
+        "title": "End-to-end verifiability",
+        "body": "Every voter gets a cryptographic receipt to confirm their ballot was recorded and counted — without ever revealing how they voted."
+      },
+      "anonymity": {
+        "title": "Truly anonymous ballots",
+        "body": "Identity and choice are separated by design. Electius can prove the count is right while making it impossible to trace a ballot to a person."
+      },
+      "results": {
+        "title": "Results the moment voting closes",
+        "body": "Turnout and the full tally are certified the instant the election ends — no spreadsheets, no manual count, no waiting. Live results during voting are a Pro feature."
+      },
+      "audit": {
+        "title": "Complete audit trail",
+        "body": "Every action is timestamped and tamper-evident, producing a documentation pack ready for legal review or a contested result."
+      },
+      "setup": {
+        "title": "Set it up once",
+        "body": "Build the election once and schedule it — Electius mints every magic link, sends the invitations and certifies the result. Automatic 24-hour voter reminders are a Pro feature."
+      },
+      "archive": {
+        "title": "One place for every vote",
+        "body": "Past and present elections live in a single searchable archive — so the record of every decision is always one click away."
+      }
+    },
+    "pricing": {
+      "kicker": "Pricing",
+      "title": "Start free. Upgrade when it counts.",
+      "subtitle": "Two plans, no hidden fees. A real 50-voter election runs free.",
+      "compare": "Established platforms charge from €90 for an election that size. On Electius it costs nothing.",
+      "billingGroup": "Billing period",
+      "monthly": "Monthly",
+      "yearly": "Yearly −20%",
+      "free": {
+        "name": "Free",
+        "desc": "For real elections up to 50 voters — not a demo, the full platform.",
+        "price": "€0",
+        "period": "forever",
+        "note": "No credit card required",
+        "cta": "Start for free",
+        "features": [
+          {
+            "pre": "",
+            "strong": "50 voters",
+            "post": " per election"
+          },
+          {
+            "pre": "",
+            "strong": "Unlimited elections",
+            "post": ""
+          },
+          {
+            "pre": "Single- and multi-choice elections",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Abstain option and quorum threshold",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Magic-link invitations, QR entry, manual reminders",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Audit log, public results page, Merkle-sealed archive",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "CSV exports and Electius-branded PDF report",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "GDPR data export, account deletion, two-factor authentication",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Archive record kept forever; ",
+            "strong": "full audit proof kept 1 year",
+            "post": ""
+          }
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "desc": "For organizations running larger or recurring votes.",
+        "priceMonthly": "€9",
+        "priceYearly": "€7.20",
+        "perMonth": "/ month",
+        "noteMonthly": "€9 billed monthly",
+        "noteYearly": "€7.20/month, billed annually — €86/year (20% off)",
+        "cta": "Start free trial",
+        "trial": "14-day free trial. No card required.",
+        "features": [
+          {
+            "pre": "Everything in Free, plus:",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "",
+            "strong": "500 voters",
+            "post": " per election"
+          },
+          {
+            "pre": "",
+            "strong": "Live results during voting",
+            "post": " — watch turnout climb in real time"
+          },
+          {
+            "pre": "",
+            "strong": "Automatic 24-hour voter reminders",
+            "post": ""
+          },
+          {
+            "pre": "",
+            "strong": "Organization-branded PDF reports",
+            "post": " — your logo replaces ours"
+          },
+          {
+            "pre": "",
+            "strong": "Unlimited archive retention",
+            "post": " — nothing is ever pruned"
+          },
+          {
+            "pre": "Priority support",
+            "strong": "",
+            "post": ""
+          }
+        ]
+      },
+      "pointer": "Running a bigger election? Pay once, from €9.",
+      "table": {
+        "caption": "Free and Pro compared",
+        "feature": "Feature",
+        "included": "Included",
+        "notIncluded": "Not included",
+        "rows": [
+          {
+            "label": "Voters per election",
+            "free": "50 voters",
+            "pro": "500 voters"
+          },
+          {
+            "label": "Elections",
+            "free": "Unlimited",
+            "pro": "Unlimited"
+          },
+          {
+            "label": "Single- and multi-choice elections",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Abstain option and quorum threshold",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Magic-link invitations and QR entry",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Results after the election closes",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Live results during voting",
+            "free": "—",
+            "pro": "✓"
+          },
+          {
+            "label": "Automatic 24-hour voter reminders",
+            "free": "—",
+            "pro": "✓"
+          },
+          {
+            "label": "Audit log, public results page, Merkle-sealed archive",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "GDPR data export and two-factor authentication",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "PDF report branding",
+            "free": "Electius-branded",
+            "pro": "Your organization’s branding"
+          },
+          {
+            "label": "Full audit proof retention",
+            "free": "1 year",
+            "pro": "Unlimited"
+          },
+          {
+            "label": "Priority support",
+            "free": "—",
+            "pro": "✓"
+          }
+        ]
+      },
+      "footnote": "Billing is per organization. Prices exclude VAT where applicable."
+    },
+    "faq": {
+      "kicker": "Pricing FAQ",
+      "title": "Honest answers.",
+      "items": [
+        {
+          "q": "What counts as a voter?",
+          "a": "Every person on the voter roster of a single election — whether or not they end up casting a ballot. A 40-person roster counts as 40 voters even if 25 vote."
+        },
+        {
+          "q": "What happens when my election is bigger than my plan?",
+          "a": "The limit is per election. Up to 50 voters is free; up to 500 needs Pro. Beyond 500, use pay-per-election — a single payment for that one election, from €9."
+        },
+        {
+          "q": "What happens to my elections if I cancel?",
+          "a": "Nothing is lost. Your account returns to Free and every archive record — root hash, result and PDF report — stays available forever. Only the Pro retention benefit ends: bulky audit proofs follow the Free rule and are pruned 12 months after each election."
+        },
+        {
+          "q": "Do I need a card for the trial?",
+          "a": "No. The 14-day Pro trial starts without a card. When it ends, your account simply returns to Free — no charge, nothing to cancel."
+        },
+        {
+          "q": "Can I pay for just one election?",
+          "a": "Yes. Pay-per-election covers a single election with one payment, from €9, with no subscription — designed for organizations that vote once a year or run one large election."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Keep your organization’s votes worthy of trust.",
+      "subtitle": "Set up your first election in minutes. No consultant, no contract to start.",
+      "primary": "Start voting inside your organization",
+      "demo": "See the ballot demo"
+    },
+    "footer": {
+      "tagline": "Secure, verifiable online voting for unions, universities, boards and member organizations.",
+      "product": "Product",
+      "features": "Features",
+      "how": "How it works",
+      "pricing": "Pricing",
+      "demo": "Ballot demo",
+      "trust": "Trust",
+      "security": "Security",
+      "verifiability": "Verifiability",
+      "privacy": "Privacy",
+      "compliance": "Compliance",
+      "contact": "Contact",
+      "copyright": "© 2026 Electius. All rights reserved.",
+      "motto": "Trust through clarity."
+    },
+    "demo": {
+      "titleTop": "Voter demo",
+      "label": "Ballot demo",
+      "cast": "Cast your vote",
+      "sub": "2025 Board Election · choose one candidate",
+      "privacy": "Your identity is never linked to your choice",
+      "candidates": [
+        {
+          "name": "Dr. Amara Osei",
+          "platform": "Continuity & Reform"
+        },
+        {
+          "name": "Liam Becker",
+          "platform": "New Direction"
+        },
+        {
+          "name": "Priya Noor",
+          "platform": "Member Voices"
+        }
+      ],
+      "selectFirst": "Select a candidate",
+      "submit": "Submit vote",
+      "doneTitle": "Your vote has been recorded",
+      "doneSub": "In a real election this receipt lets you confirm your ballot was counted — anytime, without revealing your choice.",
+      "receiptLabel": "Sample receipt",
+      "demoNote": "Demonstration only — no vote was recorded and this code verifies nothing.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "doneBtn": "Done",
+      "close": "Close"
     }
   },
   "voter": {
