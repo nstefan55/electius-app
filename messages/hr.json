@@ -1287,11 +1287,405 @@
     }
   },
   "marketing": {
-    "signIn": "Prijava",
-    "signUp": "Registracija",
+    "meta": {
+      "title": "Electius — Sigurno i provjerljivo online glasovanje za organizacije",
+      "description": "Vodite cijele izbore svoje organizacije na jednom mjestu — anonimni listići, provjerljive potvrde i trajan revizijski trag. Besplatno za izbore do 50 birača."
+    },
+    "nav": {
+      "how": "Kako funkcionira",
+      "pricing": "Cijene",
+      "contact": "Kontakt",
+      "signIn": "Prijava",
+      "getStarted": "Započnite",
+      "openMenu": "Otvori izbornik",
+      "closeMenu": "Zatvori izbornik",
+      "label": "Glavna navigacija"
+    },
     "hero": {
-      "title": "Sigurno elektroničko glasovanje za organizacije",
-      "subtitle": "Pripremite, provedite i arhivirajte izbore — bez tehničkog znanja."
+      "badge": "PROVJERLJIVO GLASOVANJE OD POČETKA DO KRAJA",
+      "title": "Sigurna elektronička glasovanja za organizacije",
+      "subtitle": "Vodite cijele izbore — od pripreme do anonimnih listića, ovjerenih rezultata i trajnog revizijskog traga — na jednom mjestu kojem vaši članovi doista mogu vjerovati.",
+      "cta": "Započnite glasovanje u svojoj organizaciji",
+      "demo": "Pogledajte demo glasovanja (60 s)",
+      "trustedBy": "IZRAĐENO ZA",
+      "unions": "Sindikate",
+      "universities": "Sveučilišta",
+      "boards": "Uprave i zadruge",
+      "card": {
+        "election": "Izbori za upravu 2025.",
+        "choose": "Odaberite jednog kandidata",
+        "live": "Uživo",
+        "cand1": "Dr. Amara Osei",
+        "cand1Platform": "Kontinuitet i reforma",
+        "cand2": "Liam Becker",
+        "cand2Platform": "Novi smjer",
+        "receipt": "Vaša provjerljiva potvrda",
+        "votes": "1.284 glasa",
+        "verified": "Sve kriptografski provjereno"
+      }
+    },
+    "problem": {
+      "kicker": "Problem",
+      "title": "Provođenje glasovanja ne bi smjelo biti rizik.",
+      "subtitle": "Većina organizacija zaglavi između alata koji nikad nisu napravljeni za izbore — i sustava preteških za stvarnu upotrebu.",
+      "paper": {
+        "title": "Papirnati i e-mail listići",
+        "body": "Ručno brojanje, izgubljene omotnice i bez prave anonimnosti. Jedan osporeni rezultat i cijeli su izbori upitni."
+      },
+      "forms": {
+        "title": "Google obrasci i alati za ankete",
+        "body": "Svaki je odgovor vezan uz identitet, svatko s pristupom može mijenjati rezultate, a glasač ne može ništa provjeriti."
+      },
+      "enterprise": {
+        "title": "Korporativni izborni sustavi",
+        "body": "Moćni, ali cijenom i izvedbom namijenjeni vladama — tjedni postavljanja i proračun koji nijedna udruga ne želi braniti."
+      }
+    },
+    "story": {
+      "kicker": "Zašto smo izradili Electius",
+      "title": "Jedan dom za cijele izbore — a ne pet alata skrpanih zajedno.",
+      "p1": "Stalno smo gledali kako organizacije provode važna glasovanja na papiru, e-mailom i u tablicama — ili plaćaju sustave tako složene da im je trebao konzultant za početak.",
+      "p2a": "Nije postojala pristupačna platforma koja pokriva ",
+      "lifecycle": "cijeli životni ciklus",
+      "p2b": " — pripremu, glasovanje, rezultate i arhiviranje — uz stvarna jamstva anonimnosti, integriteta i revizijskog traga koji možete predati svakom članu koji pita.",
+      "chip1": "Zajamčena anonimnost",
+      "chip2": "Dokaziv integritet",
+      "chip3": "Sve arhivirano"
+    },
+    "placeholder": {
+      "stats": [
+        {
+          "num": "2,4 mil.+",
+          "label": "Sigurno predanih glasova"
+        },
+        {
+          "num": "850+",
+          "label": "Organizacija koristi"
+        },
+        {
+          "num": "99,99 %",
+          "label": "Dostupnost na dan izbora"
+        },
+        {
+          "num": "100 %",
+          "label": "Listića neovisno provjerljivo"
+        }
+      ],
+      "quotes": [
+        {
+          "quote": "Naše godišnje izbore za upravu odbor je brojao tri dana. Uz Electius rezultati su ovjereni čim je glasovanje zatvoreno — i nitko ih nije doveo u pitanje.",
+          "name": "Renata Kovač",
+          "initials": "RK",
+          "role": "Tajnica, Nacionalni sindikat"
+        },
+        {
+          "quote": "Izlaznost studenata skočila je jer je glasovanje trajalo dvije minute na mobitelu. Provjerljiva potvrda preko noći je okončala svaki e-mail „je li moj glas izbrojan?”.",
+          "name": "Daniel Mendez",
+          "initials": "DM",
+          "role": "Predsjednik, Studentski zbor"
+        },
+        {
+          "quote": "Potpun revizijski trag zadovoljio je našu pravnu provjeru iz prvog pokušaja. Svaka odluka koju smo otad donijeli živi u jednoj pretraživoj arhivi.",
+          "name": "Sofia Oduya",
+          "initials": "SO",
+          "role": "Predsjednica uprave, Stambena zadruga"
+        }
+      ]
+    },
+    "features": {
+      "kicker": "Što je unutra",
+      "title": "Sve što izbori trebaju, ništa što ne trebaju.",
+      "subtitle": "Izgrađeno oko jamstava zbog kojih rezultat opstaje: anonimnost, integritet i zapis koji svatko može provjeriti.",
+      "verifiability": {
+        "title": "Provjerljivost od početka do kraja",
+        "body": "Svaki glasač dobiva kriptografsku potvrdu da je njegov listić zabilježen i izbrojan — bez ikad otkrivanja kako je glasao."
+      },
+      "anonymity": {
+        "title": "Uistinu anonimni listići",
+        "body": "Identitet i izbor razdvojeni su po dizajnu. Electius može dokazati da je brojanje točno, a istovremeno onemogućuje povezivanje listića s osobom."
+      },
+      "results": {
+        "title": "Rezultati čim glasovanje završi",
+        "body": "Izlaznost i potpun rezultat ovjereni su istog trenutka kad izbori završe — bez tablica, bez ručnog brojanja, bez čekanja. Rezultati uživo tijekom glasovanja Pro su značajka."
+      },
+      "audit": {
+        "title": "Potpun revizijski trag",
+        "body": "Svaka radnja ima vremenski žig i otporna je na neovlaštene izmjene, stvarajući dokumentaciju spremnu za pravnu provjeru ili osporeni rezultat."
+      },
+      "setup": {
+        "title": "Postavite jednom",
+        "body": "Izradite izbore jednom i zakažite ih — Electius izrađuje svaku čarobnu poveznicu, šalje pozivnice i ovjerava rezultat. Automatski podsjetnici biračima 24 sata prije Pro su značajka."
+      },
+      "archive": {
+        "title": "Jedno mjesto za svaki glas",
+        "body": "Prošli i sadašnji izbori žive u jednoj pretraživoj arhivi — pa je zapis svake odluke uvijek udaljen jedan klik."
+      }
+    },
+    "pricing": {
+      "kicker": "Cijene",
+      "title": "Počnite besplatno. Nadogradite kad je važno.",
+      "subtitle": "Dva plana, bez skrivenih naknada. Pravi izbori s 50 birača su besplatni.",
+      "compare": "Etablirane platforme naplaćuju od 90 € za izbore te veličine. Na Electiusu ne koštaju ništa.",
+      "billingGroup": "Razdoblje naplaćivanja",
+      "monthly": "Mjesečno",
+      "yearly": "Godišnje −20 %",
+      "free": {
+        "name": "Besplatno",
+        "desc": "Za prave izbore do 50 birača — ne demo, nego cijela platforma.",
+        "price": "0 €",
+        "period": "zauvijek",
+        "note": "Bez kreditne kartice",
+        "cta": "Počnite besplatno",
+        "features": [
+          {
+            "pre": "",
+            "strong": "50 birača",
+            "post": " po izborima"
+          },
+          {
+            "pre": "",
+            "strong": "Neograničeno izbora",
+            "post": ""
+          },
+          {
+            "pre": "Izbori s jednim i više odabira",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Mogućnost suzdržanog glasa i prag kvoruma",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Pozivnice čarobnom poveznicom, QR ulaz, ručni podsjetnici",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Revizijski dnevnik, javna stranica rezultata, arhiva zapečaćena Merkleovim stablom",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "CSV izvozi i PDF izvještaj s Electius brendom",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "GDPR izvoz podataka, brisanje računa, dvofaktorska autentifikacija",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "Arhivski zapis čuva se zauvijek; ",
+            "strong": "potpuni revizijski dokaz čuva se 1 godinu",
+            "post": ""
+          }
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "desc": "Za organizacije koje provode veća ili ponavljajuća glasovanja.",
+        "priceMonthly": "9 €",
+        "priceYearly": "7,20 €",
+        "perMonth": "/ mjesec",
+        "noteMonthly": "9 € naplaćuje se mjesečno",
+        "noteYearly": "7,20 €/mjesec uz godišnju naplatu — 86 €/god. (20 % popusta)",
+        "cta": "Započnite probno razdoblje",
+        "trial": "Besplatnih 14 dana. Bez kartice.",
+        "features": [
+          {
+            "pre": "Sve iz Besplatnog, plus:",
+            "strong": "",
+            "post": ""
+          },
+          {
+            "pre": "",
+            "strong": "500 birača",
+            "post": " po izborima"
+          },
+          {
+            "pre": "",
+            "strong": "Rezultati uživo tijekom glasovanja",
+            "post": " — pratite rast izlaznosti u stvarnom vremenu"
+          },
+          {
+            "pre": "",
+            "strong": "Automatski podsjetnici biračima 24 sata prije",
+            "post": ""
+          },
+          {
+            "pre": "",
+            "strong": "PDF izvještaji s brendom organizacije",
+            "post": " — vaš logotip umjesto našeg"
+          },
+          {
+            "pre": "",
+            "strong": "Neograničeno čuvanje arhive",
+            "post": " — ništa se nikad ne briše"
+          },
+          {
+            "pre": "Prioritetna podrška",
+            "strong": "",
+            "post": ""
+          }
+        ]
+      },
+      "pointer": "Provodite veće izbore? Platite jednom, od 9 €.",
+      "table": {
+        "caption": "Usporedba Besplatnog i Pro plana",
+        "feature": "Značajka",
+        "included": "Uključeno",
+        "notIncluded": "Nije uključeno",
+        "rows": [
+          {
+            "label": "Birača po izborima",
+            "free": "50 birača",
+            "pro": "500 birača"
+          },
+          {
+            "label": "Izbori",
+            "free": "Neograničeno",
+            "pro": "Neograničeno"
+          },
+          {
+            "label": "Izbori s jednim i više odabira",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Suzdržani glas i prag kvoruma",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Pozivnice čarobnom poveznicom i QR ulaz",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Rezultati nakon zatvaranja izbora",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Rezultati uživo tijekom glasovanja",
+            "free": "—",
+            "pro": "✓"
+          },
+          {
+            "label": "Automatski podsjetnici biračima 24 sata prije",
+            "free": "—",
+            "pro": "✓"
+          },
+          {
+            "label": "Revizijski dnevnik, javni rezultati, Merkle arhiva",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "GDPR izvoz podataka i dvofaktorska autentifikacija",
+            "free": "✓",
+            "pro": "✓"
+          },
+          {
+            "label": "Brendiranje PDF izvještaja",
+            "free": "S Electius brendom",
+            "pro": "S brendom vaše organizacije"
+          },
+          {
+            "label": "Čuvanje potpunog revizijskog dokaza",
+            "free": "1 godina",
+            "pro": "Neograničeno"
+          },
+          {
+            "label": "Prioritetna podrška",
+            "free": "—",
+            "pro": "✓"
+          }
+        ]
+      },
+      "footnote": "Naplata je po organizaciji. Cijene ne uključuju PDV gdje je primjenjiv."
+    },
+    "faq": {
+      "kicker": "Pitanja o cijenama",
+      "title": "Iskreni odgovori.",
+      "items": [
+        {
+          "q": "Što se računa kao birač?",
+          "a": "Svaka osoba na popisu birača pojedinih izbora — bez obzira na to preda li na kraju listić. Popis od 40 osoba računa se kao 40 birača čak i ako glasa njih 25."
+        },
+        {
+          "q": "Što ako su moji izbori veći od mog plana?",
+          "a": "Ograničenje vrijedi po izborima. Do 50 birača je besplatno; do 500 birača treba Pro. Iznad 500 koristite plaćanje po izborima — jednokratna uplata za te izbore, od 9 €."
+        },
+        {
+          "q": "Što se događa s mojim izborima ako otkažem?",
+          "a": "Ništa se ne gubi. Račun se vraća na Besplatno, a svaki arhivski zapis — korijenski hash, rezultat i PDF izvještaj — ostaje dostupan zauvijek. Prestaje samo Pro pogodnost čuvanja: opsežni revizijski dokazi slijede pravilo Besplatnog plana i brišu se 12 mjeseci nakon svakih izbora."
+        },
+        {
+          "q": "Trebam li karticu za probno razdoblje?",
+          "a": "Ne. Probno razdoblje Pro plana od 14 dana počinje bez kartice. Kad završi, račun se jednostavno vraća na Besplatno — bez naplaćivanja i bez otkazivanja."
+        },
+        {
+          "q": "Mogu li platiti samo jedne izbore?",
+          "a": "Da. Plaćanje po izborima pokriva jedne izbore jednom uplatom, od 9 €, bez pretplate — namijenjeno organizacijama koje glasaju jednom godišnje ili provode jedne velike izbore."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Neka glasovi vaše organizacije zaslužuju povjerenje.",
+      "subtitle": "Postavite svoje prve izbore u nekoliko minuta. Bez konzultanta, bez ugovora za početak.",
+      "primary": "Započnite glasovanje u svojoj organizaciji",
+      "demo": "Pogledajte demo glasovanja"
+    },
+    "footer": {
+      "tagline": "Sigurno, provjerljivo online glasovanje za sindikate, sveučilišta, uprave i članske organizacije.",
+      "product": "Proizvod",
+      "features": "Značajke",
+      "how": "Kako funkcionira",
+      "pricing": "Cijene",
+      "demo": "Demo glasovanja",
+      "trust": "Povjerenje",
+      "security": "Sigurnost",
+      "verifiability": "Provjerljivost",
+      "privacy": "Privatnost",
+      "compliance": "Usklađenost",
+      "contact": "Kontakt",
+      "copyright": "© 2026 Electius. Sva prava pridržana.",
+      "motto": "Povjerenje kroz jasnoću."
+    },
+    "demo": {
+      "titleTop": "Demo za glasače",
+      "label": "Demo glasovanja",
+      "cast": "Predajte svoj glas",
+      "sub": "Izbori za upravu 2025. · odaberite jednog kandidata",
+      "privacy": "Vaš identitet nikad nije povezan s vašim izborom",
+      "candidates": [
+        {
+          "name": "Dr. Amara Osei",
+          "platform": "Kontinuitet i reforma"
+        },
+        {
+          "name": "Liam Becker",
+          "platform": "Novi smjer"
+        },
+        {
+          "name": "Priya Noor",
+          "platform": "Glasovi članova"
+        }
+      ],
+      "selectFirst": "Odaberite kandidata",
+      "submit": "Predaj glas",
+      "doneTitle": "Vaš glas je zabilježen",
+      "doneSub": "U pravim izborima ova vam potvrda omogućuje provjeru je li vaš listić izbrojan — bilo kada, bez otkrivanja vašeg izbora.",
+      "receiptLabel": "Primjer potvrde",
+      "demoNote": "Samo demonstracija — nijedan glas nije zabilježen i ovaj kod ništa ne potvrđuje.",
+      "copy": "Kopiraj",
+      "copied": "Kopirano",
+      "doneBtn": "Gotovo",
+      "close": "Zatvori"
     }
   },
   "voter": {
