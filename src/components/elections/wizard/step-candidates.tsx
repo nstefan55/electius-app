@@ -11,14 +11,13 @@ import {
   FIELD_LABEL,
   INPUT_CLASS,
   ModeTabs,
-  ProBadge,
   StepCard,
   StepHeading,
   Toggle,
   type StepProps,
 } from "./wizard-shared";
 
-// Step 2 — candidates: manual add or CSV import, abstain toggle (PRO),
+// Step 2 — candidates: manual add or CSV import, abstain toggle,
 // removable list with the "at least two" empty state.
 export function StepCandidates({ data, patch }: StepProps) {
   const t = useTranslations("dashboard.wizard.step2");
@@ -132,14 +131,13 @@ export function StepCandidates({ data, patch }: StepProps) {
           </div>
         )}
 
-        {/* Allow abstain (PRO) */}
+        {/* Suzdržani — besplatno na svim planovima (integritet listića) */}
         <div className="mt-5.5 flex items-center justify-between gap-4 rounded-[10px] border border-border bg-neutral-50/60 p-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-neutral-800">
                 {t("allowAbstain")}
               </span>
-              <ProBadge />
             </div>
             <div className="mt-0.75 text-[0.8125rem] text-muted-foreground">
               {t("allowAbstainDesc")}
