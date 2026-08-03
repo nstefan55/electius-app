@@ -14,11 +14,11 @@ import {
   type WizardData,
 } from "./wizard-shared";
 
-// Toggle rows (design OPTION_DEFS); PRO per the phase-2 spec — auto-close is
-// free-for-all, sealed results is free.
+// Prekidači (design OPTION_DEFS). Kvorum je besplatan od 2026-08-03 — zakonski
+// uvjet valjanosti skupštine, ne dodatna pogodnost.
 const OPTIONS = [
   { key: "sealedResults", pro: false },
-  { key: "quorum", pro: true },
+  { key: "quorum", pro: false },
   // autoCloseOnDeadline maknut: glasanje se UVIJEK zatvara na rok (čistač u
   // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je
   // ionako umirao na endsAt — izbori bi ostali "otvoreni" bez ijedne žive
