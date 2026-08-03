@@ -43,7 +43,7 @@ export function LogoUpload({ logoUrl }: { logoUrl: string | null }) {
         onFile={upload}
         labels={labels}
         empty={
-          <span className="text-xs font-medium text-neutral-400 group-hover:text-brand-700">
+          <span className="text-xs font-medium text-neutral-600 group-hover:text-brand-700">
             {t("placeholder")}
           </span>
         }

@@ -40,7 +40,7 @@ function ReviewCard({
         <h2 className="font-heading text-base font-semibold text-neutral-800">
           {title}
           {suffix && (
-            <span className="font-medium text-neutral-400"> · {suffix}</span>
+            <span className="font-medium text-neutral-600"> · {suffix}</span>
           )}
         </h2>
         <button
@@ -57,7 +57,9 @@ function ReviewCard({
   );
 }
 
-const ROW_LABEL = "text-neutral-400";
+// neutral-600, ne -400: ovo su stvarne oznake polja koja admin cita prije
+// objave izbora, a -400 na bijelom je 2,54:1 (AA trazi 4,5:1).
+const ROW_LABEL = "text-neutral-600";
 const ROW_GRID = "grid grid-cols-[130px_1fr] gap-x-4 gap-y-3 text-sm";
 
 // Step 5 — read-back of everything with per-section Edit jumps.
@@ -189,7 +191,7 @@ export function StepReview({
           <span className={ROW_LABEL}>{t("labels.enabled")}</span>
           <span className="flex flex-wrap gap-1.5">
             {enabled.length === 0 ? (
-              <span className="text-[0.8125rem] text-neutral-400">
+              <span className="text-[0.8125rem] text-neutral-600">
                 {t("defaultsOnly")}
               </span>
             ) : (

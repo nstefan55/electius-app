@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link"
+import { Link } from "@/i18n/navigation";
 import {
+  formatCount,
   formatVotingDate,
   sortRecent,
   type DashboardElection,
 } from "@/lib/elections-view";
 import { fetchTurnout } from "@/actions/dashboard";
+import { cn } from "@/lib/utils";
 
 // Featured live-voting hero: the active election with the most ballots cast.
 // Renders nothing when no election is active. Turnout refreshes by polling —
@@ -34,8 +36,14 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
     if (!heroId) return;
     const ms = isLive ? 15_000 : 60_000;
     const timer = setInterval(async () => {
-      const next = await fetchTurnout(heroId);
-      if (next) setTurnout(next);
+      // Mreža padne → samo preskoči ciklus. Bez hvatanja, svaki neuspjeli
+      // poll baca neuhvaćeni rejection u konzolu, zauvijek.
+      try {
+        const next = await fetchTurnout(heroId);
+        if (next) setTurnout(next);
+      } catch {
+        // sljedeći tick pokušava ponovno
+      }
     }, ms);
     return () => clearInterval(timer);
   }, [heroId, isLive]);
@@ -50,10 +58,27 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
     <div className="rounded-lg bg-brand-900 p-6 text-white shadow-md sm:p-8">
       <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
         <div className="min-w-0 sm:flex-1">
-          <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full bg-success-500/15 px-2.5 py-1">
-            <span className="size-1.75 animate-pulse rounded-full bg-success-500" />
-            <span className="text-xs font-semibold tracking-wide text-success-500">
-              {t("live.badge")}
+          {/* Samo LIVE izbori smiju tvrditi da su rezultati uživo — kod
+              AFTER_CLOSE su zapečaćeni do zatvaranja. */}
+          <div
+            className={cn(
+              "mb-3.5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1",
+              isLive ? "bg-success-500/15" : "bg-white/10",
+            )}
+          >
+            <span
+              className={cn(
+                "size-1.75 rounded-full",
+                isLive ? "animate-pulse bg-success-500" : "bg-white/50",
+              )}
+            />
+            <span
+              className={cn(
+                "text-xs font-semibold tracking-wide",
+                isLive ? "text-success-500" : "text-white/70",
+              )}
+            >
+              {isLive ? t("live.badge") : t("live.badgeAuto")}
             </span>
           </div>
           <h2 className="font-heading text-2xl leading-snug font-semibold">
@@ -75,8 +100,8 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
           </div>
           <p className="mt-3 text-sm text-white/85">
             {t("live.progress", {
-              voted: voted.toLocaleString("en-US"),
-              total: voters.toLocaleString("en-US"),
+              voted: formatCount(voted, locale),
+              total: formatCount(voters, locale),
             })}
           </p>
         </div>
@@ -86,16 +111,18 @@ export function LiveHero({ elections }: { elections: DashboardElection[] }) {
               {pct}%
             </div>
             <div className="mt-1 text-[0.8125rem] text-white/60">
-              {t("live.turnoutLabel")}
+              {isLive ? t("live.turnoutLabel") : t("live.turnoutLabelAuto")}
             </div>
           </div>
+          {/* Zapečaćeni rezultati nemaju što pokazati — vodi na pregled izbora. */}
           <Link
-            href={`/elections/${hero.id}/results`}
-            type="submit"
-            className="inline-flex h-10 items-center rounded-md bg-white px-4.5 sm:py-10 lg:py-6 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+            href={
+              isLive ? `/elections/${hero.id}/results` : `/elections/${hero.id}`
+            }
+            className="inline-flex h-12 items-center gap-1 rounded-md bg-white px-6 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
-            {t("live.viewResults")}
-            <ChevronRight className="sm:size-10 lg:size-5" />
+            {isLive ? t("live.viewResults") : t("live.viewElection")}
+            <ChevronRight className="size-5 flex-none" />
           </Link>
         </div>
       </div>

@@ -28,7 +28,7 @@ import { AddVotersDialog } from "@/components/voters/add-voters-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "@/i18n/navigation";
 import type { RosterVoter, VoterRoster as Roster } from "@/lib/db/voters";
-import type { ElectionStatus } from "@/lib/elections-view";
+import { formatCount, type ElectionStatus } from "@/lib/elections-view";
 import { cn } from "@/lib/utils";
 
 // Popis birača za /elections/[id]/voters (voter-management-spec). Bez vlastitog
@@ -103,8 +103,7 @@ export function VoterRoster({
   const canRemove =
     electionStatus === "DRAFT" || electionStatus === "SCHEDULED";
   const canResend = electionStatus === "ACTIVE";
-  const num = (n: number) =>
-    n.toLocaleString(locale === "hr" ? "hr-HR" : "en-US");
+  const num = (n: number) => formatCount(n, locale);
 
   const run = (fn: () => Promise<{ success: boolean; error?: string }>, ok: string) =>
     startTransition(async () => {

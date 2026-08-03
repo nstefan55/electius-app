@@ -402,7 +402,10 @@
         "meta": "{type} · Closes {closes}",
         "progress": "{voted} of {total} voters have cast their ballot",
         "turnoutLabel": "live turnout",
-        "viewResults": "View live results"
+        "viewResults": "View live results",
+        "badgeAuto": "Updates automatically",
+        "turnoutLabelAuto": "turnout",
+        "viewElection": "View election"
       },
       "list": {
         "title": "Recent elections",

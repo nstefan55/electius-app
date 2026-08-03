@@ -498,7 +498,7 @@ async function AuditCard({ sealed }: { sealed: ArchiveSeal | null }) {
         <div className="mb-1.5 text-xs font-semibold text-neutral-600">
           {t("merkleRoot")}
         </div>
-        <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3 py-2.5 font-mono text-[0.78125rem] text-neutral-400">
+        <div className="rounded-md border border-dashed border-neutral-200 bg-neutral-50 px-3 py-2.5 font-mono text-[0.78125rem] text-neutral-600">
           {t("merkleUnavailable")}
         </div>
         <p className="mt-3 text-[0.78125rem] leading-relaxed text-neutral-600">

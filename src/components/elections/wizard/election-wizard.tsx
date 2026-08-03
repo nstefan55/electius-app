@@ -169,7 +169,7 @@ export function ElectionWizard() {
           </div>
         </div>
         <div className="flex items-center gap-4.5">
-          <span className="hidden items-center gap-1.5 text-[0.8125rem] text-neutral-400 md:flex">
+          <span className="hidden items-center gap-1.5 text-[0.8125rem] text-neutral-600 md:flex">
             <Eye className="size-3.75" />
             {t("trustLine")}
           </span>
@@ -259,7 +259,7 @@ export function ElectionWizard() {
             <ChevronLeft className="size-4.5" />
             {t("back")}
           </button>
-          <span className="hidden text-[0.8125rem] text-neutral-400 sm:inline">
+          <span className="hidden text-[0.8125rem] text-neutral-600 sm:inline">
             {stepLabel}
           </span>
           {step === 5 ? (
