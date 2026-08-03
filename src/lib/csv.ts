@@ -11,12 +11,19 @@ export function delimiterFor(locale: ExportLocale): string {
   return locale === "hr" ? ";" : ",";
 }
 
+// Excel, LibreOffice i Sheets izvrše ćeliju koja počinje ovim znakovima. Ime
+// kandidata i birača piše administrator, a izvoz otvara revizor.
+// Navodnici NE pomažu — `"=1+1"` se svejedno izvrši.
+const FORMULA_START = /^[=+\-@\t\r]/;
+
 // RFC 4180: navodnici oko polja s razdjelnikom, navodnikom ili novim redom;
 // ugrađeni navodnik se udvostručuje.
 function csvField(value: string, delimiter: string): string {
-  return /["\r\n]/.test(value) || value.includes(delimiter)
-    ? `"${value.replace(/"/g, '""')}"`
-    : value;
+  // Apostrof je oznaka teksta: formula se prikaže, ne izvrši.
+  const v = FORMULA_START.test(value) ? `'${value}` : value;
+  return /["\r\n]/.test(v) || v.includes(delimiter)
+    ? `"${v.replace(/"/g, '""')}"`
+    : v;
 }
 
 // `sep=` u prvom retku govori Excelu i LibreOfficeu koji je razdjelnik, bez
@@ -97,6 +104,14 @@ export function detectDelimiter(text: string): string {
   return semi > comma ? ";" : ",";
 }
 
+// Inverz oznake teksta iz csvField(). Apostrof se miče samo ispred okidača
+// formule, pa apostrof u pravom podatku ostaje netaknut.
+function unescapeFormula(value: string): string {
+  return value.startsWith("'") && FORMULA_START.test(value.slice(1))
+    ? value.slice(1)
+    : value;
+}
+
 // RFC 4180 tokenizer. Vraća neobrezane ćelije; prazni retci otpadaju.
 export function parseCsv(text: string, delimiter: string): string[][] {
   const rows: string[][] = [];
@@ -107,7 +122,7 @@ export function parseCsv(text: string, delimiter: string): string[][] {
   const lastQuote = text.lastIndexOf('"');
 
   const endField = () => {
-    row.push(field);
+    row.push(unescapeFormula(field));
     field = "";
   };
   const endRow = () => {
