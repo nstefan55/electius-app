@@ -135,12 +135,44 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Prsten fokusa iz tokena (design-system §6), a ne zadani outline preglednika,
+     koji se razlikuje po pregledniku i OS-u. U base sloju namjerno: vlastite
+     `focus:` klase komponenti i dalje pobjeđuju. Pravilo za
+     `data-focus-outlines` niže mijenja KADA se prsten vidi, ovo mijenja KAKAV je. */
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
   body {
     @apply bg-background text-foreground;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* Vodoravna sjena ruba za tablice koje se scrollaju: bijeli `local` slojevi putuju
+   sa sadržajem i gase sjenu na svakom kraju, `scroll` slojevi ostaju na rubu. Bez
+   JS-a i bez lažne sjene kad nema što scrollati. */
+.scroll-shadow-x {
+  background-color: #fff;
+  background-image:
+    linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
+    linear-gradient(to left, #fff 30%, rgba(255, 255, 255, 0)),
+    radial-gradient(farthest-side at 0 50%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0)),
+    radial-gradient(farthest-side at 100% 50%, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0));
+  background-position:
+    0 0,
+    100% 0,
+    0 0,
+    100% 0;
+  background-size:
+    36px 100%,
+    36px 100%,
+    14px 100%,
+    14px 100%;
+  background-repeat: no-repeat;
+  background-attachment: local, local, scroll, scroll;
 }
 
 /* ───────── Odredišna stranica (homepage-spec §5) ─────────

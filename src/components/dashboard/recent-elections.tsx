@@ -34,7 +34,8 @@ import {
 import { cn } from "@/lib/utils";
 
 // Shared grid track so the column header and body rows line up
-const GRID = "md:grid-cols-[minmax(0,1fr)_120px_190px_130px_44px]";
+// lg:, ne md: — fiksni stupci traže ~600px, a na 768px ostaje samo ~464px pokraj sidebara.
+const GRID = "lg:grid-cols-[minmax(0,1fr)_120px_190px_130px_44px]";
 
 const MENU_ITEM =
   "flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm text-neutral-800 outline-none select-none data-highlighted:bg-neutral-100";
@@ -197,7 +198,7 @@ export function RecentElections({
           {/* Column header — hidden on mobile, where rows stack. */}
           <div
             className={cn(
-              "hidden gap-4 border-b border-border bg-neutral-50 px-6 py-3 md:grid",
+              "hidden gap-4 border-b border-border bg-neutral-50 px-6 py-3 lg:grid",
               GRID,
             )}
           >
@@ -224,12 +225,12 @@ export function RecentElections({
                 <li
                   key={e.id}
                   className={cn(
-                    "relative grid grid-cols-1 gap-2 border-b border-border px-6 py-4 transition-colors last:border-b-0 hover:bg-brand-50 md:items-center md:gap-4",
+                    "relative grid grid-cols-1 gap-2 border-b border-border px-6 py-4 transition-colors last:border-b-0 hover:bg-brand-50 lg:items-center lg:gap-4",
                     GRID,
                   )}
                 >
                   {/* Name + type (inline-editable) */}
-                  <div className="min-w-0 pr-10 md:pr-0">
+                  <div className="min-w-0 pr-10 lg:pr-0">
                     {isEditing ? (
                       <input
                         ref={editRef}
@@ -303,12 +304,12 @@ export function RecentElections({
                   </div>
 
                   {/* Row actions — absolute top-right on mobile, last cell on desktop */}
-                  {/* md:relative (not static) so the menu stacks above the stretched link */}
-                  <div className="absolute top-3 right-3 md:relative md:justify-self-end">
+                  {/* lg:relative (not static) so the menu stacks above the stretched link */}
+                  <div className="absolute top-3 right-3 lg:relative lg:justify-self-end">
                     <Menu.Root>
                       <Menu.Trigger
                         aria-label={t("actions.menuLabel")}
-                        className="flex size-8.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
+                        className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
                       >
                         <MoreVertical className="size-4.5" />
                       </Menu.Trigger>

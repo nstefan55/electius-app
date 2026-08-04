@@ -260,9 +260,10 @@ export function VoterRoster({
                       GRID,
                     )}
                   >
+                    {/* neutral-400 pada na 2,9:1 — ovo je stvarni sadržaj retka, ne placeholder. */}
                     <div className="min-w-0 pr-10 font-heading text-[0.9375rem] font-semibold text-neutral-800 md:pr-0">
                       {fullName || (
-                        <span className="font-body font-normal text-neutral-400">
+                        <span className="font-body font-normal text-neutral-600">
                           {t("noName")}
                         </span>
                       )}
@@ -288,7 +289,7 @@ export function VoterRoster({
                       <Menu.Root>
                         <Menu.Trigger
                           aria-label={t("actions.menuLabel")}
-                          className="flex size-8.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
+                          className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
                         >
                           <MoreVertical className="size-4.5" />
                         </Menu.Trigger>

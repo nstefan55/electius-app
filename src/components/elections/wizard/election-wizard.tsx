@@ -155,7 +155,7 @@ export function ElectionWizard() {
           <Link
             href="/elections"
             aria-label={t("close")}
-            className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-white text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+            className="flex size-11 shrink-0 items-center justify-center rounded-md border border-border bg-white text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-neutral-800"
           >
             <X className="size-5" />
           </Link>
@@ -209,14 +209,16 @@ export function ElectionWizard() {
                   >
                     {isDone ? <Check className="size-3.75" strokeWidth={2.6} /> : n}
                   </span>
+                  {/* Zaglavlje već ispisuje „Korak X od 5”, pa su oznake na uskom ekranu suvišne:
+                      ispod sm ostaju samo kružići, inače 5 oznaka prelije stepper. */}
                   <span
                     className={cn(
-                      "font-heading text-sm whitespace-nowrap transition-colors group-hover:text-neutral-800",
+                      "hidden font-heading text-sm whitespace-nowrap transition-colors group-hover:text-neutral-800",
                       isCurrent
-                        ? "font-semibold text-neutral-800"
+                        ? "font-semibold text-neutral-800 sm:inline"
                         : isDone
-                          ? "font-medium text-brand-700"
-                          : "hidden font-medium text-neutral-400 lg:inline",
+                          ? "font-medium text-brand-700 lg:inline"
+                          : "font-medium text-neutral-400 lg:inline",
                     )}
                   >
                     {t(`steps.${key}`)}
@@ -225,7 +227,7 @@ export function ElectionWizard() {
                 {n < 5 && (
                   <span
                     className={cn(
-                      "mx-3.5 h-0.5 min-w-5 flex-1 rounded-full",
+                      "mx-2 h-0.5 min-w-2.5 flex-1 rounded-full sm:mx-3.5 sm:min-w-5",
                       isDone ? "bg-brand-700" : "bg-neutral-200",
                     )}
                   />

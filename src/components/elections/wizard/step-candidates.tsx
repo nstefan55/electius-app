@@ -186,7 +186,7 @@ export function StepCandidates({ data, patch }: StepProps) {
                         candidates: data.candidates.filter((_, j) => j !== i),
                       })
                     }
-                    className="flex size-8.5 shrink-0 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-error-50 hover:text-error-700"
+                    className="flex size-11 shrink-0 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-error-50 hover:text-error-700"
                   >
                     <Trash2 className="size-4.5" />
                   </button>

@@ -138,10 +138,11 @@ export default async function Home({
       >
         {/* ponytail: next/image umjesto CSS background-image — ovo je LCP element
             jedine indeksabilne stranice, a CSS pozadina zaobilazi optimizaciju.
-            Izvornik je stisnut sa 3168×1344 PNG / 3,5 MB na 2560×1086 WebP / 23 KB
-            (mekani gradijent, pa se gubitak ne vidi). */}
+            Trenutni banner: 3168×1344 WebP / 26 KB. og:image i dalje pokazuje na
+            /marketing/hero-banner.webp (2560×1086) — namjerno, dimenzije ondje
+            moraju odgovarati datoteci koju scraper stvarno dohvaća. */}
         <Image
-          src="/marketing/hero-banner.webp"
+          src="/hero/hero_banner.webp"
           alt=""
           fill
           priority
@@ -152,7 +153,9 @@ export default async function Home({
           className={`${CONTAINER} grid w-full grid-cols-1 items-center gap-16 py-20 lg:grid-cols-[1.04fr_0.96fr]`}
         >
           <div>
-            <div className="mb-5.5 inline-flex h-7.5 items-center gap-2 rounded-full bg-brand-100 px-3">
+            {/* min-h + py, ne fiksni h: hrvatski natpis se na 390px lomi u dva reda
+                i probijao je pilulu. Na desktopu stane u jedan red, pa min-h drži staru visinu. */}
+            <div className="mb-5.5 inline-flex min-h-7.5 items-center gap-2 rounded-full bg-brand-100 px-3.5 py-1 sm:px-3">
               <span className="size-1.75 rounded-full bg-brand-700" />
               <span className="font-heading text-[0.78125rem] font-semibold tracking-[0.04em] text-brand-700">
                 {t("hero.badge")}
@@ -167,7 +170,7 @@ export default async function Home({
             <div className="flex flex-wrap items-center gap-4.5">
               <a
                 href={signUpUrl()}
-                className="inline-flex h-14 items-center gap-2.5 rounded-md bg-brand-700 px-7.5 font-heading text-[1.0625rem] font-semibold text-white shadow-md hover:bg-brand-600"
+                className="inline-flex h-14 items-center gap-2.5 rounded-md bg-brand-700 px-8 font-heading text-[1.0625rem] font-semibold text-white shadow-md hover:bg-brand-600 sm:px-7.5"
               >
                 {t("hero.cta")}
                 <ArrowRight className="size-4.5" aria-hidden="true" />
@@ -490,7 +493,7 @@ export default async function Home({
           <div className="flex flex-wrap items-center justify-center gap-4">
             <a
               href={signUpUrl()}
-              className="inline-flex h-14 items-center gap-2.5 rounded-md bg-brand-700 px-8 font-heading text-[1.0625rem] font-semibold text-white shadow-lg hover:bg-brand-600"
+              className="inline-flex h-14 items-center gap-2.5 rounded-md bg-brand-700 px-8.5 font-heading text-[1.0625rem] font-semibold text-white shadow-lg hover:bg-brand-600 sm:px-8"
             >
               {t("cta.primary")}
               <ArrowRight className="size-4.5" aria-hidden="true" />
