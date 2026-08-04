@@ -151,7 +151,8 @@ export function ElectionTopbar({
           <p className="mt-0.75 text-[0.8125rem] text-neutral-600">{subtitle}</p>
         </div>
 
-        <div className="flex shrink-0 flex-wrap items-center gap-2.5">
+        {/* Bez shrink-0: inače se red drži max-content širine i flex-wrap se nikad ne aktivira. */}
+        <div className="flex min-w-0 flex-wrap items-center gap-2.5">
           <StatusBadge status={status} size="md" />
 
           {showEdit && (
@@ -221,7 +222,7 @@ export function ElectionTopbar({
             href="/elections"
             aria-label={t("exit")}
             title={t("exit")}
-            className="flex size-9.5 items-center justify-center rounded-md border border-border bg-white text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+            className="flex size-11 items-center justify-center rounded-md border border-border bg-white text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
           >
             <X className="size-4.5" aria-hidden />
           </Link>
@@ -312,7 +313,7 @@ function ReportTopbar({
           href={backHref}
           aria-label={t("back")}
           title={t("back")}
-          className="flex size-10 shrink-0 items-center justify-center rounded-md border border-border bg-white text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md border border-border bg-white text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-800"
         >
           <ArrowLeft className="size-4.5" aria-hidden />
         </Link>

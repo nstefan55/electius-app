@@ -126,7 +126,7 @@ export function AddVotersDialog({
             </div>
             <Dialog.Close
               aria-label={t("close")}
-              className="flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100"
+              className="flex size-11 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100"
             >
               <X className="size-4.5" />
             </Dialog.Close>

@@ -162,7 +162,7 @@ export function PricingPlans() {
       </p>
       */}
 
-      <div className="mx-auto mt-14 max-w-220 overflow-x-auto rounded-lg border border-neutral-200 bg-white shadow-sm">
+      <div className="scroll-shadow-x mx-auto mt-14 max-w-220 overflow-x-auto rounded-lg border border-neutral-200 shadow-sm">
         <table className="w-full border-collapse text-[0.90625rem]">
           <caption className="sr-only">{t("table.caption")}</caption>
           <thead>

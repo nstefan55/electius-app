@@ -83,7 +83,7 @@ export function BallotDemo() {
           type="button"
           onClick={() => ref.current?.close()}
           aria-label={t("close")}
-          className="inline-flex size-9 items-center justify-center rounded-md text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800"
+          className="inline-flex size-11 items-center justify-center rounded-md text-neutral-600 hover:bg-neutral-100 hover:text-neutral-800"
         >
           <X className="size-5" aria-hidden="true" />
         </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
@@ -20,8 +20,19 @@ export function LandingNav() {
   const t = useTranslations("marketing.nav");
   const [open, setOpen] = useState(false);
 
+  // Escape zatvara izbornik — <dialog> to dobiva besplatno, običan panel ne.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur-md backdrop-saturate-150">
+    <>
+      <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur-md backdrop-saturate-150">
       <nav
         aria-label={t("label")}
         className="mx-auto flex h-18 max-w-295 items-center justify-between gap-6 px-6"
@@ -83,37 +94,49 @@ export function LandingNav() {
         </button>
       </nav>
 
+        {open ? (
+          <div
+            id="landing-mobile-menu"
+            className="relative border-t border-neutral-200 bg-white px-6 py-4 md:hidden"
+          >
+            <div className="flex flex-col gap-1">
+              {LINKS.map((l) => (
+                <a
+                  key={l.key}
+                  href={l.href}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-11 items-center text-base font-medium text-neutral-600"
+                >
+                  {t(l.key)}
+                </a>
+              ))}
+              <a
+                href={signInUrl()}
+                className="flex min-h-11 items-center text-base font-semibold text-brand-900"
+              >
+                {t("signIn")}
+              </a>
+              <a
+                href={signUpUrl()}
+                className="mt-2 inline-flex h-12 items-center justify-center rounded-md bg-brand-700 px-5 text-base font-semibold text-white"
+              >
+                {t("getStarted")}
+              </a>
+            </div>
+          </div>
+        ) : null}
+      </header>
+
+      {/* Zastor stoji IZVAN <header>: backdrop-blur na zaglavlju čini ga containing
+          blockom za position:fixed, pa bi se zastor rastegnuo samo preko zaglavlja
+          (izmjereno 390×281 umjesto pune visine). z-40 → ispod trake, iznad sadržaja. */}
       {open ? (
         <div
-          id="landing-mobile-menu"
-          className="border-t border-neutral-200 bg-white px-6 py-4 md:hidden"
-        >
-          <div className="flex flex-col gap-1">
-            {LINKS.map((l) => (
-              <a
-                key={l.key}
-                href={l.href}
-                onClick={() => setOpen(false)}
-                className="flex min-h-11 items-center text-base font-medium text-neutral-600"
-              >
-                {t(l.key)}
-              </a>
-            ))}
-            <a
-              href={signInUrl()}
-              className="flex min-h-11 items-center text-base font-semibold text-brand-900"
-            >
-              {t("signIn")}
-            </a>
-            <a
-              href={signUpUrl()}
-              className="mt-2 inline-flex h-12 items-center justify-center rounded-md bg-brand-700 px-5 text-base font-semibold text-white"
-            >
-              {t("getStarted")}
-            </a>
-          </div>
-        </div>
+          aria-hidden="true"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 top-18 z-40 bg-black/40 md:hidden"
+        />
       ) : null}
-    </header>
+    </>
   );
 }

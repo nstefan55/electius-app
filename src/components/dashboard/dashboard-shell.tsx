@@ -103,7 +103,7 @@ export function DashboardShell({
               type="button"
               aria-label={t("sidebar.openMenu")}
               onClick={() => setMobileOpen(true)}
-              className="flex size-9.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary md:hidden"
+              className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary md:hidden"
             >
               <Menu className="size-5" />
             </button>
@@ -112,7 +112,7 @@ export function DashboardShell({
               type="button"
               aria-label={collapsed ? t("sidebar.expand") : t("sidebar.collapse")}
               onClick={() => setCollapsed((c) => !c)}
-              className="hidden size-9.5 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary md:flex"
+              className="hidden size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary md:flex"
             >
               <PanelLeft className="size-5" />
             </button>
@@ -130,7 +130,6 @@ export function DashboardShell({
                 ) : (
                   <>
                     <BreadcrumbItem>
-                    {/* TODO: IF possible: Change the breadcrumb link to marketing landing page */}
                       <BreadcrumbLink render={<Link href="/home" />}>
                         {t("topbar.home")}
                       </BreadcrumbLink>
@@ -155,7 +154,7 @@ export function DashboardShell({
             <button
               type="button"
               aria-label={t("topbar.notifications")}
-              className="flex size-9.5 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary"
+              className="flex size-11 items-center justify-center rounded-md border border-border bg-card text-muted-foreground transition-colors hover:bg-secondary"
             >
               <Bell className="size-4.75" />
             </button>
