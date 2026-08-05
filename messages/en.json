@@ -1243,6 +1243,70 @@
         },
         "error": "Couldn't save that setting. Please try again."
       },
+      "billing": {
+        "title": "Plan & billing",
+        "subtitle": "Billed per organization.",
+        "chipBeta": "Beta",
+        "chipFree": "Free",
+        "chipPro": "Pro",
+        "comingSoon": "Billing switches on soon — every feature is open in the meantime.",
+        "processing": {
+          "title": "Payment received",
+          "body": "We are activating Pro. Refresh the page in a moment."
+        },
+        "prelaunch": {
+          "body": "Every feature is currently open to all organizations.",
+          "planned": "Pricing is planned for our official launch — <a>see the planned plans</a>.",
+          "close": "Close"
+        },
+        "limits": {
+          "voters": "Up to 50 voters per election",
+          "results": "Results after the election closes",
+          "reminders": "No automatic reminders",
+          "archive": "Full audit proof kept for 1 year"
+        },
+        "upsell": {
+          "name": "Electius Pro",
+          "perMonth": "per month",
+          "perYear": "per year",
+          "noteMonthly": "Or {price}/year — 20% off with yearly billing.",
+          "noteYearly": "Billed once a year. Equivalent to {price}/month.",
+          "cycleLabel": "Billing period",
+          "monthly": "Monthly",
+          "yearly": "Yearly −20%",
+          "features": [
+            "500 voters per election",
+            "Live results during voting",
+            "Automatic 24-hour voter reminders",
+            "Organization-branded PDF reports",
+            "Unlimited archive retention",
+            "Priority support"
+          ],
+          "trial": "14 days free. No card required.",
+          "cta": "Upgrade to Pro"
+        },
+        "pro": {
+          "perMonth": "per month",
+          "perYear": "per year",
+          "activeNoDate": "Pro is active.",
+          "renews": "Renews {date}.",
+          "trialing": "Free trial — first charge {date}.",
+          "canceling": "Pro ends {date} — your plan will not renew.",
+          "cancelsChip": "Cancels {date}",
+          "includes": "Includes 500 voters per election, live results, automatic voter reminders, organization-branded PDF reports, unlimited archive retention and priority support.",
+          "switchYearly": "Switch to yearly — save 20%",
+          "manage": "Manage billing",
+          "cancel": "Cancel subscription",
+          "retentionNote": "If you cancel, new elections follow Free plan limits and full audit proofs older than a year are pruned. Your election records, results and reports are kept."
+        },
+        "cancelModal": {
+          "title": "Cancel Pro subscription?",
+          "body": "You keep Pro until <b>{date}</b>. After that, new elections follow Free limits (50 voters per election), and full audit proofs older than a year are pruned — <b>your election records, results and reports are kept</b>.",
+          "bodyNoDate": "You keep Pro until the end of your current billing period. After that, new elections follow Free limits (50 voters per election), and full audit proofs older than a year are pruned — <b>your election records, results and reports are kept</b>.",
+          "keep": "Keep Pro",
+          "confirm": "Cancel subscription"
+        }
+      },
       "customizations": {
         "title": "Dashboard customizations",
         "subtitle": "Personalize what your dashboard shows and how.",

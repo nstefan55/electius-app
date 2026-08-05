@@ -1243,6 +1243,70 @@
         },
         "error": "Postavku nije bilo moguće spremiti. Pokušajte ponovno."
       },
+      "billing": {
+        "title": "Plan i naplata",
+        "subtitle": "Naplaćuje se po organizaciji.",
+        "chipBeta": "Beta",
+        "chipFree": "Besplatno",
+        "chipPro": "Pro",
+        "comingSoon": "Naplata se uključuje uskoro — za sada su sve značajke otvorene.",
+        "processing": {
+          "title": "Plaćanje zaprimljeno",
+          "body": "Aktiviramo Pro. Osvježite stranicu za koji trenutak."
+        },
+        "prelaunch": {
+          "body": "Sve značajke su trenutačno otvorene svim organizacijama.",
+          "planned": "Cijene su planirane za službeno pokretanje — <a>pogledajte planirane planove</a>.",
+          "close": "Zatvori"
+        },
+        "limits": {
+          "voters": "Do 50 birača po izborima",
+          "results": "Rezultati nakon zatvaranja izbora",
+          "reminders": "Bez automatskih podsjetnika",
+          "archive": "Potpuni revizijski dokaz čuva se 1 godinu"
+        },
+        "upsell": {
+          "name": "Electius Pro",
+          "perMonth": "po mjesecu",
+          "perYear": "po godini",
+          "noteMonthly": "Ili {price}/god. — 20 % popusta uz godišnju naplatu.",
+          "noteYearly": "Naplaćuje se jednom godišnje. Odgovara {price}/mjesec.",
+          "cycleLabel": "Razdoblje naplate",
+          "monthly": "Mjesečno",
+          "yearly": "Godišnje −20 %",
+          "features": [
+            "500 birača po izborima",
+            "Rezultati uživo tijekom glasovanja",
+            "Automatski podsjetnici biračima 24 sata prije",
+            "PDF izvještaji s brendom organizacije",
+            "Neograničeno čuvanje arhive",
+            "Prioritetna podrška"
+          ],
+          "trial": "Besplatnih 14 dana. Bez kartice.",
+          "cta": "Nadogradi na Pro"
+        },
+        "pro": {
+          "perMonth": "po mjesecu",
+          "perYear": "po godini",
+          "activeNoDate": "Pro je aktivan.",
+          "renews": "Obnavlja se {date}",
+          "trialing": "Besplatno probno razdoblje — prva naplata {date}",
+          "canceling": "Pro istječe {date} — plan se neće obnoviti.",
+          "cancelsChip": "Otkazuje se {date}",
+          "includes": "Uključuje 500 birača po izborima, rezultate uživo, automatske podsjetnike biračima, PDF izvještaje s brendom organizacije, neograničeno čuvanje arhive i prioritetnu podršku.",
+          "switchYearly": "Prijeđite na godišnje — uštedite 20 %",
+          "manage": "Upravljanje naplatom",
+          "cancel": "Otkaži pretplatu",
+          "retentionNote": "Ako otkažete, novi izbori slijede ograničenja Besplatnog plana, a potpuni revizijski dokazi stariji od godine dana se uklanjaju. Vaši zapisi o izborima, rezultati i izvještaji ostaju sačuvani."
+        },
+        "cancelModal": {
+          "title": "Otkazati Pro pretplatu?",
+          "body": "Pro zadržavate do <b>{date}</b> Nakon toga novi izbori slijede ograničenja Besplatnog plana (50 birača po izborima), a potpuni revizijski dokazi stariji od godine dana se uklanjaju — <b>vaši zapisi o izborima, rezultati i izvještaji ostaju sačuvani</b>.",
+          "bodyNoDate": "Pro zadržavate do kraja tekućeg obračunskog razdoblja. Nakon toga novi izbori slijede ograničenja Besplatnog plana (50 birača po izborima), a potpuni revizijski dokazi stariji od godine dana se uklanjaju — <b>vaši zapisi o izborima, rezultati i izvještaji ostaju sačuvani</b>.",
+          "keep": "Zadrži Pro",
+          "confirm": "Otkaži pretplatu"
+        }
+      },
       "customizations": {
         "title": "Prilagodbe nadzorne ploče",
         "subtitle": "Prilagodite što nadzorna ploča prikazuje i kako.",
