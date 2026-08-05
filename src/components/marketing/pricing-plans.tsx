@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import { signUpUrl } from "@/lib/urls";
 
 type Feature = { pre: string; strong: string; post: string };
@@ -62,6 +62,15 @@ export function PricingPlans() {
 
   return (
     <>
+      {/* Cijene su planirane, nisu ponuda — nema pravnog subjekta ni aktivne naplate.
+          Uklanja se kad BILLING_ENABLED postane true. */}
+      <div className="mx-auto mb-8 flex max-w-220 items-start gap-3 rounded-md border-l-[3px] border-brand-500 bg-brand-50 p-4">
+        <Info aria-hidden="true" className="mt-px size-5 flex-none text-brand-700" />
+        <p className="text-[0.90625rem] leading-normal text-neutral-800">
+          {t("betaNotice")}
+        </p>
+      </div>
+
       <div className="mb-10 flex justify-center">
         <div
           role="group"
@@ -118,8 +127,13 @@ export function PricingPlans() {
 
         {/* Pro */}
         <div className="flex flex-col rounded-lg border border-brand-900 bg-brand-900 p-8 shadow-md">
-          <div className="font-heading text-sm font-semibold tracking-[0.04em] text-brand-100 uppercase">
-            {t("pro.name")}
+          <div className="flex items-center gap-2.5">
+            <span className="font-heading text-sm font-semibold tracking-[0.04em] text-brand-100 uppercase">
+              {t("pro.name")}
+            </span>
+            <span className="inline-flex h-5 items-center rounded-full bg-white/15 px-2 text-xs font-semibold text-brand-100">
+              {t("pro.badge")}
+            </span>
           </div>
           <p className="mt-2 mb-5 text-[0.90625rem] leading-normal text-brand-100">
             {t("pro.desc")}
@@ -139,13 +153,11 @@ export function PricingPlans() {
           </div>
           <a
             href={signUpUrl()}
-            className="mb-2.5 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-700 font-heading text-[0.9375rem] font-semibold text-white hover:bg-brand-600"
+            className="mb-7 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-700 font-heading text-[0.9375rem] font-semibold text-white hover:bg-brand-600"
           >
             {t("pro.cta")}
           </a>
-          <div className="mb-6 text-center text-[0.8125rem] text-brand-100">
-            {t("pro.trial")}
-          </div>
+          {/* `pro.trial` se ne prikazuje — uvjet je prodaje. Ključ ostaje u katalozima. */}
           <Bullets items={proFeatures} dark />
         </div>
       </div>
