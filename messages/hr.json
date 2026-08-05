@@ -1495,7 +1495,7 @@
         "perMonth": "/ mjesec",
         "noteMonthly": "9 € naplaćuje se mjesečno",
         "noteYearly": "7,20 €/mjesec uz godišnju naplatu — 86 €/god. (20 % popusta)",
-        "cta": "Započnite probno razdoblje",
+        "cta": "Isprobajte Electius",
         "trial": "Besplatnih 14 dana. Bez kartice.",
         "features": [
           {
@@ -1533,7 +1533,8 @@
             "strong": "",
             "post": ""
           }
-        ]
+        ],
+        "badge": "Uskoro"
       },
       "pointer": "Provodite veće izbore? Platite jednom, od 9 €.",
       "table": {
@@ -1609,7 +1610,9 @@
           }
         ]
       },
-      "footnote": "Naplata je po organizaciji. Cijene ne uključuju PDV gdje je primjenjiv."
+      "footnote": "Naplata je po organizaciji.",
+      "betaNotice": "Beta — trenutačno su sve značajke otvorene svim organizacijama. Cijene u nastavku planirane su za službeno pokretanje.",
+      "footnoteVat": "Naplata je po organizaciji. Cijene ne uključuju PDV gdje je primjenjiv."
     },
     "faq": {
       "kicker": "Pitanja o cijenama",
@@ -1621,19 +1624,19 @@
         },
         {
           "q": "Što ako su moji izbori veći od mog plana?",
-          "a": "Ograničenje vrijedi po izborima. Do 50 birača je besplatno; do 500 birača treba Pro. Iznad 500 koristite plaćanje po izborima — jednokratna uplata za te izbore, od 9 €."
+          "a": "Ograničenje vrijedi po izborima. Tijekom bete nema ograničenja — sve su značajke otvorene svim organizacijama. Pri službenom pokretanju planirano je: do 50 birača besplatno, do 500 birača uz Pro."
         },
         {
           "q": "Što se događa s mojim izborima ako otkažem?",
           "a": "Ništa se ne gubi. Račun se vraća na Besplatno, a svaki arhivski zapis — korijenski hash, rezultat i PDF izvještaj — ostaje dostupan zauvijek. Prestaje samo Pro pogodnost čuvanja: opsežni revizijski dokazi slijede pravilo Besplatnog plana i brišu se 12 mjeseci nakon svakih izbora."
         },
         {
-          "q": "Trebam li karticu za probno razdoblje?",
-          "a": "Ne. Probno razdoblje Pro plana od 14 dana počinje bez kartice. Kad završi, račun se jednostavno vraća na Besplatno — bez naplaćivanja i bez otkazivanja."
+          "q": "Trebam li karticu?",
+          "a": "Ne. Electius je u beti — sve su značajke otvorene svim organizacijama i ništa se ne naplaćuje. Prikazane cijene planirane su za službeno pokretanje."
         },
         {
-          "q": "Mogu li platiti samo jedne izbore?",
-          "a": "Da. Plaćanje po izborima pokriva jedne izbore jednom uplatom, od 9 €, bez pretplate — namijenjeno organizacijama koje glasaju jednom godišnje ili provode jedne velike izbore."
+          "q": "Hoće li Electius ostati besplatan?",
+          "a": "Besplatni plan ostaje — pravi izbori do 50 birača i dalje neće koštati ništa. Tijekom bete otvorene su vam sve značajke, uključujući Pro; kad naplata krene, Besplatni plan vraća se na granice iz tablice iznad. Najavit ćemo to prije nego što se išta promijeni."
         }
       ]
     },

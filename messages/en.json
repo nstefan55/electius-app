@@ -1495,7 +1495,7 @@
         "perMonth": "/ month",
         "noteMonthly": "€9 billed monthly",
         "noteYearly": "€7.20/month, billed annually — €86/year (20% off)",
-        "cta": "Start free trial",
+        "cta": "Try Electius",
         "trial": "14-day free trial. No card required.",
         "features": [
           {
@@ -1533,7 +1533,8 @@
             "strong": "",
             "post": ""
           }
-        ]
+        ],
+        "badge": "Coming soon"
       },
       "pointer": "Running a bigger election? Pay once, from €9.",
       "table": {
@@ -1609,7 +1610,9 @@
           }
         ]
       },
-      "footnote": "Billing is per organization. Prices exclude VAT where applicable."
+      "footnote": "Billing is per organization.",
+      "betaNotice": "Beta — every feature is currently open to all organizations. The pricing below is planned for our official launch.",
+      "footnoteVat": "Billing is per organization. Prices exclude VAT where applicable."
     },
     "faq": {
       "kicker": "Pricing FAQ",
@@ -1621,19 +1624,19 @@
         },
         {
           "q": "What happens when my election is bigger than my plan?",
-          "a": "The limit is per election. Up to 50 voters is free; up to 500 needs Pro. Beyond 500, use pay-per-election — a single payment for that one election, from €9."
+          "a": "The limit is per election. During the beta there are no limits — every feature is open to all organizations. At official launch the plan is: up to 50 voters free, up to 500 with Pro."
         },
         {
           "q": "What happens to my elections if I cancel?",
           "a": "Nothing is lost. Your account returns to Free and every archive record — root hash, result and PDF report — stays available forever. Only the Pro retention benefit ends: bulky audit proofs follow the Free rule and are pruned 12 months after each election."
         },
         {
-          "q": "Do I need a card for the trial?",
-          "a": "No. The 14-day Pro trial starts without a card. When it ends, your account simply returns to Free — no charge, nothing to cancel."
+          "q": "Do I need a card?",
+          "a": "No. Electius is in beta — every feature is open to all organizations and nothing is charged. The prices shown are planned for our official launch."
         },
         {
-          "q": "Can I pay for just one election?",
-          "a": "Yes. Pay-per-election covers a single election with one payment, from €9, with no subscription — designed for organizations that vote once a year or run one large election."
+          "q": "Will Electius stay free?",
+          "a": "The Free plan stays — a real election of up to 50 voters will still cost nothing. During the beta every feature is open to you, Pro included; when billing starts, Free returns to the limits in the table above. We will announce that before anything changes."
         }
       ]
     },
