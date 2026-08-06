@@ -312,3 +312,40 @@ model Archive {
 
   @@map("archives")
 }
+
+// ───────── 9. Subscription — @better-auth/stripe (plugin-owned) ─────────
+// Izvor istine iz Stripea. users.isPro ostaje projekcija koju čita ostatak
+// aplikacije — nikad se ne čita spoj u gateu.
+
+model Subscription {
+  id String @id @default(cuid())
+
+  plan String
+
+  // D1: drži organizationId, ne userId — pretplata se naplaćuje po organizaciji
+  // i roadmap sjedala je org-scoped. NIJE unique: nakon otkazivanja korisnik se
+  // mora moći ponovno pretplatiti, a to je drugi red.
+  // Bez FK-a na User/Organization: plugin ovdje očekuje običan string.
+  referenceId String
+
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  status               String    @default("incomplete")
+  periodStart          DateTime?
+  periodEnd            DateTime?
+  cancelAtPeriodEnd    Boolean?  @default(false)
+  cancelAt             DateTime?
+  canceledAt           DateTime?
+  endedAt              DateTime?
+  // seats i stripeScheduleId stižu neiskorišteni — ugovor plugina, ne naš. Bez
+  // njih je migracija na dan kad sjedala krenu, a to je stavka koja je odlučila arhitekturu.
+  seats                Int?
+  trialStart           DateTime?
+  trialEnd             DateTime?
+  billingInterval      String?
+  stripeScheduleId     String?
+
+  @@index([referenceId])
+  @@index([stripeSubscriptionId])
+  @@map("subscriptions")
+}
