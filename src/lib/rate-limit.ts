@@ -64,6 +64,12 @@ const limiters = (() => {
     // zahtjev pročita cijelu organizaciju. Ključ je korisnik, ne IP — dijeljeni
     // IP fakulteta ne smije zaključati drugog administratora.
     export: make(redis, "export", 3, "1 h"),
+    // Pretplatnički pozivi koje pokreće korisnik (stripe-integration-phase-2 §12
+    // D4): svaki otvara sesiju kod Stripea, pa je neograničena ruta besplatan
+    // pojačavač prema tuđem API-ju. Ključ je korisnik — dijeljeni IP ne smije
+    // zaključati drugog administratora. WEBHOOK NIJE OVDJE I NE SMIJE BITI:
+    // 429 prema Stripeu je izgubljen upis prava.
+    subscription: make(redis, "subscription", 10, "15 m"),
   };
 })();
 

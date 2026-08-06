@@ -10,8 +10,15 @@ import {
 import { verifyPassword } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import { emailOTP, oAuthProxy } from "better-auth/plugins";
+import { stripe as stripePlugin } from "@better-auth/stripe";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { proPlan } from "@/lib/billing";
+import { stripeClient, stripeConfigured } from "@/lib/stripe";
+import {
+  projectEntitlement,
+  stampArchiveRetention,
+} from "@/lib/services/billing.service";
 import { confirmDeletionUrl } from "@/lib/urls";
 import { RATE_LIMIT_RULES } from "@/lib/auth/rate-limit-rules";
 import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
@@ -32,6 +39,81 @@ import {
 // owner, so any other test email could never log in).
 export const emailVerificationEnabled =
   process.env.EMAIL_VERIFICATION_ENABLED !== "false";
+
+// Naplata (@better-auth/stripe, stripe-integration-phase-2-spec §2). Plugin
+// donosi rute pod postojećim /api/auth/[...all] — webhook je
+// /api/auth/stripe/webhook. Nema nove datoteke rute i nema izmjene proxyja
+// (matcher već preskače /api).
+//
+// Montira se SAMO kad su oba ključa postavljena: produkcija ih nema dok ne
+// postoji pravni subjekt, a bezuvjetna montaža bi od Stripe ključeva napravila
+// uvjet za podizanje cijele aplikacije (vidi lib/stripe.ts). Bez ključeva
+// aplikacija radi točno kao prije ove faze.
+function billingPlugin() {
+  return stripePlugin({
+    stripeClient: stripeClient(),
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET as string,
+    // Kupac se stvara tek pri prvoj naplati (faza 1 D6) — inače bi svaka
+    // registracija ostavila smeće u Stripeu na putu koji s naplatom nema veze.
+    createCustomerOnSignUp: false,
+    subscription: {
+      enabled: true,
+      // Funkcija, ne polje: requiredPriceId baca na prazan price id. To smije
+      // srušiti pokušaj kupnje, nikad učitavanje modula.
+      plans: () => [proPlan()],
+      // referenceId je organizationId (faza 1 D1), pa ga bez ove provjere
+      // svaki prijavljeni korisnik može zamijeniti tuđim i upravljati tuđom
+      // pretplatom. Namjerno obična jednakost s vlastitom organizacijom, a ne
+      // provjera uloge: model uloga ne postoji (1 organizacija ↔ 1
+      // administrator). Kad stignu sjedala, provjera uloge dolazi ovdje i nigdje drugdje.
+      // ponytail: jedan upit više po pozivu pretplate — ne po učitavanju stranice.
+      authorizeReference: async ({ user, referenceId }) => {
+        const row = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { organizationId: true },
+        });
+        return row?.organizationId === referenceId;
+      },
+      // D4: probno razdoblje bez kartice završava otkazivanjem, ne naplatom.
+      // trial_period_days se NE postavlja ovdje — plugin ga izvodi iz
+      // proPlan().freeTrial.days, a postavljanje oboje tiho promijeni trajanje.
+      getCheckoutSessionParams: () => ({
+        params: {
+          subscription_data: {
+            trial_settings: {
+              end_behavior: { missing_payment_method: "cancel" },
+            },
+          },
+          // Vrijedi samo u subscription modu i preskače karticu samo kad je
+          // iznos 0 — točno probno razdoblje. Zadano je "always".
+          payment_method_collection: "if_required",
+        },
+      }),
+      // Sve kuke pišu isto pravo kroz projectEntitlement — jedini pisac.
+      onSubscriptionComplete: async ({ subscription }) => {
+        await projectEntitlement("complete", subscription.referenceId, subscription);
+      },
+      // Pretplata otvorena izvan Checkouta (Stripe dashboard) — ista projekcija.
+      onSubscriptionCreated: async ({ subscription }) => {
+        await projectEntitlement("created", subscription.referenceId, subscription);
+      },
+      onSubscriptionUpdate: async ({ subscription }) => {
+        await projectEntitlement("update", subscription.referenceId, subscription);
+      },
+      // cancel_at_period_end: status je i dalje active, pa isPro OSTAJE true —
+      // razdoblje je plaćeno. Projekcija to izvodi sama iz statusa.
+      onSubscriptionCancel: async ({ subscription }) => {
+        await projectEntitlement("cancel", subscription.referenceId, subscription);
+      },
+      // Razdoblje je isteklo: pravo pada i arhive dobivaju rok zadržavanja.
+      // Pečat NIKAD ne briše redak — vidi billing.service.
+      onSubscriptionDeleted: async ({ subscription }) => {
+        await projectEntitlement("deleted", subscription.referenceId, subscription);
+        await stampArchiveRetention(subscription.referenceId);
+      },
+    },
+  });
+}
 
 // BetterAuth server instance, mounted at /api/auth/[...all]; auth lives on the
 // dashboard host only (BETTER_AUTH_URL/BETTER_AUTH_SECRET read from env — see
@@ -191,6 +273,9 @@ export const auth = betterAuth({
         }
       },
     }),
+    // Prazno kad Stripe nije konfiguriran (produkcija do pravnog subjekta):
+    // aplikacija se tada podiže bez ijedne naplatne rute.
+    ...(stripeConfigured ? [billingPlugin()] : []),
     // Keep last — lets Server Actions calling the auth API set cookies.
     nextCookies(),
   ],

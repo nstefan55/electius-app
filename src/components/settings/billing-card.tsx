@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Dialog } from "@base-ui/react/dialog";
@@ -14,14 +14,19 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { authClient } from "@/lib/auth/client";
+import { PRO_PLAN_NAME } from "@/lib/billing";
 import { BillingToggle, PlanCards } from "@/components/marketing/plan-cards";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { Spinner } from "@/components/ui/spinner";
 
 // "Plan i naplata" na /settings (profile-settings-phase-7-spec).
 //
-// SAMO SUČELJE. Ne zove Stripe, ne piše isPro, ne pomiče novac — CTA-ovi su
-// imenovani šavovi koje popunjava stripe-integration-phase-2-spec §2.
+// Sučelje je iz faze 7 i ne mijenja se; stripe-integration-phase-2 §5 popunjava
+// samo četiri tijela funkcija. Klijent šalje ime plana i boolean, NIKAD cijenu —
+// price id se razrješava na poslužitelju iz proPlan(), pa krivotvoreni zahtjev
+// ne može izmisliti pretplatu od 0 €. isPro ne mijenja nijedan od ovih poziva:
+// pravo piše isključivo provjereni webhook.
 
 // Iznosi su u kodu, ne u katalogu: formatira ih next-intl, pa tvrdo kodiran
 // znak € nikad ne uđe u prijevod. Autoritet: project-paywall-spec.md.
@@ -45,10 +50,37 @@ export type BillingState =
         status: "active" | "trialing" | "canceling";
         renewsAt: Date;
         cycle: Cycle;
+        // Stripe id (sub_…), ne id našeg retka — plugin traži pretplatu upravo
+        // po toj koloni. Obavezan pri prelasku na godišnje: bez njega Checkout
+        // otvara DRUGU pretplatu i naplaćuje dvaput.
+        stripeSubscriptionId: string | null;
       } | null;
     };
 
-export function BillingCard({ state }: { state: BillingState }) {
+// Kamo se Stripe vraća. Traka "obrada u tijeku" iz faze 7 visi o ?checkout=success,
+// pa uspjeh mora nositi taj parametar; sam povratak ne mijenja nikakvo pravo.
+function useReturnUrls() {
+  const locale = useLocale();
+  const base = `/${locale}/settings`;
+  return { locale, base, success: `${base}?checkout=success` };
+}
+
+// Korisniku ide prevedena poruka, nikad Stripeova. Njegovi tekstovi su engleski
+// i interni ("the subscription update feature in the portal configuration is
+// disabled") — administratoru ne govore ništa, a hrvatsko sučelje ne smije
+// procuriti engleski. Original ide u konzolu, gdje i pripada.
+function fail(error: { message?: string } | null | undefined, localized: string) {
+  if (error?.message) console.error("[billing]", error.message);
+  toast.error(localized);
+}
+
+export function BillingCard({
+  state,
+  organizationId,
+}: {
+  state: BillingState;
+  organizationId: string;
+}) {
   const t = useTranslations(NS);
   // Povratak s Checkouta. Uspjeh NIKAD ne mijenja pravo — isPro piše samo
   // provjereni webhook — pa se ovdje prikazuje čekanje, ne Pro.
@@ -92,8 +124,10 @@ export function BillingCard({ state }: { state: BillingState }) {
       )}
 
       {state.kind === "prelaunch" && <PrelaunchState />}
-      {state.kind === "free" && <FreeState />}
-      {state.kind === "pro" && <ProState state={state} />}
+      {state.kind === "free" && <FreeState organizationId={organizationId} />}
+      {state.kind === "pro" && (
+        <ProState state={state} organizationId={organizationId} />
+      )}
     </SettingsCard>
   );
 }
@@ -182,17 +216,33 @@ function PlansDialog({
 }
 
 // ───────── Besplatni plan ─────────
-function FreeState() {
+function FreeState({ organizationId }: { organizationId: string }) {
   const t = useTranslations(NS);
   const format = useFormatter();
   const [cycle, setCycle] = useState<Cycle>("monthly");
+  const [pending, setPending] = useState(false);
   const monthly = cycle === "monthly";
+  const urls = useReturnUrls();
 
-  // → createCheckoutSession(cycle) (stripe-integration-phase-2 §2).
-  // Šalje se razdoblje iz stanja iznad, nikad cijena: iznos s klijenta može se
-  // krivotvoriti u pretplatu od 0 €.
-  function upgrade() {
-    toast(t("comingSoon"));
+  // Prva kupnja: plugin otvara Checkout i sam preusmjerava. Šalje se razdoblje
+  // iz stanja iznad, nikad cijena. locale ide dalje da Stripeove stranice budu
+  // na hrvatskom, a ne na jeziku preglednika.
+  async function upgrade() {
+    setPending(true);
+    const { error } = await authClient.subscription.upgrade({
+      plan: PRO_PLAN_NAME,
+      annual: cycle === "yearly",
+      referenceId: organizationId,
+      successUrl: urls.success,
+      cancelUrl: urls.base,
+      locale: urls.locale,
+    });
+    // Uspjeh znači preusmjeravanje, pa se pending namjerno ne gasi — gumb ostaje
+    // zaključan dok stranica ne ode.
+    if (error) {
+      fail(error, t("errors.checkout"));
+      setPending(false);
+    }
   }
 
   const price = (value: number, digits: number) =>
@@ -294,9 +344,10 @@ function FreeState() {
         <button
           type="button"
           onClick={upgrade}
-          className="mt-3 h-11 cursor-pointer rounded-md bg-white px-5.5 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+          disabled={pending}
+          className="mt-3 h-11 cursor-pointer rounded-md bg-white px-5.5 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {t("upsell.cta")}
+          {pending ? t("redirecting") : t("upsell.cta")}
         </button>
       </div>
     </>
@@ -304,24 +355,56 @@ function FreeState() {
 }
 
 // ───────── Pro plan ─────────
-function ProState({ state }: { state: Extract<BillingState, { kind: "pro" }> }) {
+function ProState({
+  state,
+  organizationId,
+}: {
+  state: Extract<BillingState, { kind: "pro" }>;
+  organizationId: string;
+}) {
   const t = useTranslations(NS);
   const format = useFormatter();
   const [cancelOpen, setCancelOpen] = useState(false);
-
-  // → createPortalSession() (stripe-integration-phase-2 §2). Način plaćanja,
-  // računi i promjena razdoblja žive u Stripe portalu — ništa od toga se ne
-  // gradi ovdje, kao ni sučelje za proration.
-  function switchYearly() {
-    toast(t("comingSoon"));
-  }
-
-  // → createPortalSession()
-  function manageBilling() {
-    toast(t("comingSoon"));
-  }
-
+  const [pending, setPending] = useState(false);
+  const urls = useReturnUrls();
   const sub = state.subscription;
+
+  // Prelazak na godišnje. subscriptionId je OBAVEZAN kad pretplata već postoji:
+  // bez njega plugin otvara drugu pretplatu i naplaćuje dvaput. Gumb se ionako
+  // prikazuje samo kad postoji redak, pa i id postoji.
+  async function switchYearly() {
+    setPending(true);
+    const { error } = await authClient.subscription.upgrade({
+      plan: PRO_PLAN_NAME,
+      annual: true,
+      referenceId: organizationId,
+      subscriptionId: sub?.stripeSubscriptionId ?? undefined,
+      successUrl: urls.success,
+      cancelUrl: urls.base,
+      returnUrl: urls.base,
+      locale: urls.locale,
+    });
+    if (error) {
+      fail(error, t("errors.checkout"));
+      setPending(false);
+    }
+  }
+
+  // Način plaćanja, računi i otkazivanje žive u Stripe portalu — ništa od toga
+  // se ne gradi ovdje.
+  async function manageBilling() {
+    setPending(true);
+    const { error } = await authClient.subscription.billingPortal({
+      referenceId: organizationId,
+      returnUrl: urls.base,
+      locale: urls.locale,
+    });
+    if (error) {
+      fail(error, t("errors.portal"));
+      setPending(false);
+    }
+  }
+
   const canceling = sub?.status === "canceling";
   const monthly = sub?.cycle === "monthly";
 
@@ -373,7 +456,8 @@ function ProState({ state }: { state: Extract<BillingState, { kind: "pro" }> }) 
             <button
               type="button"
               onClick={switchYearly}
-              className="h-10 cursor-pointer rounded-md border-[1.5px] border-brand-700 px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50"
+              disabled={pending}
+              className="h-10 cursor-pointer rounded-md border-[1.5px] border-brand-700 px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {t("pro.switchYearly")}
             </button>
@@ -381,9 +465,10 @@ function ProState({ state }: { state: Extract<BillingState, { kind: "pro" }> }) 
           <button
             type="button"
             onClick={manageBilling}
-            className="h-10 cursor-pointer rounded-md border border-neutral-200 px-4 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100"
+            disabled={pending}
+            className="h-10 cursor-pointer rounded-md border border-neutral-200 px-4 text-sm font-semibold text-neutral-800 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {t("pro.manage")}
+            {pending ? t("redirecting") : t("pro.manage")}
           </button>
         </div>
       </div>
@@ -413,7 +498,13 @@ function ProState({ state }: { state: Extract<BillingState, { kind: "pro" }> }) 
         )}
       </div>
 
-      <CancelDialog open={cancelOpen} onOpenChange={setCancelOpen} date={renewsAt} />
+      <CancelDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        date={renewsAt}
+        organizationId={organizationId}
+        subscriptionId={sub?.stripeSubscriptionId ?? null}
+      />
     </>
   );
 }
@@ -422,18 +513,38 @@ function CancelDialog({
   open,
   onOpenChange,
   date,
+  organizationId,
+  subscriptionId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   date: string | null;
+  organizationId: string;
+  subscriptionId: string | null;
 }) {
   const t = useTranslations(NS);
+  const [pending, setPending] = useState(false);
+  const urls = useReturnUrls();
 
-  // → cancelSubscription() (stripe-integration-phase-2 §2). Otkazivanje je
-  // uvijek cancel_at_period_end, nikad subscriptions.del.
-  function cancelSubscription() {
-    toast(t("comingSoon"));
-    onOpenChange(false);
+  // Potvrdi-pa-preusmjeri, ne potvrdi-pa-toast: plugin vodi na Stripeov portal,
+  // gdje se otkazivanje dovršava. Modal ostaje jer govori ono što portal ne —
+  // da Pro traje do kraja plaćenog razdoblja.
+  //
+  // ⚠ "nikad subscriptions.del" više ne jamči naš kod. Je li otkazivanje trenutno
+  // ili na kraju razdoblja odlučuje konfiguracija portala u Stripe dashboardu, koju
+  // aplikacija ne može pročitati (spec §8.2).
+  async function cancelSubscription() {
+    setPending(true);
+    const { error } = await authClient.subscription.cancel({
+      referenceId: organizationId,
+      subscriptionId: subscriptionId ?? undefined,
+      returnUrl: urls.base,
+    });
+    if (error) {
+      fail(error, t("errors.cancel"));
+      setPending(false);
+      onOpenChange(false);
+    }
   }
 
   return (
@@ -466,16 +577,18 @@ function CancelDialog({
             <button
               type="button"
               onClick={() => onOpenChange(false)}
-              className="h-11 cursor-pointer rounded-md px-5 text-[0.9375rem] font-medium text-neutral-600 transition-colors hover:bg-neutral-100"
+              disabled={pending}
+              className="h-11 cursor-pointer rounded-md px-5 text-[0.9375rem] font-medium text-neutral-600 transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {t("cancelModal.keep")}
             </button>
             <button
               type="button"
               onClick={cancelSubscription}
-              className="h-11 cursor-pointer rounded-md bg-error-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-error-500"
+              disabled={pending}
+              className="h-11 cursor-pointer rounded-md bg-error-700 px-5.5 text-[0.9375rem] font-semibold text-white transition-colors hover:bg-error-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {t("cancelModal.confirm")}
+              {pending ? t("redirecting") : t("cancelModal.confirm")}
             </button>
           </div>
         </Dialog.Popup>
