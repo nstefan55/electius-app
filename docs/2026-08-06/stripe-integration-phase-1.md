@@ -14,6 +14,28 @@
 
 ---
 
+## Findings from implementation — read this before picking up phase 2
+
+Eight things came out of building this that the spec did not predict. Three of them mean the spec
+itself is wrong and needs amending. Full reasoning in the sections linked.
+
+| # | Finding | Action | Detail |
+| --- | --- | --- | --- |
+| 1 | **The spec's headline leap-year test case is a false pin.** `2027-02-28 → 2028-02-28` passes under *both* the calendar-year implementation and `365 * 86_400_000`, because 29 Feb 2028 falls after 28 Feb 2028 and that interval is exactly 365 days. Found by mutation-checking; a case that bites has to *cross* a 29 February. | **Amend spec §9.** A replacement case (`2027-03-01`) is added and the original annotated. | §10 |
+| 2 | **The D7 CLI diff cannot be run the way the spec describes.** `@better-auth/cli generate` refuses any config that reaches `import "server-only"`, which `src/lib/auth/index.ts` does transitively via `@/lib/prisma` — so scratch-*mounting* the plugin there is not enough, and removing the top-level import is not either. | **Amend spec §4.** Use a throwaway isolated config instead. Also: the CLI versions independently — `@latest` is `1.4.21`, there is no `1.6.26`. | §8 |
+| 3 | **The startup guard cannot be exercised by starting the app in this phase.** §3 forbids importing `stripe.ts` anywhere, so nothing loads the module and `npm run dev` never reaches the guard. §3 and §10 contradict each other. | **Amend spec §10.** All four branches were exercised by loading the module directly — the identical module-level code that runs at boot in phase 2. | §10 |
+| 4 | **`status` nullability diverges between the CLI and our model.** The CLI emits `String?`; ours is `String @default("incomplete")`. Traced to a missing `required: true` flag in the plugin's field declaration, not a real nullable write. | Kept **NOT NULL**. Phase 2's `isProStatus(status)` therefore needs **no null branch**. | §8 |
+| 5 | **`better-auth` moved `1.6.23` → `1.6.26`** in the lockfile — `@better-auth/stripe@1.6.26` peer-requires `^1.6.26` and `package.json` already carried `^1.6.23`. `package.json` unchanged, no auth code touched. | Lint/tsc/452 tests/build clean, but **run a login + OTP smoke test** — an auth-library bump rode in on a billing branch. | §11 |
+| 6 | **Price env vars were named differently from the spec** (`STRIPE_PRICE_ID_*` vs `STRIPE_PRICE_PRO_*`), with real distinct test IDs already set in dev and empty placeholders in prod. | Renamed to the spec names in both files. Nothing had to migrate — **but Vercel still needs the production values set.** | §7 |
+| 7 | **`STRIPE_PUBLISHABLE_KEY` and `STRIPE_TRIAL_PRICE_ID` exist in env and are read by nothing.** Checkout/Portal are redirect-based; the trial is `freeTrial.days` on the plan. | Left in place by decision. **Do not wire a client-side Stripe call to justify the publishable key.** | §7 |
+| 8 | **`archiveExpiresAt` duplicates `oneYearFrom` in `archive.service.ts`** — two implementations of one calendar-year rule (invariant #5). | Left deliberately: folding them needs `resolveEntitlement` (phase 2), and touching the seal path inside a billing diff is the objection from §1. `ponytail:` marker names the fold-in. | §5 |
+
+**Obligation created by D1:** `referenceId` holds an organization id, so phase 2 **must** implement
+`authorizeReference`. Without it the reference is attacker-supplied — any signed-in admin could name
+any organization's id. See §4.
+
+---
+
 ## 1. The rule the whole design rests on
 
 > **The `Subscription` table is the source of truth from Stripe. `users.isPro` stays the projection
