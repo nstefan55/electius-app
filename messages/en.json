@@ -1249,7 +1249,6 @@
         "chipBeta": "Beta",
         "chipFree": "Free",
         "chipPro": "Pro",
-        "comingSoon": "Billing switches on soon — every feature is open in the meantime.",
         "processing": {
           "title": "Payment received",
           "body": "We are activating Pro. Refresh the page in a moment."
@@ -1305,6 +1304,12 @@
           "bodyNoDate": "You keep Pro until the end of your current billing period. After that, new elections follow Free limits (50 voters per election), and full audit proofs older than a year are pruned — <b>your election records, results and reports are kept</b>.",
           "keep": "Keep Pro",
           "confirm": "Cancel subscription"
+        },
+        "redirecting": "Redirecting…",
+        "errors": {
+          "checkout": "Checkout could not be opened right now. Please try again.",
+          "portal": "The billing portal is unavailable right now. Please try again.",
+          "cancel": "The subscription could not be cancelled right now. Please try again."
         }
       },
       "customizations": {

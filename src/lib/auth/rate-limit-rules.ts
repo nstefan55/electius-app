@@ -49,4 +49,11 @@ export const RATE_LIMIT_RULES: Record<
   // tuđi sandučić, a novi račun ne nasljeđuje tuđi potrošeni prozor.
   // /delete-user/callback namjerno NIJE ovdje — vidi komentar uz limiter.
   "/delete-user": { action: "deleteAccount", withUser: true },
+  // Pretplata: sve tri rute traže sesiju i svaka otvara sesiju kod Stripea
+  // (cancel jednako kao billing-portal — vodi na isti portal). /stripe/webhook
+  // NAMJERNO nije ovdje i ne smije doći: mapa je allowlist (if (!rule) return),
+  // pa webhook ostaje neograničen. 429 prema Stripeu je izgubljen upis prava.
+  "/subscription/upgrade": { action: "subscription", withUser: true },
+  "/subscription/billing-portal": { action: "subscription", withUser: true },
+  "/subscription/cancel": { action: "subscription", withUser: true },
 };

@@ -1249,7 +1249,6 @@
         "chipBeta": "Beta",
         "chipFree": "Besplatno",
         "chipPro": "Pro",
-        "comingSoon": "Naplata se uključuje uskoro — za sada su sve značajke otvorene.",
         "processing": {
           "title": "Plaćanje zaprimljeno",
           "body": "Aktiviramo Pro. Osvježite stranicu za koji trenutak."
@@ -1305,6 +1304,12 @@
           "bodyNoDate": "Pro zadržavate do kraja tekućeg obračunskog razdoblja. Nakon toga novi izbori slijede ograničenja Besplatnog plana (50 birača po izborima), a potpuni revizijski dokazi stariji od godine dana se uklanjaju — <b>vaši zapisi o izborima, rezultati i izvještaji ostaju sačuvani</b>.",
           "keep": "Zadrži Pro",
           "confirm": "Otkaži pretplatu"
+        },
+        "redirecting": "Preusmjeravanje…",
+        "errors": {
+          "checkout": "Naplatu trenutačno nije moguće otvoriti. Pokušajte ponovno.",
+          "portal": "Portal za naplatu trenutačno nije dostupan. Pokušajte ponovno.",
+          "cancel": "Otkazivanje trenutačno nije moguće. Pokušajte ponovno."
         }
       },
       "customizations": {

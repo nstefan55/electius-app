@@ -5,7 +5,6 @@ import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Dialog } from "@base-ui/react/dialog";
 import { CreditCard, Trash2 } from "lucide-react";
-import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { Spinner } from "@/components/ui/spinner";
@@ -23,13 +22,34 @@ const CONFIRM_WORD = "DELETE";
 
 export function AccountManagementCard({
   organizationName,
+  organizationId,
   subscriptionActive,
 }: {
   organizationName: string;
+  organizationId: string;
   subscriptionActive: boolean;
 }) {
   const t = useTranslations("dashboard.settings.account");
+  const tBilling = useTranslations("dashboard.settings.billing");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
+  const [portalPending, setPortalPending] = useState(false);
+
+  // Otkazivanje se dovršava u Stripe portalu — jedino što odblokira brisanje.
+  async function manageBilling() {
+    setPortalPending(true);
+    const { error } = await authClient.subscription.billingPortal({
+      referenceId: organizationId,
+      returnUrl: `/${locale}/settings`,
+      locale,
+    });
+    // Uspjeh znači preusmjeravanje, pa se pending gasi samo na grešci.
+    if (error) {
+      if (error.message) console.error("[billing]", error.message);
+      toast.error(tBilling("errors.portal"));
+      setPortalPending(false);
+    }
+  }
 
   return (
     <SettingsCard
@@ -51,13 +71,15 @@ export function AccountManagementCard({
           <p className="max-w-64 text-right text-[0.8125rem] text-neutral-600">
             {t("subscriptionBlocked")}
           </p>
-          <Link
-            href="/settings"
-            className="inline-flex items-center gap-1.5 text-[0.8125rem] font-semibold text-brand-700 hover:underline"
+          <button
+            type="button"
+            onClick={manageBilling}
+            disabled={portalPending}
+            className="inline-flex cursor-pointer items-center gap-1.5 text-[0.8125rem] font-semibold text-brand-700 hover:underline disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:no-underline"
           >
             <CreditCard className="size-3.5" />
             {t("manageBilling")}
-          </Link>
+          </button>
         </div>
       ) : (
         <button
