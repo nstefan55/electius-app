@@ -92,7 +92,6 @@ export async function duplicateElection(id: string): Promise<ActionResult> {
         resultsMode: src.resultsMode,
         allowAbstain: src.allowAbstain,
         quorumThreshold: src.quorumThreshold,
-        autoCloseOnDeadline: src.autoCloseOnDeadline,
         voterReminder24h: src.voterReminder24h,
         organizationId: src.organizationId,
         createdById: src.createdById,

@@ -16,7 +16,8 @@ import type { VoterExportRow } from "@/lib/voter-export";
 // izvještaju. Izvoz koji se ne slaže sa stranicom rezultata gori je od nikakvog.
 
 // Verzija oblika, ne aplikacije: čitatelj mora moći prepoznati promjenu sheme.
-export const EXPORT_VERSION = 1;
+// v2: maknut settings.autoCloseOnDeadline (stupac obrisan — nitko ga nije čitao).
+export const EXPORT_VERSION = 2;
 
 // Ključevi su stabilan engleski i kad je sučelje hrvatsko — strojno čitljiv
 // izlaz čija shema ovisi o jeziku nije prenosiv.
@@ -56,7 +57,6 @@ export interface ExportElectionSource {
   resultsMode: string;
   allowAbstain: boolean;
   quorumThreshold: number | null;
-  autoCloseOnDeadline: boolean;
   voterReminder24h: boolean;
   adminTurnoutReminder: boolean;
   sealedResults: boolean;
@@ -150,7 +150,6 @@ export interface ExportElection {
     resultsMode: string;
     allowAbstain: boolean;
     quorumThreshold: number | null;
-    autoCloseOnDeadline: boolean;
     voterReminder24h: boolean;
     adminTurnoutReminder: boolean;
     sealedResults: boolean;
@@ -242,7 +241,6 @@ function buildElection(e: ExportElectionSource): ExportElection {
       resultsMode: e.resultsMode,
       allowAbstain: e.allowAbstain,
       quorumThreshold: e.quorumThreshold,
-      autoCloseOnDeadline: e.autoCloseOnDeadline,
       voterReminder24h: e.voterReminder24h,
       adminTurnoutReminder: e.adminTurnoutReminder,
       sealedResults: e.sealedResults,

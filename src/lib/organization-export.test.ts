@@ -31,7 +31,6 @@ function election(
     resultsMode: "AFTER_CLOSE",
     allowAbstain: false,
     quorumThreshold: null,
-    autoCloseOnDeadline: true,
     voterReminder24h: false,
     adminTurnoutReminder: false,
     sealedResults: false,

@@ -56,7 +56,6 @@ const basePayload = {
   closeAt: "2999-06-01T12:00",
   sealedResults: false,
   quorumThreshold: null,
-  autoCloseOnDeadline: true,
   adminTurnoutReminder: false,
   voterReminder24h: false,
 };
