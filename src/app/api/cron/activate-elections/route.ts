@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { publishElection } from "@/lib/services/publication.service";
 import { windowOver } from "@/lib/services/token.service";
+import { pruneExpiredArchives } from "@/lib/services/archive.service";
 
 // Election lifecycle sweep (election-publication-spec §5 + expired-token-sends
 // fix): opens due SCHEDULED elections and publishes their invitations, then
@@ -84,5 +85,27 @@ export async function POST(request: Request) {
     closed += count;
   }
 
-  return NextResponse.json({ activated: elections.length, closed, elections });
+  // Obrezivanje isteklog tereta dokaza arhive (entitlement-enforcement-spec §6).
+  // Ovdje, a ne na svojoj ruti: treća radnja iza istog CRON_SECRET-a i istog
+  // pingera je jeftinija od druge infrastrukture koju aplikacija ne može
+  // provjeriti da postoji — isti razlog zbog kojeg je i zatvaranje ovdje.
+  //
+  // Bez dnevne brave. Za nju treba zapis o zadnjem prolazu, kojeg shema nema,
+  // pa bi brava tražila migraciju skuplju od onoga što štedi. Metla je
+  // idempotentna, a indeksirani upit koji vrati 0 redaka jeftiniji je od
+  // vođenja dnevnika prolaza.
+  // ponytail: bravu dodati tek ako se cijena upita ikad pojavi u mjerenjima.
+  const archives = await pruneExpiredArchives().catch((error) => {
+    // Obrezivanje ne smije srušiti otvaranje i zatvaranje izbora — to su
+    // radnje s rokom, a arhiva može pričekati sljedeći ping.
+    console.error("[cron] archive prune failed", { error });
+    return null;
+  });
+
+  return NextResponse.json({
+    activated: elections.length,
+    closed,
+    elections,
+    archives: archives ?? { pruned: 0, kept: 0 },
+  });
 }

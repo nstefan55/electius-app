@@ -533,7 +533,8 @@
         "titleRequired": "Dodajte naziv izbora za nastavak",
         "candidatesRequired": "Dodajte barem dva kandidata za nastavak",
         "scheduleInvalid": "Provjerite datume — zatvaranje mora biti nakon otvaranja",
-        "createFailed": "Nešto je pošlo po zlu. Pokušajte ponovno."
+        "createFailed": "Nešto je pošlo po zlu. Pokušajte ponovno.",
+        "voterCap": "Popis birača premašuje granicu plana ({cap})."
       },
       "step1": {
         "title": "Osnovni podaci",
@@ -624,7 +625,11 @@
         "nameRequired": "Unesite puno ime glasača",
         "emailInvalid": "Unesite ispravnu e-mail adresu",
         "emailDuplicate": "Ta je e-mail adresa već na popisu",
-        "remove": "Ukloni"
+        "remove": "Ukloni",
+        "capTitle": "Dosegnuta granica plana",
+        "capBody": "Vaš plan dopušta najviše {cap} birača po izborima, a popis ih ima {current}.",
+        "capLink": "Pogledaj planove",
+        "capUsage": "Iskorišteno {used} od {cap} birača."
       },
       "step4": {
         "title": "Raspored i postavke",
@@ -1118,7 +1123,14 @@
         "failed": "Dodavanje nije uspjelo. Pokušajte ponovno.",
         "nameRequired": "Unesite ime i prezime.",
         "emailInvalid": "Unesite ispravnu e-mail adresu.",
-        "emailDuplicate": "Ta e-mail adresa je već na popisu."
+        "emailDuplicate": "Ta e-mail adresa je već na popisu.",
+        "capTitle": "Dosegnuta granica plana",
+        "capBody": "Ovi izbori mogu imati najviše {cap} birača. Trenutačno ih je {current}, a dodajete još {adding}.",
+        "capLink": "Pogledaj planove",
+        "capUsage": "Iskorišteno {used} od {cap} birača."
+      },
+      "cap": {
+        "usage": "Iskorišteno {used} od {cap} birača"
       }
     },
     "profile": {

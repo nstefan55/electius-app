@@ -305,6 +305,12 @@ model Archive {
   // poziva upravo grešku s dva doma koju D5 izbjegava.
 
   expiresAt DateTime? // retention cap — Free: createdAt + 1 year; Pro: null (unlimited)
+  // Kad je teret dokaza obrezan. Stupac, ne ključ u proofData: metla bira
+  // kandidate s `expiresAt <= now, prunedAt: null`, a negirani JSON path filtar
+  // na retku bez tog ključa vraća NULL — NOT(NULL = true) je NULL, pa bi redak
+  // tiho ispao i ništa se nikad ne bi obrezalo. Nadgrobni zapis u proofData i
+  // dalje nosi isti datum, za onoga tko čita sam JSON.
+  prunedAt  DateTime?
   createdAt DateTime  @default(now())
 
   electionId String   @unique

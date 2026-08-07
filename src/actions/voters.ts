@@ -8,6 +8,8 @@ import {
   inviteVoter,
   publishElection,
 } from "@/lib/services/publication.service";
+import { voterCap } from "@/lib/entitlements";
+import { resolveEntitlement } from "@/lib/services/entitlement.service";
 
 // Upravljanje biračima (voter-management-spec). Svaka akcija je org-scoped i
 // nosi status izbora u WHERE klauzuli — nikad pročitaj-pa-provjeri.
@@ -29,6 +31,10 @@ export type AddVotersResult = ActionResult & {
   failed?: number;
   // Birači su dodani, ali rok je istekao pa pozivnica nije poslana.
   blocked?: "windowOver";
+  // Uz error: "voterCap". Granica i trenutačno stanje putuju s odbijanjem jer
+  // ih poruka mora imenovati — goli `error: string` to ne može (§4).
+  cap?: number;
+  current?: number;
 };
 
 // Popis se smije mijenjati dok izbori nisu gotovi.
@@ -82,6 +88,18 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
     });
     const skipped = rows.length - fresh.length;
     if (fresh.length === 0) return { success: true, added: 0, skipped };
+
+    // Granica birača (§4). Broji se `fresh`, NE `rows`: dedupliciranje je gore,
+    // pa organizacija na Free planu s 50 birača koja ponovno učita isti CSV od
+    // 50 redaka ne smije biti odbijena — taj poziv ne upisuje ništa.
+    // Odbijanje ide neuspješnim putem, ne kroz `blocked`: `blocked` je kvalifikator
+    // uspjeha ("dodani su, ali pozivnica nije poslana") i dijalog ga čita tek nakon
+    // res.success, pa bi odbijanje ovdje tiho ispalo u generičku poruku o grešci.
+    const current = election.voters.length;
+    const cap = voterCap(await resolveEntitlement(electionId, organizationId));
+    if (current + fresh.length > cap) {
+      return { success: false, error: "voterCap", cap, current };
+    }
 
     await prisma.voter.createMany({
       data: fresh.map((r) => {

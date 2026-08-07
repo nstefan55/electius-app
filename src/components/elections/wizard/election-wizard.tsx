@@ -39,7 +39,7 @@ function toPayload(data: WizardData): WizardPayload {
 // 5-step creation wizard — fills the 90% modal panel mounted by
 // /elections/new (design: Election Wizard.dc.html; presentation: user
 // decision 2026-07-23, centered modal over the dashboard).
-export function ElectionWizard() {
+export function ElectionWizard({ voterCap }: { voterCap: number }) {
   const t = useTranslations("dashboard.wizard");
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -98,6 +98,11 @@ export function ElectionWizard() {
       if (res.success) {
         setCreatedId(res.data.id);
         router.refresh(); // the /elections list behind the modal has a new row
+      } else if (res.error === "voterCap") {
+        // Vraćamo na korak 3: poruka mora stajati uz popis koji je predugačak,
+        // a ne uz sažetak na kojem se ništa ne može skratiti.
+        setStep(3);
+        toast.error(t("errors.voterCap", { cap: res.cap ?? voterCap }));
       } else {
         toast.error(
           res.error === "schedule"
@@ -243,7 +248,9 @@ export function ElectionWizard() {
         <div className="mx-auto max-w-3xl px-5 pt-9 pb-16 sm:px-7">
           {step === 1 && <StepBasicInfo data={data} patch={patch} />}
           {step === 2 && <StepCandidates data={data} patch={patch} />}
-          {step === 3 && <StepVoters data={data} patch={patch} />}
+          {step === 3 && (
+            <StepVoters data={data} patch={patch} voterCap={voterCap} />
+          )}
           {step === 4 && <StepSettings data={data} patch={patch} />}
           {step === 5 && <StepReview data={data} goStep={setStep} />}
         </div>

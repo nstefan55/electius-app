@@ -29,6 +29,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { useRouter } from "@/i18n/navigation";
 import type { RosterVoter, VoterRoster as Roster } from "@/lib/db/voters";
 import { formatCount, type ElectionStatus } from "@/lib/elections-view";
+import { nearCap } from "@/lib/entitlements";
 import { cn } from "@/lib/utils";
 
 // Popis birača za /elections/[id]/voters (voter-management-spec). Bez vlastitog
@@ -56,11 +57,13 @@ export function VoterRoster({
   electionStatus,
   roster,
   query,
+  voterCap,
 }: {
   electionId: string;
   electionStatus: ElectionStatus;
   roster: Roster;
   query: { q: string; status: string };
+  voterCap: number;
 }) {
   const t = useTranslations("dashboard.voters");
   const locale = useLocale();
@@ -126,6 +129,13 @@ export function VoterRoster({
           className="text-success-700"
         />
         <Summary label={t("summary.pending")} value={num(counts.pending)} />
+
+        {/* Tiha najava granice — tek od 80%, i nikad kao upozorenje. */}
+        {nearCap(counts.total, voterCap) && (
+          <span className="ml-auto text-[0.8125rem] text-neutral-600">
+            {t("cap.usage", { used: counts.total, cap: voterCap })}
+          </span>
+        )}
         {canAdd && (
           <button
             type="button"
@@ -357,6 +367,8 @@ export function VoterRoster({
         electionStatus={electionStatus}
         open={addOpen}
         onOpenChange={setAddOpen}
+        voterCap={voterCap}
+        voterCount={counts.total}
       />
 
       <EditNameDialog

@@ -10,9 +10,15 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/auth/require-session", () => ({
   requireSession: vi.fn(),
 }));
+vi.mock("@/lib/services/entitlement.service", () => ({
+  resolveEntitlement: vi.fn(),
+}));
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
+const { resolveEntitlement } = await import(
+  "@/lib/services/entitlement.service"
+);
 const { createElection } = await import("@/actions/create-election");
 
 const session = {
@@ -63,6 +69,7 @@ beforeEach(() => {
   vi.mocked(prisma.election.create)
     .mockReset()
     .mockResolvedValue({ id: "elc_1" } as never);
+  vi.mocked(resolveEntitlement).mockReset().mockResolvedValue({ kind: "pro" });
 });
 
 describe("createElection", () => {
@@ -141,5 +148,72 @@ describe("createElection", () => {
       success: false,
       error: "failed",
     });
+  });
+});
+
+// Granica birača (entitlement-enforcement-spec §4). Ista granica kao addVoters,
+// samo na drugom ulazu — čarobnjak stvara izbore i popis odjednom.
+describe("createElection — granica plana", () => {
+  const withVoters = (n: number) => ({
+    ...basePayload,
+    voters: Array.from({ length: n }, (_, i) => ({
+      name: `V ${i}`,
+      email: `v${i}@unizg.hr`,
+    })),
+  });
+
+  beforeEach(() => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+  });
+
+  it("točno na granici prolazi", async () => {
+    const res = await createElection(withVoters(50));
+
+    expect(res.success).toBe(true);
+    expect(prisma.election.create).toHaveBeenCalled();
+  });
+
+  it("jedan preko granice je odbijen i NE stvara izbore", async () => {
+    const res = await createElection(withVoters(51));
+
+    expect(res).toEqual({ success: false, error: "voterCap", cap: 50 });
+    // Odbijanje koje ipak stvori izbore ostavlja pola popisa iza sebe.
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("broji popis nakon deduplikacije", async () => {
+    // 51 redak, ali dva su isti birač → 50 stvarnih redaka, dakle prolazi.
+    const payload = withVoters(50);
+    payload.voters.push({ name: "Dupli", email: "V0@UNIZG.HR" });
+
+    const res = await createElection(payload);
+
+    expect(res.success).toBe(true);
+  });
+
+  it("Pro odbija tek na 501", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
+
+    expect((await createElection(withVoters(500))).success).toBe(true);
+    expect(await createElection(withVoters(501))).toEqual({
+      success: false,
+      error: "voterCap",
+      cap: 500,
+    });
+  });
+
+  it("granica vrijedi i za spremanje skice", async () => {
+    // Skica bez granice bila bi zaobilaznica: popis se skupi kao skica, pa se
+    // objavi. Provjera stoji na jednom mjestu, prije upisa, za oba načina.
+    const res = await createElection(withVoters(51), true);
+
+    expect(res).toEqual({ success: false, error: "voterCap", cap: 50 });
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("pravo se razrješava na razini organizacije — izbori još ne postoje", async () => {
+    await createElection(withVoters(1));
+
+    expect(resolveEntitlement).toHaveBeenCalledWith(null, "org_1");
   });
 });

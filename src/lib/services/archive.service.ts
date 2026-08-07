@@ -9,6 +9,13 @@ import {
   MERKLE_LEAF_ORDERING,
 } from "./merkle.service";
 import { deleteObject } from "./storage.service";
+import { resolveEntitlement } from "./entitlement.service";
+import { archiveExpiresAt } from "@/lib/entitlements";
+import {
+  buildArchiveTombstone,
+  readProofMeta,
+  shouldPrune,
+} from "@/lib/archive-prune";
 
 // Pečaćenje arhive — trenutak u kojem glasovi izbora postaju dokazivo
 // nepromijenjeni. Nakon ovoga svaki "kontrolni kod" s biračevog ekrana je
@@ -16,14 +23,6 @@ import { deleteObject } from "./storage.service";
 //
 // Zapečaćeno je nepromjenjivo: nema update staze, ponovno pečaćenje je greška.
 // Brisanje arhive ide postojećim deleteElection tokom.
-
-// Kalendarska godina, ne 365 dana — u prijelaznoj godini to nije isti datum, a
-// rok zadržavanja je obećanje prema organizaciji.
-function oneYearFrom(date: Date): Date {
-  const d = new Date(date);
-  d.setFullYear(d.getFullYear() + 1);
-  return d;
-}
 
 export type ArchiveErrorCode =
   | "invalidStatus" // nije CLOSED, tuđa organizacija, ili je već zapečaćeno
@@ -94,10 +93,6 @@ export async function sealElection(
       // birača ⇒ ≤50 listova); stranicati tek ako Pro mjera ikad zaboli.
       votes: { select: { voteHash: true } },
       _count: { select: { voters: true } },
-      // Retencija visi o izborima, ne o adminu koji klikne Arhiviraj — na
-      // organizaciji s više admina to često nije ista osoba. Vlasnik zapisa je
-      // autoritet, pa se čita createdBy.isPro, a ne isPro iz sesije.
-      createdBy: { select: { isPro: true } },
       // Pročitano PRIJE transakcije: nakon nje su stupci već ništeni, pa ključ
       // objekta više ne bi imao odakle doći.
       reportKey: true,
@@ -140,10 +135,19 @@ export async function sealElection(
     root,
   };
 
-  // Free: godina od nastanka arhive (createdAt je default now(), pa je ovo isti
-  // trenutak). Pro: bez roka. Ovdje se samo PEČATIRA točan datum — čišćenje
-  // isteklih arhiva je posao retencijske specifikacije.
-  const expiresAt = election.createdBy.isPro ? null : oneYearFrom(new Date());
+  // Free: kalendarska godina od nastanka arhive (createdAt je default now(), pa
+  // je ovo isti trenutak). Pro: bez roka. Ovdje se samo PEČATIRA datum —
+  // obrezivanje isteklih arhiva radi pruneExpiredArchives.
+  //
+  // Vlastiti oneYearFrom i izravno čitanje createdBy.isPro maknuti su ovdje
+  // (invarijanta #5): to je bila druga izvedba istog kalendarskog pravila, samo
+  // s pravom razriješenim po adminu umjesto po organizaciji. Sada odlučuje isti
+  // resolver kao i svaka druga zaštita — i pravo i dalje visi o izborima, ne o
+  // adminu koji je slučajno kliknuo Arhiviraj.
+  const expiresAt = archiveExpiresAt(
+    await resolveEntitlement(electionId, organizationId),
+    new Date(),
+  );
 
   // Jedna interaktivna transakcija: red arhive pa WHERE-čuvani prelaz. Ako
   // status u međuvremenu nije više CLOSED (dvoklik, paralelno pečaćenje), flip
@@ -190,4 +194,92 @@ export async function sealElection(
   }
 
   return { merkleRoot: root, votesSealed: votesCast };
+}
+
+export interface PruneResult {
+  pruned: number;
+  /** Isteklih kandidata koje je pravo spasilo — nadograđene organizacije. */
+  kept: number;
+}
+
+/**
+ * Obrezivanje isteklog tereta dokaza (§6). Vrti se u metli životnog ciklusa
+ * izbora; idempotentno je i na gotovo svakom pingu pogodi 0 redaka.
+ *
+ * Obrezuje se ISKLJUČIVO proofData. merkleRoot, electionData i spremljeni PDF
+ * ostaju zauvijek (D6) — zato ovdje nema ni jednog poziva prema R2 ni jednog
+ * report* stupca. Redak arhive se ne briše nikad.
+ *
+ * `expiresAt <= now` bira kandidate; pravo odlučuje hoće li koji doista biti
+ * obrezan. Pečat je jednosmjeran (stampArchiveRetention piše pri padu na Free,
+ * nitko ga ne briše pri nadogradnji), pa bi metla koja mu vjeruje uništila teret
+ * dokaza organizaciji koja plaća.
+ */
+export async function pruneExpiredArchives(
+  now: Date = new Date(),
+): Promise<PruneResult> {
+  // prunedAt je stupac, ne ključ u JSON-u: negirani JSON path filtar na retku
+  // bez tog ključa vraća NULL, NOT(NULL = true) je NULL, pa bi svaki neobrezani
+  // redak tiho ispao iz izbora i metla nikad ne bi obrezala ništa.
+  // ponytail: čita proofData kandidata (stablo), jer algoritam mora doći s
+  // retka. Isteklih arhiva je malo; stranicati tek ako to ikad zaboli.
+  const candidates = await prisma.archive.findMany({
+    where: { expiresAt: { lte: now }, prunedAt: null },
+    select: {
+      id: true,
+      merkleRoot: true,
+      proofData: true,
+      createdAt: true,
+      election: { select: { id: true, organizationId: true } },
+    },
+  });
+  if (candidates.length === 0) return { pruned: 0, kept: 0 };
+
+  // Jedno razrješavanje po organizaciji, ne po arhivi.
+  const byOrg = new Map<string, Awaited<ReturnType<typeof resolveEntitlement>>>();
+
+  let pruned = 0;
+  let kept = 0;
+
+  for (const archive of candidates) {
+    const orgId = archive.election.organizationId;
+    let entitlement = byOrg.get(orgId);
+    if (!entitlement) {
+      entitlement = await resolveEntitlement(archive.election.id, orgId);
+      byOrg.set(orgId, entitlement);
+    }
+
+    // Rok se PONOVNO izvodi iz prava koje vrijedi sada, ne čita s retka. Pro
+    // vraća null → shouldPrune je false → redak preživi svoj vlastiti pečat.
+    if (!shouldPrune(archiveExpiresAt(entitlement, archive.createdAt), now)) {
+      kept++;
+      continue;
+    }
+
+    const meta = readProofMeta(archive.proofData, {
+      algorithm: MERKLE_ALGORITHM,
+      leafOrdering: MERKLE_LEAF_ORDERING,
+    });
+
+    // prunedAt: null i u WHERE-u — isti atomski oblik kao svugdje, pa dvije
+    // istovremene metle obrežu svaki redak točno jednom.
+    const { count } = await prisma.archive.updateMany({
+      where: { id: archive.id, prunedAt: null },
+      data: {
+        proofData: buildArchiveTombstone({
+          root: archive.merkleRoot,
+          algorithm: meta.algorithm,
+          leafOrdering: meta.leafOrdering,
+          prunedAt: now,
+        }) as unknown as Prisma.InputJsonValue,
+        prunedAt: now,
+      },
+    });
+    pruned += count;
+  }
+
+  if (pruned > 0 || kept > 0) {
+    console.info("[archive] proof payload pruned", { pruned, kept });
+  }
+  return { pruned, kept };
 }
