@@ -61,7 +61,6 @@ export async function getOrganizationExport(
         resultsMode: true,
         allowAbstain: true,
         quorumThreshold: true,
-        autoCloseOnDeadline: true,
         voterReminder24h: true,
         adminTurnoutReminder: true,
         sealedResults: true,

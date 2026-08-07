@@ -168,7 +168,6 @@ model Election {
   resultsMode         ResultsMode @default(AFTER_CLOSE) // LIVE = Pro only
   allowAbstain        Boolean     @default(false) // abstain option — Pro only
   quorumThreshold     Int? // null = no quorum; otherwise required turnout %
-  autoCloseOnDeadline Boolean     @default(true) // auto-close at endsAt
   voterReminder24h    Boolean     @default(false) // email reminder 24h before close
   adminTurnoutReminder Boolean    @default(false) // email admin turnout updates during voting — Pro only
   sealedResults       Boolean     @default(false) // hide tallies from everyone (admins included) until close
