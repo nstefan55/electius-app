@@ -6,6 +6,8 @@ import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { parseVotersCsv, voterRowSchema } from "@/lib/wizard-csv";
+import { nearCap } from "@/lib/entitlements";
+import { Link } from "@/i18n/navigation";
 import {
   CsvDropZone,
   FIELD_LABEL,
@@ -18,7 +20,11 @@ import {
 
 // Step 3 — voter list: manual add (name + email, both required) or CSV
 // import. Emails are deduped case-insensitively — one voter, one vote.
-export function StepVoters({ data, patch }: StepProps) {
+export function StepVoters({
+  data,
+  patch,
+  voterCap,
+}: StepProps & { voterCap: number }) {
   const t = useTranslations("dashboard.wizard.step3");
   const [mode, setMode] = useState<"manual" | "csv">("manual");
   const [name, setName] = useState("");
@@ -134,6 +140,30 @@ export function StepVoters({ data, patch }: StepProps) {
           <div className="mt-4 rounded-md border border-[#FECACA] bg-error-50 px-3.5 py-3 text-[0.84375rem] leading-relaxed text-[#991B1B]">
             {csvError}
           </div>
+        )}
+
+        {/* Granica plana. Preko granice je odbijanje (createElection ga
+            provodi), na ≥80% samo tiha najava — otkriti granicu tek pri
+            spremanju, s 300 pripremljenih redaka, je najskuplji trenutak. */}
+        {data.voters.length > voterCap ? (
+          <div className="mt-4 rounded-md border-l-[3px] border-error-500 bg-error-50 px-4 py-3.5 text-[0.84375rem] leading-relaxed text-error-700">
+            <p className="font-semibold">{t("capTitle")}</p>
+            <p className="mt-0.5">
+              {t("capBody", { cap: voterCap, current: data.voters.length })}
+            </p>
+            <Link
+              href="/settings"
+              className="mt-1.5 inline-block font-semibold underline underline-offset-2"
+            >
+              {t("capLink")}
+            </Link>
+          </div>
+        ) : (
+          nearCap(data.voters.length, voterCap) && (
+            <p className="mt-4 text-[0.84375rem] text-neutral-600">
+              {t("capUsage", { used: data.voters.length, cap: voterCap })}
+            </p>
+          )
         )}
 
         {/* Voter list */}

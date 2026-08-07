@@ -13,8 +13,9 @@ import {
   ModeTabs,
 } from "@/components/elections/wizard/wizard-shared";
 import { parseVotersCsv, voterRowSchema, type VoterRow } from "@/lib/wizard-csv";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import type { ElectionStatus } from "@/lib/elections-view";
+import { nearCap } from "@/lib/entitlements";
 
 // Dodavanje birača nakon kreiranja izbora. Isti ulazi kao čarobnjakov korak 3
 // (ručno + CSV), pa se `parseVotersCsv` i `CsvDropZone` dijele, ne pišu ponovno.
@@ -26,11 +27,15 @@ export function AddVotersDialog({
   electionStatus,
   open,
   onOpenChange,
+  voterCap,
+  voterCount,
 }: {
   electionId: string;
   electionStatus: ElectionStatus;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  voterCap: number;
+  voterCount: number;
 }) {
   const t = useTranslations("dashboard.voters.add");
   const router = useRouter();
@@ -40,6 +45,12 @@ export function AddVotersDialog({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [rows, setRows] = useState<VoterRow[]>([]);
+  // Odbijanje zbog granice ostaje NA MJESTU, ne odlazi u poruku koja nestane:
+  // pripremljeni redci se čuvaju da ih se može skratiti umjesto ponovno unijeti.
+  const [capError, setCapError] = useState<{
+    cap: number;
+    current: number;
+  } | null>(null);
 
   // Glasanje traje → dodavanje je neopozivo (brisanje je dopušteno samo prije
   // otvaranja), a novi birač odmah dobiva ispravnu poveznicu.
@@ -48,11 +59,20 @@ export function AddVotersDialog({
   const has = (em: string) =>
     rows.some((r) => r.email.toLowerCase() === em.toLowerCase());
 
+  // Svaka promjena popisa poništava prethodno odbijanje: brojke u poruci više
+  // ne opisuju ono što bi se poslalo, a crveni okvir pokraj skraćenog popisa
+  // izgleda kao da je i dalje blokirano.
+  const changeRows = (next: React.SetStateAction<VoterRow[]>) => {
+    setCapError(null);
+    setRows(next);
+  };
+
   function reset() {
     setRows([]);
     setName("");
     setEmail("");
     setMode("manual");
+    setCapError(null);
   }
 
   function add() {
@@ -63,7 +83,7 @@ export function AddVotersDialog({
     if (!name.trim()) return toast.error(t("nameRequired"));
     if (!parsed.success) return toast.error(t("emailInvalid"));
     if (has(parsed.data.email)) return toast.error(t("emailDuplicate"));
-    setRows((rs) => [...rs, parsed.data]);
+    changeRows((rs) => [...rs, parsed.data]);
     setName("");
     setEmail("");
   }
@@ -72,7 +92,7 @@ export function AddVotersDialog({
     const { rows: parsed, skipped } = parseVotersCsv(text);
     const fresh = parsed.filter((r) => !has(r.email));
     if (!fresh.length) return toast.error(t("csvEmpty"));
-    setRows((rs) => [...rs, ...fresh]);
+    changeRows((rs) => [...rs, ...fresh]);
     toast.success(
       skipped
         ? t("csvImportedSkipped", { count: fresh.length, skipped })
@@ -84,6 +104,16 @@ export function AddVotersDialog({
     startTransition(async () => {
       const res = await addVoters({ electionId, rows });
       if (!res.success) {
+        // Granica je odbijanje, ne kvalifikator uspjeha: `blocked` čita se tek
+        // ispod ove grane i znači "dodani su, ali pozivnica nije poslana".
+        // Kroz njega bi odbijanje tiho završilo u generičkoj poruci o grešci.
+        if (res.error === "voterCap") {
+          setCapError({
+            cap: res.cap ?? voterCap,
+            current: res.current ?? voterCount,
+          });
+          return;
+        }
         toast.error(t(res.error === "invalidStatus" ? "closed" : "failed"));
         return;
       }
@@ -206,7 +236,7 @@ export function AddVotersDialog({
                 {rows.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => setRows([])}
+                    onClick={() => changeRows([])}
                     className="text-[0.8125rem] font-semibold text-neutral-400 transition-colors hover:text-brand-700"
                   >
                     {t("clearAll")}
@@ -237,7 +267,7 @@ export function AddVotersDialog({
                           type="button"
                           aria-label={t("removeRow")}
                           onClick={() =>
-                            setRows((rs) => rs.filter((_, j) => j !== i))
+                            changeRows((rs) => rs.filter((_, j) => j !== i))
                           }
                           className="flex size-8 shrink-0 items-center justify-center rounded-md text-neutral-400 transition-colors hover:bg-error-50 hover:text-error-700"
                         >
@@ -249,6 +279,44 @@ export function AddVotersDialog({
                 )}
               </div>
             </div>
+
+            {/* Odbijanje zbog granice — na mjestu neuspjeha, s brojkama i
+                poveznicom. Nikad golo "potrebna je nadogradnja" (§8). */}
+            {capError && (
+              <div className="mt-5 flex gap-3 rounded-md border-l-[3px] border-error-500 bg-error-50 px-4 py-3.5">
+                <TriangleAlert
+                  className="mt-0.5 size-5 shrink-0 text-error-700"
+                  aria-hidden
+                />
+                <div className="text-[0.84375rem] leading-relaxed text-error-700">
+                  <p className="font-semibold">{t("capTitle")}</p>
+                  <p className="mt-0.5">
+                    {t("capBody", {
+                      cap: capError.cap,
+                      current: capError.current,
+                      adding: rows.length,
+                    })}
+                  </p>
+                  <Link
+                    href="/settings"
+                    className="mt-1.5 inline-block font-semibold underline underline-offset-2"
+                  >
+                    {t("capLink")}
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Tiha najava prije odbijanja: granica se ne otkriva tek kad je
+                pripremljeno 300 redaka. */}
+            {!capError && nearCap(voterCount + rows.length, voterCap) && (
+              <p className="mt-5 text-[0.84375rem] text-neutral-600">
+                {t("capUsage", {
+                  used: voterCount + rows.length,
+                  cap: voterCap,
+                })}
+              </p>
+            )}
 
             {/* Dodavanje u izbore koji traju mijenja nazivnik izlaznosti i ne
                 može se poništiti — zato upozorenje ide PRIJE unosa. */}

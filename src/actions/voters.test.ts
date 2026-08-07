@@ -19,11 +19,17 @@ vi.mock("@/lib/services/publication.service", () => ({
   publishElection: vi.fn(),
   inviteVoter: vi.fn(),
 }));
+vi.mock("@/lib/services/entitlement.service", () => ({
+  resolveEntitlement: vi.fn(),
+}));
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
 const { publishElection, inviteVoter } = await import(
   "@/lib/services/publication.service"
+);
+const { resolveEntitlement } = await import(
+  "@/lib/services/entitlement.service"
 );
 const { addVoters, updateVoterName, removeVoter, resendVoterInvite } =
   await import("@/actions/voters");
@@ -56,6 +62,7 @@ beforeEach(() => {
   vi.mocked(publishElection).mockResolvedValue({ sent: 0, failed: 0 });
   vi.mocked(inviteVoter).mockResolvedValue("sent");
   vi.mocked(prisma.voter.createMany).mockResolvedValue({ count: 0 });
+  vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
 });
 
 describe("addVoters", () => {
@@ -344,5 +351,92 @@ describe("resendVoterInvite", () => {
       error: "invalidStatus",
     });
     expect(inviteVoter).not.toHaveBeenCalled();
+  });
+});
+
+// Granica birača (entitlement-enforcement-spec §4). Free 50 / Pro 500, po
+// izborima. Nazivnik su Voter redci, isto kao izlaznost i kvorum.
+describe("addVoters — granica plana", () => {
+  const rows = (n: number, prefix = "new") =>
+    Array.from({ length: n }, (_, i) => ({
+      name: `V ${i}`,
+      email: `${prefix}${i}@example.com`,
+    }));
+
+  const existing = (n: number, prefix = "old") =>
+    Array.from({ length: n }, (_, i) => ({ email: `${prefix}${i}@example.com` }));
+
+  beforeEach(() => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+  });
+
+  it("točno na granici prolazi", async () => {
+    mockElection({ status: "DRAFT", voters: existing(49) });
+
+    const res = await addVoters({ electionId: "e1", rows: rows(1) });
+
+    expect(res.success).toBe(true);
+    expect(prisma.voter.createMany).toHaveBeenCalled();
+  });
+
+  it("jedan preko granice je odbijen i NE upisuje ništa", async () => {
+    mockElection({ status: "DRAFT", voters: existing(50) });
+
+    const res = await addVoters({ electionId: "e1", rows: rows(1) });
+
+    expect(res).toEqual({
+      success: false,
+      error: "voterCap",
+      cap: 50,
+      current: 50,
+    });
+    // Zaštita koja odbija NAKON upisa gora je od nikakve zaštite.
+    expect(prisma.voter.createMany).not.toHaveBeenCalled();
+  });
+
+  it("ponovno učitan isti CSV na granici prolazi — broji se fresh, ne rows", async () => {
+    // Organizacija na Free planu s 50 birača ponovno učita istih 50 redaka.
+    // Formula `existing + rows.length` odbila bi ovo (50 + 50 > 50) iako
+    // deduplikacija ne ostavlja nijedan redak za upis.
+    mockElection({ status: "DRAFT", voters: existing(50, "dup") });
+
+    const res = await addVoters({ electionId: "e1", rows: rows(50, "dup") });
+
+    expect(res).toEqual({ success: true, added: 0, skipped: 50 });
+    expect(prisma.voter.createMany).not.toHaveBeenCalled();
+  });
+
+  it("Pro nosi 500, pa isti popis koji Free odbija prolazi", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
+    mockElection({ status: "DRAFT", voters: existing(50) });
+
+    const res = await addVoters({ electionId: "e1", rows: rows(1) });
+
+    expect(res.success).toBe(true);
+  });
+
+  it("Pro odbija tek na 501", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
+    mockElection({ status: "DRAFT", voters: existing(500) });
+
+    const res = await addVoters({ electionId: "e1", rows: rows(1) });
+
+    expect(res).toEqual({
+      success: false,
+      error: "voterCap",
+      cap: 500,
+      current: 500,
+    });
+    expect(prisma.voter.createMany).not.toHaveBeenCalled();
+  });
+
+  it("pravo se razrješava za TE izbore, ne samo za organizaciju", async () => {
+    mockElection({ status: "DRAFT", voters: existing(0) });
+
+    await addVoters({ electionId: "e1", rows: rows(1) });
+
+    // electionId mora stići do resolvera, inače kupnja pojedinog izbora nikad
+    // neće moći podići granicu samo tim izborima.
+    expect(resolveEntitlement).toHaveBeenCalledWith("e1", "org_1");
   });
 });

@@ -3,17 +3,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     election: { findFirst: vi.fn(), updateMany: vi.fn() },
-    archive: { create: vi.fn() },
+    archive: { create: vi.fn(), findMany: vi.fn(), updateMany: vi.fn() },
     $transaction: vi.fn(),
   },
 }));
 
 // R2 se ne dira u testu: zanima nas ZOVE li se brisanje i s kojom kantom.
 vi.mock("./storage.service", () => ({ deleteObject: vi.fn() }));
+vi.mock("./entitlement.service", () => ({ resolveEntitlement: vi.fn() }));
 
 const { prisma } = await import("@/lib/prisma");
 const { deleteObject } = await import("./storage.service");
-const { sealElection, ArchiveError } = await import("./archive.service");
+const { resolveEntitlement } = await import("./entitlement.service");
+const { sealElection, ArchiveError, pruneExpiredArchives } = await import(
+  "./archive.service"
+);
 const { buildMerkleTree } = await import("./merkle.service");
 
 const leaf = (c: string) => c.repeat(64);
@@ -35,7 +39,6 @@ const closed = {
   options: [{ id: "o1", text: "Ana", orderIndex: 0 }],
   votes: HASHES.map((voteHash) => ({ voteHash })),
   _count: { voters: 4 },
-  createdBy: { isPro: false },
 };
 
 // Prolazi kroz pravu transakcijsku logiku s tx == mock prisma, pa se čuvar
@@ -52,6 +55,7 @@ beforeEach(() => {
   runTransaction();
   vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
   vi.mocked(prisma.archive.create).mockResolvedValue({} as never);
+  vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
 });
 
 describe("sealElection", () => {
@@ -131,7 +135,10 @@ describe("sealElection", () => {
     }
   });
 
-  it("Free: expiresAt je godina unaprijed; Pro: null — čita se createdBy, ne sesija", async () => {
+  it("Free: expiresAt je godina unaprijed; Pro: null — odlučuje resolver, ne sesija", async () => {
+    // Rok više ne dolazi iz vlastitog oneYearFrom uz izravno čitanje
+    // createdBy.isPro: računa ga archiveExpiresAt iz prava koje razriješi
+    // resolveEntitlement, ista funkcija koju čita i metla (invarijanta #5).
     vi.mocked(prisma.election.findFirst).mockResolvedValue(closed as never);
     await sealElection("e1", "org1");
     const free = vi.mocked(prisma.archive.create).mock.calls[0]![0]!.data
@@ -141,14 +148,15 @@ describe("sealElection", () => {
     expect(days).toBeGreaterThan(364);
     expect(days).toBeLessThan(366);
 
+    // Pravo se traži za TE izbore i TU organizaciju, ne za korisnika iz sesije.
+    expect(resolveEntitlement).toHaveBeenCalledWith("e1", "org1");
+
     vi.clearAllMocks();
     runTransaction();
     vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
     vi.mocked(prisma.archive.create).mockResolvedValue({} as never);
-    vi.mocked(prisma.election.findFirst).mockResolvedValue({
-      ...closed,
-      createdBy: { isPro: true },
-    } as never);
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(closed as never);
 
     await sealElection("e1", "org1");
     expect(
@@ -231,5 +239,139 @@ describe("sealElection", () => {
     await expect(sealElection("e1", "org1")).resolves.toMatchObject({
       votesSealed: 3,
     });
+  });
+});
+
+// Metla obrezivanja (entitlement-enforcement-spec §6).
+describe("pruneExpiredArchives", () => {
+  const NOW = new Date("2027-06-01T00:00:00.000Z");
+
+  const candidate = (over: Partial<Record<string, unknown>> = {}) => ({
+    id: "a1",
+    merkleRoot: "b".repeat(64),
+    proofData: {
+      algorithm: "sha256-hex-concat/dup-last/lex-asc",
+      leafOrdering: "lex-asc",
+      leaves: [leaf("1")],
+      tree: [[leaf("1")]],
+      root: "b".repeat(64),
+    },
+    // Zapečaćeno prije više od godine dana.
+    createdAt: new Date("2026-01-01T00:00:00.000Z"),
+    election: { id: "e1", organizationId: "org1" },
+    ...over,
+  });
+
+  beforeEach(() => {
+    vi.mocked(prisma.archive.updateMany).mockResolvedValue({ count: 1 });
+  });
+
+  it("bira samo istekle i još neobrezane retke", async () => {
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([]);
+
+    await pruneExpiredArchives(NOW);
+
+    // prunedAt je stupac upravo zato što negirani JSON path filtar na retku bez
+    // ključa vraća NULL i tiho izbaci svaki neobrezani redak.
+    expect(vi.mocked(prisma.archive.findMany).mock.calls[0]![0]!.where).toEqual({
+      expiresAt: { lte: NOW },
+      prunedAt: null,
+    });
+  });
+
+  it("obrezuje teret dokaza i ostavlja korijen i algoritam", async () => {
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([
+      candidate(),
+    ] as never);
+
+    await expect(pruneExpiredArchives(NOW)).resolves.toEqual({
+      pruned: 1,
+      kept: 0,
+    });
+
+    const call = vi.mocked(prisma.archive.updateMany).mock.calls[0]![0]!;
+    expect(call.data).toEqual({
+      proofData: {
+        pruned: true,
+        prunedAt: NOW.toISOString(),
+        algorithm: "sha256-hex-concat/dup-last/lex-asc",
+        leafOrdering: "lex-asc",
+        root: "b".repeat(64),
+      },
+      prunedAt: NOW,
+    });
+
+    // UPDATE, nikad DELETE — redak arhive se ne briše.
+    expect(prisma.archive.updateMany).toHaveBeenCalledTimes(1);
+    // Isti atomski oblik: prunedAt: null i u WHERE-u.
+    expect(call.where).toEqual({ id: "a1", prunedAt: null });
+  });
+
+  it("NE dira merkleRoot, electionData ni jedan report* stupac", async () => {
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([
+      candidate(),
+    ] as never);
+
+    await pruneExpiredArchives(NOW);
+
+    // Free plan obećava da se zapis arhive čuva zauvijek; obrezuje se samo
+    // teret dokaza (D6). PDF i R2 objekti ostaju netaknuti — nema ni poziva.
+    const data = vi.mocked(prisma.archive.updateMany).mock.calls[0]![0]!.data;
+    expect(Object.keys(data).sort()).toEqual(["proofData", "prunedAt"]);
+    expect(deleteObject).not.toHaveBeenCalled();
+  });
+
+  it("Pro arhivu ne obrezuje iako pečat kaže da je istekla", async () => {
+    // Jednosmjerni pečat: stampArchiveRetention ga upiše pri padu na Free, a
+    // nitko ga ne briše pri nadogradnji. Metla koja mu vjeruje uništila bi
+    // teret dokaza organizaciji koja plaća.
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "pro" });
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([
+      candidate(),
+    ] as never);
+
+    await expect(pruneExpiredArchives(NOW)).resolves.toEqual({
+      pruned: 0,
+      kept: 1,
+    });
+    expect(prisma.archive.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rok se ponovno izvodi iz prava, pa pečat u budućnosti ne obrezuje", async () => {
+    // Zapečaćeno jučer, pečat istekao (npr. ručno pomaknut): pravo kaže da rok
+    // još nije došao, i pravo pobjeđuje.
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([
+      candidate({ createdAt: new Date("2027-05-31T00:00:00.000Z") }),
+    ] as never);
+
+    await expect(pruneExpiredArchives(NOW)).resolves.toEqual({
+      pruned: 0,
+      kept: 1,
+    });
+    expect(prisma.archive.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("prazan prolaz ne dira ništa", async () => {
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([]);
+
+    await expect(pruneExpiredArchives(NOW)).resolves.toEqual({
+      pruned: 0,
+      kept: 0,
+    });
+    expect(resolveEntitlement).not.toHaveBeenCalled();
+    expect(prisma.archive.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("razrješava pravo jednom po organizaciji, ne po arhivi", async () => {
+    vi.mocked(prisma.archive.findMany).mockResolvedValue([
+      candidate({ id: "a1" }),
+      candidate({ id: "a2" }),
+      candidate({ id: "a3", election: { id: "e9", organizationId: "org2" } }),
+    ] as never);
+
+    await pruneExpiredArchives(NOW);
+
+    expect(vi.mocked(resolveEntitlement).mock.calls).toHaveLength(2);
+    expect(prisma.archive.updateMany).toHaveBeenCalledTimes(3);
   });
 });

@@ -10,6 +10,8 @@ import { resultsDetailAccess } from "@/lib/elections-view";
 import { exportFilename } from "@/lib/csv";
 import { REPORT_SUFFIX } from "@/lib/report-export";
 import { resolveExportLocale } from "@/lib/voter-export";
+import { canBrandReports } from "@/lib/entitlements";
+import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { ElectionReport } from "@/components/elections/election-report";
 
 // Pregled PDF izvještaja (election-results-pdf-report-spec).
@@ -82,12 +84,20 @@ export default async function ElectionReportPage({
     ? await getElectionOverview(id, organizationId)
     : null;
 
+  // Zaštita logotipa (§5). Pravo se traži za IZBORE, ne za gledatelja: kad
+  // stigne kupnja pojedinog izbora, kupljeni izbor nosi logotip i na Free
+  // organizaciji. Na MVP-u su ta dva odgovora uvijek ista, pa to ne košta ništa.
+  // Komponenta se ne mijenja — na null već crta Electius oznaku, i zato je ovo
+  // jedna linija. Spremljeni PDF zadržava brendiranje s kojim je nastao: to je
+  // zapis o izborima, a ne živi prikaz pretplate.
+  const entitlement = await resolveEntitlement(id, organizationId);
+
   return (
     <ElectionReport
       electionId={id}
       title={election.name}
       orgName={user.organization}
-      orgLogoUrl={user.organizationLogo}
+      orgLogoUrl={canBrandReports(entitlement) ? user.organizationLogo : null}
       quorumThreshold={results.quorumThreshold}
       voters={results.voters}
       votesCast={results.votesCast}

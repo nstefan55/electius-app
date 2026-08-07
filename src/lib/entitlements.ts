@@ -25,6 +25,14 @@ export function voterCap(e: Entitlement): number {
   }
 }
 
+// Od kojeg udjela granice se prikazuje tiha najava "42 od 50" (§8). Jedno
+// pravilo, dva zaslona — čarobnjakov korak 3 i popis birača — jer otkriti
+// granicu tek pri odbijanju s 300 pripremljenih redaka je najskuplji trenutak.
+export const CAP_HINT_THRESHOLD = 0.8;
+
+export const nearCap = (used: number, cap: number): boolean =>
+  cap > 0 && used >= cap * CAP_HINT_THRESHOLD;
+
 export function canBrandReports(e: Entitlement): boolean {
   switch (e.kind) {
     case "free":
@@ -37,8 +45,9 @@ export function canBrandReports(e: Entitlement): boolean {
 
 // Kalendarska godina, nikad 365 * 24 * 60 * 60 * 1000 — u prijelaznoj godini to
 // pada dan ranije, a ništa to ne bi primijetilo jer expiresAt još nitko ne čita.
-// ponytail: archive.service.ts ima vlastiti oneYearFrom; spaja se u fazi 2 kad
-// resolveEntitlement postoji i pečat ga može pozvati bez izmišljanja entitlementa.
+// Jedina izvedba tog pravila: archive.service.ts je imao vlastiti oneYearFrom i
+// zvao ga je uz izravno čitanje createdBy.isPro. Spojeno kad je resolver stigao,
+// pa pečat i metla sada računaju isti datum iz istog izvora (invarijanta #5).
 export function archiveExpiresAt(e: Entitlement, sealedAt: Date): Date | null {
   switch (e.kind) {
     case "pro":

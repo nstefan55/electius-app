@@ -2,17 +2,13 @@ import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { subscriptionBlocks } from "@/lib/services/account-deletion.service";
+import { BILLING_ENABLED } from "@/lib/services/entitlement.service";
 import { DashboardFooter } from "@/components/dashboard/dashboard-footer";
 import { AccessibilityCard } from "@/components/settings/accessibility-card";
 import { BillingCard, type BillingState } from "@/components/settings/billing-card";
 import { DashboardCustomizationsCard } from "@/components/settings/dashboard-customizations-card";
 import { DataExportCard } from "@/components/settings/data-export-card";
 import { AccountManagementCard } from "@/components/settings/account-management-card";
-
-// ponytail: zastavica se čita ovdje dok ne stigne src/lib/entitlements.ts
-// (stripe-integration-phase-1 §5). Zadano false — odsutnost i tipfeler znače
-// "svi su Pro", što je pravno sigurna strana (pre-incorporation-billing-spec).
-const BILLING_ENABLED = process.env.BILLING_ENABLED === "true";
 
 // /settings — controls only; identity moved to /profile. Stays a server
 // component so kartice mogu dohvaćati podatke ovdje.

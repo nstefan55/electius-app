@@ -4,13 +4,17 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
 import { candidateRowSchema, voterRowSchema } from "@/lib/wizard-csv";
+import { voterCap } from "@/lib/entitlements";
+import { resolveEntitlement } from "@/lib/services/entitlement.service";
 
 // Election creation wizard (all-elections phase 2). One action, two modes:
 // full create (step 5 confirm) and draft save (top-bar link). Both are
 // org-scoped through requireSession(); the client never supplies ids.
 type CreateResult =
   | { success: true; data: { id: string } }
-  | { success: false; error: string };
+  // cap ide uz odbijanje jer poruka mora imenovati granicu; goli "nadogradite"
+  // ne kaže ni koliko je birača previše (§8).
+  | { success: false; error: string; cap?: number };
 
 const wizardSchema = z.object({
   title: z.string().trim().min(1).max(255),
@@ -95,6 +99,16 @@ export async function createElection(
       select: { id: true },
     });
     if (!admin) return { success: false, error: "failed" };
+
+    // Granica birača (§4). Broji se popis NAKON deduplikacije — to je broj
+    // redaka koji bi doista nastali. Provjera stoji prije ijednog upisa, pa
+    // odbijanje ne ostavlja ni izbore ni pola popisa. electionId je null:
+    // izbori još ne postoje, pa se pravo može razriješiti samo na razini
+    // organizacije — točno redoslijed oko kojeg je resolver napisan.
+    const cap = voterCap(await resolveEntitlement(null, organizationId));
+    if (voters.length > cap) {
+      return { success: false, error: "voterCap", cap };
+    }
 
     const election = await prisma.election.create({
       data: {

@@ -533,7 +533,8 @@
         "titleRequired": "Add an election title to continue",
         "candidatesRequired": "Add at least two candidates to continue",
         "scheduleInvalid": "Check the dates — closing must come after opening",
-        "createFailed": "Something went wrong. Please try again."
+        "createFailed": "Something went wrong. Please try again.",
+        "voterCap": "The voter list exceeds your plan limit ({cap})."
       },
       "step1": {
         "title": "Basic information",
@@ -624,7 +625,11 @@
         "nameRequired": "Enter the voter’s full name",
         "emailInvalid": "Enter a valid email address",
         "emailDuplicate": "That email is already on the list",
-        "remove": "Remove"
+        "remove": "Remove",
+        "capTitle": "Plan limit reached",
+        "capBody": "Your plan allows at most {cap} voters per election, and the list has {current}.",
+        "capLink": "See plans",
+        "capUsage": "{used} of {cap} voters used."
       },
       "step4": {
         "title": "Schedule & settings",
@@ -1118,7 +1123,14 @@
         "failed": "Could not add the voters. Please try again.",
         "nameRequired": "Enter a full name.",
         "emailInvalid": "Enter a valid email address.",
-        "emailDuplicate": "That email address is already on the list."
+        "emailDuplicate": "That email address is already on the list.",
+        "capTitle": "Plan limit reached",
+        "capBody": "This election can hold at most {cap} voters. It currently has {current} and you are adding {adding}.",
+        "capLink": "See plans",
+        "capUsage": "{used} of {cap} voters used."
+      },
+      "cap": {
+        "usage": "{used} of {cap} voters used"
       }
     },
     "profile": {

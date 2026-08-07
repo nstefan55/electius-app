@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   archiveExpiresAt,
   canBrandReports,
+  nearCap,
   FREE_VOTER_CAP,
   PRO_VOTER_CAP,
   voterCap,
@@ -86,6 +87,27 @@ describe("archiveExpiresAt", () => {
     const sealedAt = new Date(2026, 7, 6);
     archiveExpiresAt(free, sealedAt);
     expect(sealedAt).toEqual(new Date(2026, 7, 6));
+  });
+});
+
+describe("nearCap", () => {
+  it("šuti ispod 80% granice", () => {
+    expect(nearCap(39, 50)).toBe(false);
+  });
+
+  it("javlja se točno na 80%", () => {
+    expect(nearCap(40, 50)).toBe(true);
+    expect(nearCap(400, 500)).toBe(true);
+  });
+
+  it("javlja se i kad je granica premašena", () => {
+    // Najava ne smije nestati baš kad je najpotrebnija.
+    expect(nearCap(51, 50)).toBe(true);
+  });
+
+  it("granica 0 ne pali najavu za prazan popis", () => {
+    // 0 >= 0 bi bilo točno, pa bi svaki prazan popis tvrdio da je pri kraju.
+    expect(nearCap(0, 0)).toBe(false);
   });
 });
 
