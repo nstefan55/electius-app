@@ -17,7 +17,9 @@ import type { VoterExportRow } from "@/lib/voter-export";
 
 // Verzija oblika, ne aplikacije: čitatelj mora moći prepoznati promjenu sheme.
 // v2: maknut settings.autoCloseOnDeadline (stupac obrisan — nitko ga nije čitao).
-export const EXPORT_VERSION = 2;
+// v3: maknut settings.sealedResults (stupac obrisan — pisao ga je čarobnjak, a
+// nijedno ponašanje ga nije čitalo; njegovo obećanje JE zadani AFTER_CLOSE).
+export const EXPORT_VERSION = 3;
 
 // Ključevi su stabilan engleski i kad je sučelje hrvatsko — strojno čitljiv
 // izlaz čija shema ovisi o jeziku nije prenosiv.
@@ -59,7 +61,6 @@ export interface ExportElectionSource {
   quorumThreshold: number | null;
   voterReminder24h: boolean;
   adminTurnoutReminder: boolean;
-  sealedResults: boolean;
   createdAt: Date;
   updatedAt: Date;
   options: ExportOptionSource[];
@@ -152,7 +153,6 @@ export interface ExportElection {
     quorumThreshold: number | null;
     voterReminder24h: boolean;
     adminTurnoutReminder: boolean;
-    sealedResults: boolean;
   };
   createdAt: string;
   updatedAt: string;
@@ -243,7 +243,6 @@ function buildElection(e: ExportElectionSource): ExportElection {
       quorumThreshold: e.quorumThreshold,
       voterReminder24h: e.voterReminder24h,
       adminTurnoutReminder: e.adminTurnoutReminder,
-      sealedResults: e.sealedResults,
     },
     createdAt: e.createdAt.toISOString(),
     updatedAt: e.updatedAt.toISOString(),

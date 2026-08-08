@@ -652,9 +652,9 @@
         "time": "Vrijeme (neobavezno)",
         "options": "Opcije",
         "toggles": {
-          "sealedResults": {
-            "label": "Zapečaćeni rezultati",
-            "desc": "Sakrij sve rezultate — čak i administratorima — dok se glasovanje ne zatvori."
+          "liveResults": {
+            "label": "Rezultati uživo tijekom glasovanja",
+            "desc": "Pratite zbroj po kandidatu dok glasovanje traje. Isključeno, rezultate vidite tek nakon zatvaranja — i vi i birači."
           },
           "quorum": {
             "label": "Prag kvoruma",

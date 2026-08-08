@@ -170,7 +170,12 @@ model Election {
   quorumThreshold     Int? // null = no quorum; otherwise required turnout %
   voterReminder24h    Boolean     @default(false) // email reminder 24h before close
   adminTurnoutReminder Boolean    @default(false) // email admin turnout updates during voting — Pro only
-  sealedResults       Boolean     @default(false) // hide tallies from everyone (admins included) until close
+  // sealedResults maknut: obećavao je "sakrij rezultate i od administratora do
+  // zatvaranja", što resultsMode = AFTER_CLOSE (zadano) ionako radi — vidi
+  // resultsAccess, koji za ACTIVE bez LIVE vraća "sealed". Prekidač je pisao
+  // stupac koji nijedno ponašanje nije čitalo, pa je UI tvrdio promjenu koje
+  // nije bilo. Preostala dva stupca su ortogonalna i točna: resultsMode kaže
+  // KADA administrator vidi zbroj, resultsVisible je li javna stranica upaljena.
 
   // Biljeg idempotentnosti SAMO za automatski podsjetnik (pro-features §2).
   // Postoji jer sendReminders ponovno kuje svakom primatelju čarobnu poveznicu:

@@ -63,7 +63,6 @@ export async function getOrganizationExport(
         quorumThreshold: true,
         voterReminder24h: true,
         adminTurnoutReminder: true,
-        sealedResults: true,
         createdAt: true,
         updatedAt: true,
         // reportKey/reportGeneratedAt/reportLocale i strani ključevi namjerno

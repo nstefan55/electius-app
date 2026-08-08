@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
 import { candidateRowSchema, voterRowSchema } from "@/lib/wizard-csv";
-import { voterCap } from "@/lib/entitlements";
+import { canUseLiveResults, voterCap } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 
 // Election creation wizard (all-elections phase 2). One action, two modes:
@@ -28,7 +28,7 @@ const wizardSchema = z.object({
   // datetime-local strings ("YYYY-MM-DDTHH:mm"); empty string = not set
   startAt: z.string().max(30),
   closeAt: z.string().max(30),
-  sealedResults: z.boolean(),
+  liveResults: z.boolean(),
   quorumThreshold: z.number().int().min(1).max(100).nullable(),
   adminTurnoutReminder: z.boolean(),
   voterReminder24h: z.boolean(),
@@ -105,9 +105,20 @@ export async function createElection(
     // odbijanje ne ostavlja ni izbore ni pola popisa. electionId je null:
     // izbori još ne postoje, pa se pravo može razriješiti samo na razini
     // organizacije — točno redoslijed oko kojeg je resolver napisan.
-    const cap = voterCap(await resolveEntitlement(null, organizationId));
+    const entitlement = await resolveEntitlement(null, organizationId);
+
+    const cap = voterCap(entitlement);
     if (voters.length > cap) {
       return { success: false, error: "voterCap", cap };
+    }
+
+    // Rezultati uživo su Pro. Klijent bira, poslužitelj odlučuje — isto kao kod
+    // sprege tipa i metode: UI skriva prekidač, ali radnja je granica povjerenja
+    // i payload dolazi od klijenta. Stoji uz granicu birača, dakle IZVAN
+    // `if (!draft)`, pa nacrt ne može biti zaobilaznica: nacrt s LIVE-om samo bi
+    // odgodio isto stanje do pokretanja izbora.
+    if (w.liveResults && !canUseLiveResults(entitlement)) {
+      return { success: false, error: "liveResultsLocked" };
     }
 
     const election = await prisma.election.create({
@@ -119,7 +130,7 @@ export async function createElection(
         status,
         startsAt,
         endsAt,
-        sealedResults: w.sealedResults,
+        resultsMode: w.liveResults ? "LIVE" : "AFTER_CLOSE",
         allowAbstain: w.allowAbstain,
         quorumThreshold: w.quorumThreshold,
         adminTurnoutReminder: w.adminTurnoutReminder,
