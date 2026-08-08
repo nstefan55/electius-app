@@ -30,6 +30,21 @@ export function ProBadge() {
   );
 }
 
+// "Uskoro": značajka je projektirana, ali je nema. Čita ISTI ključ kao kartica
+// prilagodbi na /settings — ista tvrdnja o istoj vrsti stvari, pa bi drugi ključ
+// bio razilaženje po konstrukciji. Namjerno NIJE `dashboard.profile.language.soon`:
+// ondje "uskoro" znači jezik koji stiže, ovdje Pro značajku koja nije izgrađena.
+export function SoonBadge() {
+  const t = useTranslations("common.badges");
+  const tc = useTranslations("dashboard.settings.customizations");
+  return (
+    <span className={`${PILL} bg-neutral-100 text-neutral-600`}>
+      {tc("soon")}
+      <span className="sr-only"> {t("soonNote")}</span>
+    </span>
+  );
+}
+
 // Tekst i boja su isti kao Beta oznaka na /settings — ista tvrdnja na dvije
 // površine, pa drugi ključ ili druga boja znače razilaženje po konstrukciji.
 export function BetaBadge() {

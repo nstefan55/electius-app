@@ -12,19 +12,26 @@ import {
   type StepProps,
   type WizardData,
 } from "./wizard-shared";
-import { ProBadge } from "@/components/ui/plan-badge";
+import { ProBadge, SoonBadge } from "@/components/ui/plan-badge";
 
 // Prekidači (design OPTION_DEFS). Kvorum je besplatan od 2026-08-03 — zakonski
 // uvjet valjanosti skupštine, ne dodatna pogodnost.
 const OPTIONS = [
-  { key: "liveResults", pro: true },
-  { key: "quorum", pro: false },
+  { key: "liveResults", pro: true, soon: false },
+  { key: "quorum", pro: false, soon: false },
   // autoCloseOnDeadline maknut: glasanje se UVIJEK zatvara na rok (čistač u
   // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je
   // ionako umirao na endsAt — izbori bi ostali "otvoreni" bez ijedne žive
   // poveznice.
-  { key: "adminTurnoutReminder", pro: true },
-  { key: "voterReminder24h", pro: true },
+  // Inertan namjerno (pro-features §3): stupac postoji i čarobnjak ga je pisao,
+  // ali NIŠTA nikad nije slalo nijednu poruku, a vrijednost se poslije stvaranja
+  // nigdje ni ne prikazuje. Prekidač koji administrator uključi i koji zatim ne
+  // učini ništa je obećanje prekršeno u trenutku najvećeg povjerenja. Značajka
+  // nije ni projektirana — kadenca, primatelj, sadržaj i odjava su sve otvorena
+  // pitanja (§3.2) — pa ostaje vidljiva kao najava, a ne kao kontrola.
+  // Ukloniti `soon` kad se pošiljatelj doista izgradi; ostatak ožičenja radi.
+  { key: "adminTurnoutReminder", pro: true, soon: true },
+  { key: "voterReminder24h", pro: true, soon: false },
 ] as const;
 
 type OptionKey = (typeof OPTIONS)[number]["key"];
@@ -135,7 +142,7 @@ export function StepSettings({ data, patch }: StepProps) {
         <h2 className="mt-4 mb-1 font-heading text-base font-semibold text-neutral-800">
           {t("options")}
         </h2>
-        {OPTIONS.map(({ key, pro }) => (
+        {OPTIONS.map(({ key, pro, soon }) => (
           <div
             key={key}
             className="border-b border-neutral-100 py-4 last:border-b-0"
@@ -147,16 +154,31 @@ export function StepSettings({ data, patch }: StepProps) {
                     {t(`toggles.${key}.label`)}
                   </span>
                   {pro && <ProBadge />}
+                  {soon && <SoonBadge />}
                 </div>
                 <div className="mt-0.75 text-[0.8125rem] leading-relaxed text-muted-foreground">
                   {t(`toggles.${key}.desc`)}
                 </div>
               </div>
-              <Toggle
-                checked={data[key]}
-                onChange={() => toggle(key)}
-                label={t(`toggles.${key}.label`)}
-              />
+              {soon ? (
+                // Nacrtani prekidač, ne kontrola (isti obrazac kao kartica
+                // prilagodbi na /settings). Skriven od čitača ekrana jer je
+                // slika, a NE aria-disabled na retku: opis mora ostati čitljiv,
+                // inače čitač javi "nedostupno" i objašnjenje se nikad ne
+                // pročita. Sakriva se prikaz, nikad obrazloženje.
+                <span
+                  aria-hidden
+                  className="relative inline-block h-6.5 w-11 shrink-0 rounded-full bg-neutral-200"
+                >
+                  <span className="absolute top-0.75 left-0.75 size-5 rounded-full bg-white shadow-xs" />
+                </span>
+              ) : (
+                <Toggle
+                  checked={data[key]}
+                  onChange={() => toggle(key)}
+                  label={t(`toggles.${key}.label`)}
+                />
+              )}
             </div>
             {key === "quorum" && data.quorum && (
               <div className="mt-3.5 flex items-center gap-2.5 rounded-[10px] border border-border bg-neutral-50 p-3.5">
