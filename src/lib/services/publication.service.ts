@@ -11,6 +11,7 @@ import {
 } from "./token.service";
 import {
   sendInvitationEmails,
+  sendReminderEmails,
   type InvitationElection,
 } from "./email.service";
 
@@ -49,16 +50,19 @@ export type SendableElection = InvitationElection & {
 // Sequential, not parallel — respects Resend's 2 req/s rate limit. Failure
 // granularity is per chunk (a batch call succeeds/fails whole); a failed chunk
 // leaves its voters PENDING → retryable via resendInvitations.
+//
+// Pošiljatelj je parametar, a ne grana: pozivnica i podsjetnik dijele komadanje,
+// prijelaz u INVITED i brojanje neuspjelih komada, a razlikuju se samo tekstom.
 async function sendInChunks(
   minted: MintedToken[],
-  invitation: InvitationElection,
+  send: (batch: MintedToken[]) => Promise<void>,
 ): Promise<PublishResult> {
   let sent = 0;
   let failed = 0;
 
   for (const batch of chunk(minted)) {
     try {
-      await sendInvitationEmails(batch, invitation);
+      await send(batch);
       await prisma.voter.updateMany({
         where: { id: { in: batch.map((m) => m.voterId) } },
         data: { status: "INVITED" },
@@ -97,10 +101,11 @@ export async function publishElection(
   const minted = await mintTokensForPendingVoters(electionId);
   if (minted.length === 0) return { sent: 0, failed: 0 };
 
-  return sendInChunks(minted, {
+  const invitation: InvitationElection = {
     title: election.title,
     organizationName: election.organization.name,
-  });
+  };
+  return sendInChunks(minted, (batch) => sendInvitationEmails(batch, invitation));
 }
 
 // Jedan birač, jedna poveznica — dijele je resend iz glasačkog toka i redak u
@@ -174,6 +179,47 @@ export async function resendVoterLink(
 
 // ───────── Reminders (election-overview-phase-3-spec) ─────────
 
+// Koliko prije zatvaranja ide automatski podsjetnik. Oglašeno je "24 sata", pa
+// je konstanta i tekst e-pošte ista činjenica na dva mjesta — mijenja se oboje
+// ili nijedno.
+export const REMINDER_LEAD_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Treba li ovim izborima SADA poslati automatski podsjetnik (pro-features §2).
+ *
+ * Čisto pravilo, odvojeno od metle, jer upit u metli je samo predfilter — isto
+ * kao kod zatvaranja. Sve tri odluke koje ovo pravilo nosi donesene su na
+ * /feature start:
+ *
+ * 1. Glasanje još traje. Podsjetnik nakon roka kovao bi tokene koji se rađaju
+ *    istekli (vidi windowOver) — nitko nije dostupan, a svima bi umrla veza.
+ * 2. Rok je unutar REMINDER_LEAD_MS. Ranije nije podsjetnik, nego druga
+ *    pozivnica.
+ * 3. Prozor glasanja je DULJI od REMINDER_LEAD_MS. Izbori otvoreni četiri sata
+ *    nikad nisu imali trenutak "24 sata prije zatvaranja" dok su bili otvoreni,
+ *    pa im podsjetnik ne pripada; bez ove klauzule takvi izbori rotiraju svaku
+ *    poveznicu nekoliko minuta nakon što je pozivnica stigla. Ista klauzula
+ *    usput izbacuje i čarobnjakov rezervirani datum (endsAt <= startsAt), gdje
+ *    rok uopće nije stvaran — jedno pravilo, tri posla.
+ *
+ * @param election prozor glasanja izbora
+ * @param now trenutak prolaza metle (ubrizgava se radi determinizma testova)
+ */
+export function autoReminderDue(
+  election: { startsAt: Date; endsAt: Date },
+  now: Date,
+): boolean {
+  const start = election.startsAt.getTime();
+  const end = election.endsAt.getTime();
+  const t = now.getTime();
+
+  const stillOpen = end > t;
+  const withinLead = end - t <= REMINDER_LEAD_MS;
+  const longEnough = end - start > REMINDER_LEAD_MS;
+
+  return stillOpen && withinLead && longEnough;
+}
+
 export interface ReminderTargets {
   recipients: string[]; // voter ids
   alreadyVoted: number;
@@ -242,15 +288,25 @@ export async function getReminderTargets(
 // Re-mints on the way out: the raw token is unrecoverable by design, so a
 // reminder necessarily carries a NEW link and the original invitation's link
 // stops working. A voter who clicks the older email lands on the voter-flow's
-// invalid-link screen, which offers them a fresh one.
-// ponytail: reuses the invitation email verbatim (spec: "sends invite") — add
-// dedicated reminder copy if the wording ever needs to differ.
+// invalid-link screen, which offers them a fresh one. Tekst podsjetnika to sada
+// i kaže naglas (voter.reminderEmail), umjesto da birač s dvije poruke pogađa
+// koja poveznica radi.
+//
+// Dijele je obje staze — ručni gumb i metla — pa se tekst ne može razići po
+// tome tko je podsjetnik pokrenuo. Ovdje NEMA čitanja ni pisanja
+// autoReminderSentAt: taj stupac pripada samo automatskom prolazu (odluka na
+// /feature start), inače bi jedno ručno podsjećanje ugasilo oglašeni automatski
+// podsjetnik.
 export async function sendReminders(
   electionId: string,
 ): Promise<PublishResult> {
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { title: true, organization: { select: { name: true } } },
+    select: {
+      title: true,
+      endsAt: true,
+      organization: { select: { name: true } },
+    },
   });
   if (!election) return { sent: 0, failed: 0 };
 
@@ -258,8 +314,10 @@ export async function sendReminders(
   const minted = await mintTokensForVoters(electionId, recipients);
   if (minted.length === 0) return { sent: 0, failed: 0 };
 
-  return sendInChunks(minted, {
+  const reminder = {
     title: election.title,
     organizationName: election.organization.name,
-  });
+    endsAt: election.endsAt,
+  };
+  return sendInChunks(minted, (batch) => sendReminderEmails(batch, reminder));
 }
