@@ -14,6 +14,7 @@ vi.mock("@/lib/services/token.service", () => ({
 }));
 vi.mock("@/lib/services/email.service", () => ({
   sendInvitationEmails: vi.fn(),
+  sendReminderEmails: vi.fn(),
 }));
 
 const { prisma } = await import("@/lib/prisma");
@@ -23,7 +24,9 @@ const {
   mintTokensForVoters,
   windowOver,
 } = await import("@/lib/services/token.service");
-const { sendInvitationEmails } = await import("@/lib/services/email.service");
+const { sendInvitationEmails, sendReminderEmails } = await import(
+  "@/lib/services/email.service"
+);
 const {
   chunk,
   publishElection,
@@ -31,7 +34,9 @@ const {
   partitionReminderTargets,
   getReminderTargets,
   sendReminders,
+  autoReminderDue,
   CHUNK_SIZE,
+  REMINDER_LEAD_MS,
 } = await import("@/lib/services/publication.service");
 
 // Far enough out that nothing is expired unless a test says so.
@@ -78,6 +83,7 @@ beforeEach(() => {
   vi.mocked(windowOver).mockReset();
   vi.mocked(windowOver).mockReturnValue(false);
   vi.mocked(sendInvitationEmails).mockReset();
+  vi.mocked(sendReminderEmails).mockReset();
 });
 
 describe("chunk", () => {
@@ -339,6 +345,68 @@ describe("getReminderTargets", () => {
   });
 });
 
+describe("autoReminderDue", () => {
+  // Tjedan dana glasanja — dovoljno dug prozor da pravilo o kratkim izborima
+  // ne smeta, pa svaki test mijenja točno jednu stvar.
+  const NOW = new Date("2026-07-27T12:00:00Z");
+  const week = (endsAt: Date) => ({
+    startsAt: new Date(endsAt.getTime() - 7 * 24 * 60 * 60 * 1000),
+    endsAt,
+  });
+  const inHours = (h: number) => new Date(NOW.getTime() + h * 60 * 60 * 1000);
+
+  it("fires inside the 24 h window", () => {
+    expect(autoReminderDue(week(inHours(12)), NOW)).toBe(true);
+  });
+
+  it("stays quiet while the deadline is further out than the lead time", () => {
+    expect(autoReminderDue(week(inHours(25)), NOW)).toBe(false);
+  });
+
+  it("includes the exact lead-time boundary", () => {
+    const endsAt = new Date(NOW.getTime() + REMINDER_LEAD_MS);
+    expect(autoReminderDue(week(endsAt), NOW)).toBe(true);
+  });
+
+  it("stays quiet once the deadline has passed", () => {
+    // Zatvoren prozor: token skovan sada rodio bi se istekao, pa nema koga
+    // podsjetiti — samo bi svima umrla poveznica.
+    expect(autoReminderDue(week(inHours(-1)), NOW)).toBe(false);
+  });
+
+  it("stays quiet at the deadline itself", () => {
+    expect(autoReminderDue(week(NOW), NOW)).toBe(false);
+  });
+
+  it("never fires for an election whose whole window is 24 h or shorter", () => {
+    // Izbori otvoreni četiri sata nikad nisu imali trenutak "24 sata prije
+    // zatvaranja" dok su bili otvoreni. Bez ove klauzule bi im se svaka
+    // poveznica rotirala nekoliko minuta nakon pozivnice.
+    const endsAt = inHours(3);
+    const opened = new Date(endsAt.getTime() - 4 * 60 * 60 * 1000);
+    expect(autoReminderDue({ startsAt: opened, endsAt }, NOW)).toBe(false);
+  });
+
+  it("stays quiet for a window of exactly the lead time", () => {
+    const endsAt = inHours(3);
+    const opened = new Date(endsAt.getTime() - REMINDER_LEAD_MS);
+    expect(autoReminderDue({ startsAt: opened, endsAt }, NOW)).toBe(false);
+  });
+
+  it("fires for a window one millisecond longer than the lead time", () => {
+    const endsAt = inHours(3);
+    const opened = new Date(endsAt.getTime() - REMINDER_LEAD_MS - 1);
+    expect(autoReminderDue({ startsAt: opened, endsAt }, NOW)).toBe(true);
+  });
+
+  it("stays quiet on the wizard's placeholder dates (endsAt <= startsAt)", () => {
+    // Nezakazano zatvaranje: rok uopće nije stvaran, pa "24 sata prije" nema
+    // značenje. Ista klauzula koja izbacuje kratke izbore hvata i ovo.
+    const startsAt = inHours(6);
+    expect(autoReminderDue({ startsAt, endsAt: startsAt }, NOW)).toBe(false);
+  });
+});
+
 describe("sendReminders", () => {
   it("re-mints for exactly the reachable voters, then sends", async () => {
     vi.mocked(prisma.voter.findMany).mockResolvedValue([
@@ -356,10 +424,13 @@ describe("sendReminders", () => {
     // Re-mint is forced: raw tokens are unrecoverable, so the reminder must
     // carry a new link (and the old one dies).
     expect(mintTokensForVoters).toHaveBeenCalledWith("el_1", ["a", "c"]);
-    expect(sendInvitationEmails).toHaveBeenCalledWith(
+    // Tekst podsjetnika, ne pozivnice — inače birač dobiva duplikat poziva.
+    // endsAt putuje s njim: rok se oblikuje uz tekst, u istom jeziku.
+    expect(sendReminderEmails).toHaveBeenCalledWith(
       [mintedVoter(1), mintedVoter(2)],
-      { title: "Studentski izbori", organizationName: "VVG" },
+      { title: "Studentski izbori", organizationName: "VVG", endsAt: FUTURE },
     );
+    expect(sendInvitationEmails).not.toHaveBeenCalled();
     expect(result).toEqual({ sent: 2, failed: 0 });
   });
 
@@ -371,7 +442,7 @@ describe("sendReminders", () => {
     const result = await sendReminders("el_1");
 
     expect(mintTokensForVoters).toHaveBeenCalledWith("el_1", []);
-    expect(sendInvitationEmails).not.toHaveBeenCalled();
+    expect(sendReminderEmails).not.toHaveBeenCalled();
     expect(result).toEqual({ sent: 0, failed: 0 });
   });
 
@@ -394,7 +465,7 @@ describe("sendReminders", () => {
       { id: "a", status: "INVITED", token: { expiresAt: FUTURE } },
     ] as never);
     vi.mocked(mintTokensForVoters).mockResolvedValue([mintedVoter(1)]);
-    vi.mocked(sendInvitationEmails).mockRejectedValue(new Error("resend: boom"));
+    vi.mocked(sendReminderEmails).mockRejectedValue(new Error("resend: boom"));
 
     const result = await sendReminders("el_1");
 

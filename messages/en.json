@@ -1788,6 +1788,14 @@
       "fallback": "If the button doesn't work, copy this link into your browser:",
       "expiry": "This link is single-use, personal, and valid until the election closes. If you weren't expecting this email, feel free to ignore it."
     },
+    "reminderEmail": {
+      "subject": "Reminder: voting in \"{title}\" closes soon",
+      "heading": "Your ballot is still waiting",
+      "body": "Voting in \"{title}\" ({org}) closes on {closes}. You haven't voted yet — open your ballot with the button below, no sign-in required.",
+      "cta": "Start voting",
+      "fallback": "If the button doesn't work, copy this link into your browser:",
+      "expiry": "Only the most recent link you received works — this one replaces any earlier ones. It is single-use and personal. If you have already voted, feel free to ignore this message."
+    },
     "flow": {
       "stepLabel": "Step {step} of 5",
       "invite": {

@@ -1788,6 +1788,14 @@
       "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
       "expiry": "Poveznica je jednokratna, osobna i vrijedi do zatvaranja izbora. Ako niste očekivali ovu poruku, slobodno je zanemarite."
     },
+    "reminderEmail": {
+      "subject": "Podsjetnik: glasovanje „{title}” uskoro se zatvara",
+      "heading": "Vaš glasački listić još čeka",
+      "body": "Glasovanje u izborima „{title}” ({org}) zatvara se {closes}. Još niste glasovali — listić otvarate gumbom u nastavku, prijava nije potrebna.",
+      "cta": "Glasujte",
+      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
+      "expiry": "Vrijedi samo posljednja poveznica koju ste primili — ova zamjenjuje sve ranije. Jednokratna je i osobna. Ako ste u međuvremenu glasovali, slobodno zanemarite ovu poruku."
+    },
     "flow": {
       "stepLabel": "Korak {step} od 5",
       "invite": {

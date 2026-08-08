@@ -1,20 +1,28 @@
 import { timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { publishElection } from "@/lib/services/publication.service";
+import {
+  autoReminderDue,
+  publishElection,
+  REMINDER_LEAD_MS,
+  sendReminders,
+} from "@/lib/services/publication.service";
 import { windowOver } from "@/lib/services/token.service";
 import { pruneExpiredArchives } from "@/lib/services/archive.service";
+import { resolveEntitlement } from "@/lib/services/entitlement.service";
 
 // Election lifecycle sweep (election-publication-spec §5 + expired-token-sends
-// fix): opens due SCHEDULED elections and publishes their invitations, then
-// closes ACTIVE elections whose deadline has passed. Idempotent — safe to ping
-// every minute; a quiet sweep matches 0 rows and exits. The trigger is
-// infrastructure config (cron-job.org now, real crontab later), never app code.
+// fix + pro-features §2): opens due SCHEDULED elections and publishes their
+// invitations, closes ACTIVE elections whose deadline has passed, sends the
+// automatic 24 h voter reminder, and prunes expired archive proofs. Idempotent
+// — safe to ping every minute; a quiet sweep matches 0 rows and exits. The
+// trigger is infrastructure config (cron-job.org now, real crontab later),
+// never app code.
 //
-// Both transitions live here on purpose: one endpoint, one CRON_SECRET, one
-// pinger. A separate close route would add infrastructure the app cannot
-// verify exists — and an unconfigured sweep is exactly what left elections
-// ACTIVE past their deadline, minting dead magic links.
+// Sve radnje žive ovdje namjerno: jedan endpoint, jedan CRON_SECRET, jedan
+// pinger. Zasebna ruta dodala bi infrastrukturu koju aplikacija ne može
+// provjeriti da postoji — a nepodešena metla je upravo ono što je ostavljalo
+// izbore ACTIVE nakon roka, kujući mrtve čarobne poveznice.
 // ponytail: sweep-side self-healing of PENDING voters in ACTIVE elections is a
 // one-line widening if wanted later; failed-send retry stays admin-driven.
 
@@ -85,6 +93,68 @@ export async function POST(request: Request) {
     closed += count;
   }
 
+  // Automatski podsjetnik 24 h prije zatvaranja (pro-features §2). Treći prolaz
+  // ovdje, a ne na svojoj ruti — isti razlog kao zatvaranje i obrezivanje.
+  //
+  // Upit je samo predfilter; odluku donosi autoReminderDue (uključujući pravilo
+  // da izbori kraći od 24 h nikad nisu imali trenutak "24 sata prije kraja").
+  const remindNow = new Date();
+  const dueReminder = await prisma.election.findMany({
+    where: {
+      status: "ACTIVE",
+      voterReminder24h: true,
+      autoReminderSentAt: null,
+      endsAt: {
+        gt: remindNow,
+        lte: new Date(remindNow.getTime() + REMINDER_LEAD_MS),
+      },
+    },
+    select: {
+      id: true,
+      startsAt: true,
+      endsAt: true,
+      organizationId: true,
+    },
+  });
+
+  const reminded: { id: string; sent: number; failed: number }[] = [];
+  for (const e of dueReminder) {
+    if (!autoReminderDue(e, remindNow)) continue;
+
+    // Pravo se provjerava PRIJE zauzimanja: Free organizaciji se biljeg ne
+    // postavlja, pa izbori koji sutra postanu Pro još uvijek mogu dobiti svoj
+    // podsjetnik. Dok je naplata isključena razrješivač svima vraća pro i ne
+    // dira bazu.
+    const { kind } = await resolveEntitlement(e.id, e.organizationId);
+    if (kind === "free") continue;
+
+    // Zauzmi pa pošalji — biljeg se postavlja PRIJE slanja, istim atomskim
+    // oblikom kao ostali prolazi (uvjet u WHERE klauzuli, broj JE provjera).
+    // Obrnuti redoslijed pustio bi dvije istodobne metle da obje prođu kroz
+    // "još nije poslano" i pošalju dvaput, a svako slanje rotira svakom biraču
+    // poveznicu. Cijena ovog smjera: pad između zauzimanja i slanja pojede
+    // podsjetnik. To je jeftinija strana — propušten podsjetnik nije događaj,
+    // a bujica poruka koje jedna drugoj ubijaju poveznicu jest upravo ono zbog
+    // čega ovaj stupac postoji. Ručni gumb ostaje kao izlaz i nije blokiran.
+    const { count } = await prisma.election.updateMany({
+      where: { id: e.id, status: "ACTIVE", autoReminderSentAt: null },
+      data: { autoReminderSentAt: remindNow },
+    });
+    if (count === 0) continue;
+
+    const result = await sendReminders(e.id).catch((error) => {
+      // Biljeg se NE briše: brisanje bi vratilo utrku koju upravo sprječava, a
+      // ponovno kovanje na svaki otkucaj ostavlja niz mrtvih poveznica.
+      console.error("[cron] reminder send failed", { id: e.id, error });
+      return null;
+    });
+    reminded.push({
+      id: e.id,
+      sent: result?.sent ?? 0,
+      failed: result?.failed ?? 0,
+    });
+  }
+
   // Obrezivanje isteklog tereta dokaza arhive (entitlement-enforcement-spec §6).
   // Ovdje, a ne na svojoj ruti: treća radnja iza istog CRON_SECRET-a i istog
   // pingera je jeftinija od druge infrastrukture koju aplikacija ne može
@@ -105,7 +175,9 @@ export async function POST(request: Request) {
   return NextResponse.json({
     activated: elections.length,
     closed,
+    reminded: reminded.length,
     elections,
+    reminders: reminded,
     archives: archives ?? { pruned: 0, kept: 0 },
   });
 }

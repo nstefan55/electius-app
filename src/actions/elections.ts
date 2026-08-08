@@ -253,6 +253,14 @@ export async function reminderPreview(
 
 // The send itself. Re-derives its own recipient list (never trusts a count the
 // client round-tripped) via the same getReminderTargets rule the preview used.
+//
+// Namjerno NE dira Election.autoReminderSentAt (odluka na /feature start).
+// Taj stupac znači "automatski podsjetnik 24 h prije zatvaranja je otišao" i
+// ništa više. Da ga ova radnja postavlja, jedno ručno podsjećanje pet dana
+// ranije tiho bi otkazalo oglašeni automatski podsjetnik — administrator bi
+// isključio Pro značajku time što ju je koristio. Da ga čita, metla bi mogla
+// blokirati administratora koji svjesno šalje. Dvije različite radnje, dvije
+// odluke.
 // ponytail: no cooldown between sends — the action is session-gated and
 // org-scoped; add a per-election window if admins start spamming voters.
 export async function sendElectionReminders(

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { Resend } from "resend";
+import { formatVotingDateTime } from "@/lib/elections-view";
 import { voteUrl } from "@/lib/urls";
 import hr from "../../../messages/hr.json";
 import en from "../../../messages/en.json";
@@ -164,25 +165,26 @@ export interface InvitationElection {
 // it succeeds or fails whole, which is exactly the spec's per-chunk
 // failure granularity. Throws on failure so the caller can leave the
 // chunk's voters PENDING (retryable).
-export async function sendInvitationEmails(
+// Jedna staza slanja za oba teksta — razlikuje se samo blok kataloga i skup
+// varijabli. Vrijednosti pod kontrolom administratora (naslov, ime
+// organizacije) interpoliraju se u HTML, pa se ondje bježe; subject i čisti
+// tekst ostaju sirovi.
+async function sendBallotLinkEmails(
   recipients: InvitationRecipient[],
-  election: InvitationElection,
-  locale: Locale = "hr",
+  raw: ActionEmailCopy,
+  vars: Record<string, string>,
+  escaped: Record<string, string>,
 ) {
-  if (recipients.length === 0) return;
-
-  const raw = CATALOGS[locale].voter.inviteEmail;
-  const vars = { title: election.title, org: election.organizationName };
   const copy = (v: Record<string, string>): ActionEmailCopy => ({
     subject: fill(raw.subject, v),
     heading: fill(raw.heading, v),
     body: fill(raw.body, v),
     cta: raw.cta,
     fallback: raw.fallback,
-    expiry: raw.expiry,
+    expiry: fill(raw.expiry, v),
   });
   const tText = copy(vars);
-  const tHtml = copy({ title: escapeHtml(vars.title), org: escapeHtml(vars.org) });
+  const tHtml = copy(escaped);
 
   const { error } = await resend.batch.send(
     recipients.map((r) => {
@@ -200,4 +202,57 @@ export async function sendInvitationEmails(
   if (error) {
     throw new Error(`resend: ${error.message}`);
   }
+}
+
+export async function sendInvitationEmails(
+  recipients: InvitationRecipient[],
+  election: InvitationElection,
+  locale: Locale = "hr",
+) {
+  if (recipients.length === 0) return;
+
+  await sendBallotLinkEmails(
+    recipients,
+    CATALOGS[locale].voter.inviteEmail,
+    { title: election.title, org: election.organizationName },
+    {
+      title: escapeHtml(election.title),
+      org: escapeHtml(election.organizationName),
+    },
+  );
+}
+
+// ───────── Podsjetnici (pro-features §2) ─────────
+
+// Podsjetnik je do sada doslovno ponavljao pozivnicu, pa je birač dobivao ono
+// što se čita kao duplikat poziva — a automatski podsjetnik stiže nepozvan, pa
+// je to gore. Vlastiti tekst navodi rok i, važnije, kaže istinu o rotaciji
+// poveznice: svako podsjećanje ponovno kuje token, pa vrijedi samo posljednja
+// primljena veza. Bez te rečenice birač s dvije poruke ne zna koja radi.
+export interface ReminderElection extends InvitationElection {
+  endsAt: Date;
+}
+
+export async function sendReminderEmails(
+  recipients: InvitationRecipient[],
+  election: ReminderElection,
+  locale: Locale = "hr",
+) {
+  if (recipients.length === 0) return;
+
+  // Datum se oblikuje ovdje, uz tekst: locale koji bira katalog isti je onaj
+  // koji oblikuje rok, pa se format i jezik ne mogu razići. Isti UTC formatter
+  // koji koriste zaslon i izvještaj (invarijanta #5).
+  const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
+
+  await sendBallotLinkEmails(
+    recipients,
+    CATALOGS[locale].voter.reminderEmail,
+    { title: election.title, org: election.organizationName, closes },
+    {
+      title: escapeHtml(election.title),
+      org: escapeHtml(election.organizationName),
+      closes: escapeHtml(closes),
+    },
+  );
 }

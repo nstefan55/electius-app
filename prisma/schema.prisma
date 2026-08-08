@@ -172,6 +172,19 @@ model Election {
   adminTurnoutReminder Boolean    @default(false) // email admin turnout updates during voting — Pro only
   sealedResults       Boolean     @default(false) // hide tallies from everyone (admins included) until close
 
+  // Biljeg idempotentnosti SAMO za automatski podsjetnik (pro-features §2).
+  // Postoji jer sendReminders ponovno kuje svakom primatelju čarobnu poveznicu:
+  // sirovi token je nepovratan pa podsjetnik nužno ubija prethodno poslanu vezu.
+  // Jednom, namjerno — ali ne na svaki otkucaj metle koja se pinga svake minute.
+  // Iz stanja birača se to ne da izvesti: sendReminders ostavlja INVITED kao
+  // INVITED.
+  //
+  // "auto" u imenu je obveza, ne ukras: ručni gumb Pošalji podsjetnik ovaj
+  // stupac NITI postavlja NITI ga čita (odluka na /feature start). Da ga dijele,
+  // jedno ručno podsjećanje pet dana ranije tiho bi ugasilo oglašeni automatski
+  // podsjetnik — administrator bi isključio Pro značajku koristeći Pro značajku.
+  autoReminderSentAt DateTime?
+
   // Spremljeni PDF izvještaj (election-report-storage-spec). Ključ, ne URL: URL
   // bi ukalupio host kante, pa bi svaki redak bio kriv nakon selidbe ili CDN-a.
   reportKey         String? // R2 object key u privatnoj kanti
