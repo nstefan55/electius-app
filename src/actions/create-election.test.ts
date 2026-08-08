@@ -54,7 +54,7 @@ const basePayload = {
   startMode: "manual",
   startAt: "",
   closeAt: "2999-06-01T12:00",
-  sealedResults: false,
+  liveResults: false,
   quorumThreshold: null,
   adminTurnoutReminder: false,
   voterReminder24h: false,
@@ -214,5 +214,54 @@ describe("createElection — granica plana", () => {
     await createElection(withVoters(1));
 
     expect(resolveEntitlement).toHaveBeenCalledWith(null, "org_1");
+  });
+});
+
+describe("createElection — rezultati uživo", () => {
+  it("zadano piše AFTER_CLOSE, ne ostavlja stupac nedirnut", async () => {
+    // Prije ovog reza NIJEDNA korisnička staza nije pisala resultsMode, pa je
+    // LIVE grana bila mrtav kod u produkciji. Test pribija da se stupac sada
+    // doista upisuje — i kad je prekidač isključen.
+    await createElection(basePayload);
+
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.resultsMode).toBe("AFTER_CLOSE");
+  });
+
+  it("uključen prekidač piše LIVE", async () => {
+    await createElection({ ...basePayload, liveResults: true });
+
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.resultsMode).toBe("LIVE");
+  });
+
+  it("Free ne može odabrati LIVE i ništa se ne upisuje", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({ ...basePayload, liveResults: true });
+
+    expect(res).toEqual({ success: false, error: "liveResultsLocked" });
+    // Odbijanje prije ijednog upisa — inače bi ostali izbori s pravom koje
+    // organizacija nema.
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("Free bez LIVE-a prolazi normalno", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection(basePayload);
+
+    expect(res.success).toBe(true);
+  });
+
+  it("zaštita vrijedi i za skicu — inače je skica zaobilaznica", async () => {
+    // Isti razlog kao granica birača: LIVE skica samo odgađa isto stanje do
+    // trenutka pokretanja izbora.
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({ ...basePayload, liveResults: true }, true);
+
+    expect(res).toEqual({ success: false, error: "liveResultsLocked" });
+    expect(prisma.election.create).not.toHaveBeenCalled();
   });
 });

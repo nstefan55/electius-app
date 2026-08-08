@@ -43,6 +43,20 @@ export function canBrandReports(e: Entitlement): boolean {
   }
 }
 
+// Rezultati uživo tijekom glasovanja (resultsMode = LIVE) — oglašeno kao Pro
+// ("Rezultati uživo tijekom glasovanja — pratite rast izlaznosti u stvarnom
+// vremenu"). Bez LIVE-a administrator zbroj vidi tek na zatvaranju; izlaznost
+// se prati uvijek i ni na jednom tieru nije skrivena.
+export function canUseLiveResults(e: Entitlement): boolean {
+  switch (e.kind) {
+    case "free":
+      return false;
+    case "pro":
+    case "purchased":
+      return true;
+  }
+}
+
 // Kalendarska godina, nikad 365 * 24 * 60 * 60 * 1000 — u prijelaznoj godini to
 // pada dan ranije, a ništa to ne bi primijetilo jer expiresAt još nitko ne čita.
 // Jedina izvedba tog pravila: archive.service.ts je imao vlastiti oneYearFrom i

@@ -29,7 +29,7 @@ function toPayload(data: WizardData): WizardPayload {
     startMode: data.startMode,
     startAt: data.startMode === "scheduled" ? data.startAt : "",
     closeAt: data.closeAt,
-    sealedResults: data.sealedResults,
+    liveResults: data.liveResults,
     quorumThreshold: data.quorum ? data.quorumPct : null,
     adminTurnoutReminder: data.adminTurnoutReminder,
     voterReminder24h: data.voterReminder24h,

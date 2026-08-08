@@ -33,7 +33,6 @@ function election(
     quorumThreshold: null,
     voterReminder24h: false,
     adminTurnoutReminder: false,
-    sealedResults: false,
     createdAt: new Date("2026-06-20T08:00:00.000Z"),
     updatedAt: new Date("2026-07-06T08:00:00.000Z"),
     options: [

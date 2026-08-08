@@ -17,7 +17,7 @@ import { ProBadge } from "@/components/ui/plan-badge";
 // Prekidači (design OPTION_DEFS). Kvorum je besplatan od 2026-08-03 — zakonski
 // uvjet valjanosti skupštine, ne dodatna pogodnost.
 const OPTIONS = [
-  { key: "sealedResults", pro: false },
+  { key: "liveResults", pro: true },
   { key: "quorum", pro: false },
   // autoCloseOnDeadline maknut: glasanje se UVIJEK zatvara na rok (čistač u
   // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je

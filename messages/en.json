@@ -652,9 +652,9 @@
         "time": "Time (optional)",
         "options": "Options",
         "toggles": {
-          "sealedResults": {
-            "label": "Sealed results",
-            "desc": "Hide all tallies — even from admins — until voting closes."
+          "liveResults": {
+            "label": "Live results during voting",
+            "desc": "Watch the per-candidate tally while voting is open. Off, results stay hidden until close — from you and from voters alike."
           },
           "quorum": {
             "label": "Quorum threshold",

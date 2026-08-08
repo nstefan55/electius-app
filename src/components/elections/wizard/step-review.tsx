@@ -76,7 +76,7 @@ export function StepReview({
   const locale = useLocale();
 
   const enabled = [
-    data.sealedResults && t4("toggles.sealedResults.label"),
+    data.liveResults && t4("toggles.liveResults.label"),
     data.quorum && t4("quorumChip", { pct: data.quorumPct }),
     data.adminTurnoutReminder && t4("toggles.adminTurnoutReminder.label"),
     data.voterReminder24h && t4("toggles.voterReminder24h.label"),
