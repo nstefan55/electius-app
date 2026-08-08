@@ -49,15 +49,19 @@ export interface ShellUser {
   name: string;
   image: string | null;
   organization: string;
+  /** Presuda razrješivača prava, ne stupac isPro — vidi showProBadge(). */
+  showPro: boolean;
 }
 
 export function DashboardShell({
   user,
   accessibility,
+  beta,
   children,
 }: {
   user: ShellUser;
   accessibility: AccessibilityPrefs;
+  beta: boolean;
   children: React.ReactNode;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -79,7 +83,7 @@ export function DashboardShell({
           collapsed ? "w-16" : "w-60",
         )}
       >
-        <SidebarNav user={user} collapsed={collapsed} />
+        <SidebarNav user={user} beta={beta} collapsed={collapsed} />
       </aside>
 
       {/* Mobile sidebar — always a drawer. */}
@@ -90,7 +94,11 @@ export function DashboardShell({
           className="w-72 gap-0 overflow-hidden border-r-0 bg-sidebar p-0"
         >
           <SheetTitle className="sr-only">{t("sidebar.openMenu")}</SheetTitle>
-          <SidebarNav user={user} onNavigate={() => setMobileOpen(false)} />
+          <SidebarNav
+            user={user}
+            beta={beta}
+            onNavigate={() => setMobileOpen(false)}
+          />
         </SheetContent>
       </Sheet>
 

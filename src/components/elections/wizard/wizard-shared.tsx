@@ -92,14 +92,6 @@ export function StepHeading({ title, sub }: { title: string; sub: string }) {
   );
 }
 
-export function ProBadge() {
-  return (
-    <span className="inline-flex h-4.5 items-center rounded-full bg-[#F5F3FF] px-1.75 text-[0.625rem] font-bold tracking-wide text-[#6D28D9]">
-      PRO
-    </span>
-  );
-}
-
 // Selection card with the top-right check circle (type / method / start mode).
 export function SelectCard({
   title,

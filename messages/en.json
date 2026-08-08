@@ -5,6 +5,10 @@
       "hr": "Croatian",
       "en": "English"
     },
+    "badges": {
+      "proNote": "plan",
+      "betaNote": "version"
+    },
     "loading": "Loading…",
     "pagination": {
       "label": "Pagination",

@@ -54,3 +54,26 @@ export async function resolveEntitlement(
   // 3. Free.
   return pro ? { kind: "pro" } : { kind: "free" };
 }
+
+/**
+ * Smije li ljuska nositi pilulu PRO.
+ *
+ * Dvije zamke, zato pravilo živi ovdje a ne na pozivnom mjestu:
+ *
+ * 1. Ne čita se `User.isPro`. Dok je naplata isključena svaka organizacija ima
+ *    Pro ponašanje, a `isPro` je svugdje false — pilula bi bila skrivena upravo
+ *    na računima koji Pro DRŽE, i lagala bi u stanju u kojem produkcija jest.
+ * 2. Ali ni sam razrješivač nije odgovor: s isključenom naplatom vraća pro
+ *    SVIMA, pa bi pilula sjedila na svakoj ljusci dok /settings istodobno
+ *    prikazuje prelaunch stanje koje namjerno ne tvrdi nikakav plan. Dvije
+ *    površine, jedan račun, dvije tvrdnje.
+ *
+ * Zato: oznaka se pojavljuje tek kad je naplata stvarna. Danas dakle nikad —
+ * ljuska nosi Beta i ništa drugo. `BILLING_ENABLED ? user.isPro : true` na
+ * pozivnom mjestu izgleda kao isto, a tvrdi redoslijed razrješavanja umjesto da
+ * ga pita, i ustaja u dan kad krene kupnja pojedinog izbora.
+ */
+export async function showProBadge(organizationId: string): Promise<boolean> {
+  if (!BILLING_ENABLED) return false;
+  return (await resolveEntitlement(null, organizationId)).kind !== "free";
+}

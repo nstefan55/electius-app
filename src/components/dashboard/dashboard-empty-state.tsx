@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
+import { ProBadge } from "@/components/ui/plan-badge";
 
 const FEATURES: {
   key: string;
@@ -70,11 +71,7 @@ export function DashboardEmptyState() {
                     <span className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
                       {t(`features.${key}.title`)}
                     </span>
-                    {pro && (
-                      <span className="inline-flex h-4.5 items-center rounded-full bg-violet-50 px-1.75 text-[0.625rem] font-bold tracking-wide text-violet-700">
-                        PRO
-                      </span>
-                    )}
+                    {pro && <ProBadge />}
                   </div>
                   <p className="mt-1.5 text-[0.8125rem] leading-normal text-muted-foreground">
                     {t(`features.${key}.desc`)}
