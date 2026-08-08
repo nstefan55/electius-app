@@ -212,20 +212,27 @@ describe("getBallotState", () => {
 });
 
 describe("castVote", () => {
+  // Prozor je otvoren po zadanom: castVote sada zove votingOver, pa izbori
+  // moraju nositi datume. Testovi koji ispituju gotov prozor ih prepisuju.
   const castTokenRow = (
     over: Record<string, unknown> = {},
-    election: Record<string, unknown> = {
-      status: "ACTIVE",
-      votingType: "SINGLE_CHOICE",
-      options: [{ id: "o1" }, { id: "o2" }],
-    },
+    election: Record<string, unknown> = {},
   ) => ({
     id: "tok_1",
     used: false,
     expiresAt: FUTURE,
     voterId: "v_1",
     electionId: "el_1",
-    voter: { election },
+    voter: {
+      election: {
+        status: "ACTIVE",
+        startsAt: PAST,
+        endsAt: FUTURE,
+        votingType: "SINGLE_CHOICE",
+        options: [{ id: "o1" }, { id: "o2" }],
+        ...election,
+      },
+    },
     ...over,
   }) as never;
 
@@ -256,6 +263,29 @@ describe("castVote", () => {
     );
     await expectCode(castVote("raw", ["o1"]), "invalid");
     expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  // G3 — točno slučaj koji je slučajnost skrivala. Izbori su ACTIVE (čistač ih
+  // još nije zatvorio ili pinger uopće ne radi), token je ŽIV, a prozor je
+  // gotov. Prije ovoga obje su provjere prolazile i glas bi bio upisan.
+  it("rejects a late ballot on a window-over ACTIVE election even when the token is still valid", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValueOnce(
+      castTokenRow(
+        { expiresAt: FUTURE }, // token nije istekao — to je poanta
+        { status: "ACTIVE", startsAt: new Date(Date.now() - 9 * 86400_000), endsAt: PAST },
+      ),
+    );
+
+    await expectCode(castVote("raw", ["o1"]), "invalid");
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("still accepts a ballot while the window is open", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValueOnce(castTokenRow());
+
+    await expect(castVote("raw", ["o1"])).resolves.toMatchObject({
+      voteHash: expect.any(String),
+    });
   });
 
   it("rejects invalid selections (foreign, empty, dupes, >1 on SINGLE)", async () => {

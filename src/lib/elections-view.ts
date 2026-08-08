@@ -1,6 +1,6 @@
 // Pure view helpers for dashboard election data — shared by server and client
 // components, so charts and the live hero can import the types + sort rule too.
-// No DB, no `server-only`. Shape mirrors the old mock-data MockElection.
+// No DB, no `server-only`. Shape mirrors the dashboard election select.
 
 export type ElectionStatus =
   | "DRAFT"
@@ -21,6 +21,10 @@ export interface DashboardElection {
   voted: number;
   opens: string;
   closes: string;
+  // Izbori su gotovi → admin ih više ne mijenja (preimenovanje, popis birača).
+  // Računa se na poslužitelju (mutationsFrozen je server-only jer zove
+  // windowOver); klijent dobiva gotovu odluku, nikad je ne izvodi sam.
+  frozen: boolean;
 }
 
 // Recent-elections sort priority. Archived lives in the Archive tab, excluded here.

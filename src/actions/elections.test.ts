@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // third seam here — the pipeline itself is covered by its own colocated tests.
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    election: { updateMany: vi.fn(), findFirst: vi.fn() },
+    election: { updateMany: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
     voter: { count: vi.fn() },
   },
 }));
@@ -35,6 +35,7 @@ const { sealElection, ArchiveError } = await import(
 );
 const {
   startElection,
+  renameElection,
   resendInvitations,
   closeElection,
   reminderPreview,
@@ -58,6 +59,7 @@ beforeEach(() => {
   vi.mocked(requireSession).mockResolvedValue(session);
   vi.mocked(prisma.election.updateMany).mockReset();
   vi.mocked(prisma.election.findFirst).mockReset();
+  vi.mocked(prisma.election.update).mockReset();
   vi.mocked(prisma.voter.count).mockReset();
   vi.mocked(publishElection).mockReset();
   vi.mocked(publishElection).mockResolvedValue({ sent: 0, failed: 0 });
@@ -160,6 +162,29 @@ describe("startElection", () => {
     });
   });
 
+  // Regresija za posljedicu usidrenja stropa u startsAt (G2). Nacrt nosi
+  // startsAt = trenutak stvaranja, pa je windowOver za stari nacrt bez roka
+  // ISTINIT — a straža čita startsAt PRIJE nego ga updateMany prepiše na sada.
+  // Da straža pita windowOver, ovakav bi nacrt bio trajno nepokretljiv, a rute
+  // za uređivanje datuma nema. Zato pita deadlinePassed.
+  it("starts an unscheduled draft that is older than the 30-day token ceiling", async () => {
+    const opens = new Date("2020-01-01T00:00:00Z"); // godinama u prošlosti
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      startsAt: opens,
+      endsAt: opens,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
+
+    expect(await startElection("el_ancient_draft")).toMatchObject({
+      success: true,
+    });
+    // startsAt se prepisuje na sada, pa novi prozor kreće od klika.
+    expect(
+      vi.mocked(prisma.election.updateMany).mock.calls[0]![0]!.data,
+    ).toMatchObject({ status: "ACTIVE" });
+  });
+
   it("stays a success when the publish pipeline throws — activation never rolls back", async () => {
     vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
     vi.mocked(publishElection).mockRejectedValue(new Error("resend down"));
@@ -178,6 +203,86 @@ describe("startElection", () => {
 
     const result = await startElection("el_1");
     expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+// G5 — zahtjev 3. Preimenovanje je prije imalo samo provjeru vlasništva, pa je
+// bilo dostupno na CLOSED i ARCHIVED izborima.
+describe("renameElection", () => {
+  const OPEN = {
+    status: "ACTIVE",
+    startsAt: new Date("2026-07-01T00:00:00Z"),
+    endsAt: new Date("2099-01-01T00:00:00Z"),
+  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockElection = (value: any) =>
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(value);
+
+  it("rejects an empty id or title without touching the session or DB", async () => {
+    expect(await renameElection("", "Novo ime")).toEqual({
+      success: false,
+      error: "invalid",
+    });
+    expect(await renameElection("el_1", "   ")).toEqual({
+      success: false,
+      error: "invalid",
+    });
+    expect(requireSession).not.toHaveBeenCalled();
+  });
+
+  it("keeps org ownership in the WHERE clause", async () => {
+    mockElection(null);
+
+    expect(await renameElection("el_other_org", "Novo ime")).toEqual({
+      success: false,
+      error: "forbidden",
+    });
+    expect(prisma.election.findFirst).toHaveBeenCalledWith({
+      where: { id: "el_other_org", organizationId: "org_1" },
+      select: { status: true, startsAt: true, endsAt: true },
+    });
+    expect(prisma.election.update).not.toHaveBeenCalled();
+  });
+
+  it("renames an election that is still open", async () => {
+    mockElection(OPEN as never);
+
+    expect(await renameElection("el_1", "  Novo ime  ")).toEqual({
+      success: true,
+    });
+    expect(vi.mocked(prisma.election.update).mock.calls[0]![0]!).toEqual({
+      where: { id: "el_1" },
+      data: { title: "Novo ime" },
+    });
+  });
+
+  // D3 — stroža linija: i CLOSED i ARCHIVED. Kod zapečaćenih je oštrije, jer
+  // Archive.electionData čuva vlastitu kopiju naslova.
+  it.each(["CLOSED", "ARCHIVED"] as const)(
+    "refuses %s and writes nothing",
+    async (status) => {
+      mockElection({ ...OPEN, status } as never);
+
+      expect(await renameElection("el_1", "Novo ime")).toEqual({
+        success: false,
+        error: "electionEnded",
+      });
+      expect(prisma.election.update).not.toHaveBeenCalled();
+    },
+  );
+
+  it("refuses an ACTIVE election whose window is over but which the sweep has not closed", async () => {
+    mockElection({
+      status: "ACTIVE",
+      startsAt: new Date("2026-07-01T00:00:00Z"),
+      endsAt: new Date("2026-07-10T00:00:00Z"),
+    } as never);
+
+    expect(await renameElection("el_1", "Novo ime")).toEqual({
+      success: false,
+      error: "electionEnded",
+    });
+    expect(prisma.election.update).not.toHaveBeenCalled();
   });
 });
 

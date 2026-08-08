@@ -4,6 +4,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
 import { clampPage, pageCountOf } from "@/lib/pagination";
+import { mutationsFrozen } from "@/lib/services/token.service";
 import {
   bucketVotesByDay,
   rankCandidates,
@@ -64,6 +65,9 @@ const toDashboardElection = (e: ElectionRow): DashboardElection => ({
   // per-locale via formatVotingDate (lib/elections-view).
   opens: e.startsAt.toISOString(),
   closes: e.endsAt.toISOString(),
+  // Jedno izvođenje za sve popise: mapper je jedina točka kroz koju svi
+  // prolaze, pa nijedan ne može ponuditi preimenovanje gotovih izbora.
+  frozen: mutationsFrozen(e),
 });
 
 // Everything the dashboard main area needs, in one round trip.

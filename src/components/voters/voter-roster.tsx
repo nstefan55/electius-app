@@ -55,12 +55,17 @@ const STATUS_OPTIONS = ["PENDING", "INVITED", "VOTED"] as const;
 export function VoterRoster({
   electionId,
   electionStatus,
+  frozen,
   roster,
   query,
   voterCap,
 }: {
   electionId: string;
   electionStatus: ElectionStatus;
+  // Izbori su gotovi (zatvoreni, arhivirani ILI im je prozor istekao prije nego
+  // ih je čistač stigao zatvoriti). Računa poslužitelj — mutationsFrozen je
+  // server-only, a status sam ne razlikuje treći slučaj.
+  frozen: boolean;
   roster: Roster;
   query: { q: string; status: string };
   voterCap: number;
@@ -102,18 +107,39 @@ export function VoterRoster({
   const { counts, voters, page, pageCount, matched } = roster;
   const filtering = Boolean(query.q || query.status);
   // Ista pravila kao akcije na poslužitelju — gumb koji uvijek pada nije ponuda.
-  const canAdd = electionStatus !== "CLOSED" && electionStatus !== "ARCHIVED";
+  // `frozen` zamjenjuje raniju provjeru statusa: pokriva i CLOSED/ARCHIVED i
+  // ACTIVE izbore kojima je rok prošao, gdje su akcije jednako odbijene.
+  const canAdd = !frozen;
+  const canEdit = !frozen;
   const canRemove =
     electionStatus === "DRAFT" || electionStatus === "SCHEDULED";
-  const canResend = electionStatus === "ACTIVE";
+  const canResend = electionStatus === "ACTIVE" && !frozen;
+  // Izbornik koji se otvori u prazno nije ponuda: na gotovim izborima otpadaju
+  // sve tri stavke, pa otpada i gumb koji ih otvara.
+  const hasRowActions = (v: RosterVoter) =>
+    (canResend && v.status !== "VOTED") ||
+    canEdit ||
+    (canRemove && v.status !== "VOTED");
   const num = (n: number) => formatCount(n, locale);
 
-  const run = (fn: () => Promise<{ success: boolean; error?: string }>, ok: string) =>
+  const run = (
+    fn: () => Promise<{ success: boolean; error?: string }>,
+    ok: string,
+  ) =>
     startTransition(async () => {
       const res = await fn();
       if (res.success) toast.success(ok);
       else if (res.error === "windowOver") toast.error(t("toast.windowOver"));
-      else toast.error(t(res.error === "invalidStatus" ? "toast.notAllowed" : "toast.failed"));
+      // Rezerva: kontrola je skrivena, ali stranica može biti stara i akcija
+      // je granica. Poruka mora imenovati razlog, ne pasti u generičku grešku.
+      else if (res.error === "electionEnded")
+        toast.error(t("toast.electionEnded"));
+      else
+        toast.error(
+          t(
+            res.error === "invalidStatus" ? "toast.notAllowed" : "toast.failed",
+          ),
+        );
       router.refresh();
     });
 
@@ -234,7 +260,10 @@ export function VoterRoster({
             }
           />
         ) : voters.length === 0 ? (
-          <Empty title={t("empty.noMatchTitle")} body={t("empty.noMatchBody")} />
+          <Empty
+            title={t("empty.noMatchTitle")}
+            body={t("empty.noMatchBody")}
+          />
         ) : (
           <>
             <div
@@ -296,56 +325,60 @@ export function VoterRoster({
                     </div>
 
                     <div className="absolute top-2.5 right-3 md:relative md:top-auto md:right-auto md:justify-self-end">
-                      <Menu.Root>
-                        <Menu.Trigger
-                          aria-label={t("actions.menuLabel")}
-                          className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
-                        >
-                          <MoreVertical className="size-4.5" />
-                        </Menu.Trigger>
-                        <Menu.Portal>
-                          <Menu.Positioner
-                            side="bottom"
-                            align="end"
-                            sideOffset={6}
-                            className="z-50 outline-none"
+                      {hasRowActions(v) && (
+                        <Menu.Root>
+                          <Menu.Trigger
+                            aria-label={t("actions.menuLabel")}
+                            className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-neutral-100 data-popup-open:bg-neutral-100"
                           >
-                            <Menu.Popup className="min-w-52 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
-                              {canResend && v.status !== "VOTED" && (
-                                <Menu.Item
-                                  className={MENU_ITEM}
-                                  onClick={() => setResendTarget(v)}
-                                >
-                                  <Send className="size-4" />
-                                  {t("actions.resend")}
-                                </Menu.Item>
-                              )}
-                              <Menu.Item
-                                className={MENU_ITEM}
-                                onClick={() => setEditTarget(v)}
-                              >
-                                <Pencil className="size-4" />
-                                {t("actions.edit")}
-                              </Menu.Item>
-                              {canRemove && v.status !== "VOTED" && (
-                                <>
-                                  <Menu.Separator className="my-1 h-px bg-border" />
+                            <MoreVertical className="size-4.5" />
+                          </Menu.Trigger>
+                          <Menu.Portal>
+                            <Menu.Positioner
+                              side="bottom"
+                              align="end"
+                              sideOffset={6}
+                              className="z-50 outline-none"
+                            >
+                              <Menu.Popup className="min-w-52 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
+                                {canResend && v.status !== "VOTED" && (
                                   <Menu.Item
-                                    className={cn(
-                                      MENU_ITEM,
-                                      "text-error-700 data-highlighted:bg-error-50",
-                                    )}
-                                    onClick={() => setRemoveTarget(v)}
+                                    className={MENU_ITEM}
+                                    onClick={() => setResendTarget(v)}
                                   >
-                                    <Trash2 className="size-4" />
-                                    {t("actions.remove")}
+                                    <Send className="size-4" />
+                                    {t("actions.resend")}
                                   </Menu.Item>
-                                </>
-                              )}
-                            </Menu.Popup>
-                          </Menu.Positioner>
-                        </Menu.Portal>
-                      </Menu.Root>
+                                )}
+                                {canEdit && (
+                                  <Menu.Item
+                                    className={MENU_ITEM}
+                                    onClick={() => setEditTarget(v)}
+                                  >
+                                    <Pencil className="size-4" />
+                                    {t("actions.edit")}
+                                  </Menu.Item>
+                                )}
+                                {canRemove && v.status !== "VOTED" && (
+                                  <>
+                                    <Menu.Separator className="my-1 h-px bg-border" />
+                                    <Menu.Item
+                                      className={cn(
+                                        MENU_ITEM,
+                                        "text-error-700 data-highlighted:bg-error-50",
+                                      )}
+                                      onClick={() => setRemoveTarget(v)}
+                                    >
+                                      <Trash2 className="size-4" />
+                                      {t("actions.remove")}
+                                    </Menu.Item>
+                                  </>
+                                )}
+                              </Menu.Popup>
+                            </Menu.Positioner>
+                          </Menu.Portal>
+                        </Menu.Root>
+                      )}
                     </div>
                   </li>
                 );
