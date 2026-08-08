@@ -3,7 +3,6 @@ import type { VoterStatus } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/require-session";
 import { getElectionDetail } from "@/lib/db/elections";
 import { getVoterRoster } from "@/lib/db/voters";
-import { voterCap } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { VoterRoster } from "@/components/voters/voter-roster";
 
@@ -41,9 +40,10 @@ export default async function ElectionVotersPage({
   const roster = await getVoterRoster(id, organizationId, { page, q, status });
   if (!roster) notFound();
 
-  // Granica ovih izbora — za tihu najavu na ≥80% i za poruku odbijanja u
-  // dijalogu. Provodi je addVoters; ovdje je samo prikaz.
-  const cap = voterCap(await resolveEntitlement(id, organizationId));
+  // Pravo ovih izbora — za tihu najavu na ≥80%, za poruku odbijanja u dijalogu
+  // i za odgovor postoji li plan iznad (bez toga bi Pro dobivao ponudu koju već
+  // ima). Provodi ga addVoters; ovdje je samo prikaz.
+  const entitlement = await resolveEntitlement(id, organizationId);
 
   return (
     <VoterRoster
@@ -55,7 +55,7 @@ export default async function ElectionVotersPage({
       frozen={election.frozen}
       roster={roster}
       query={{ q, status: status ?? "" }}
-      voterCap={cap}
+      entitlement={entitlement}
     />
   );
 }

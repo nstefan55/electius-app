@@ -540,7 +540,9 @@
         "candidatesRequired": "Dodajte barem dva kandidata za nastavak",
         "scheduleInvalid": "Provjerite datume — zatvaranje mora biti nakon otvaranja",
         "createFailed": "Nešto je pošlo po zlu. Pokušajte ponovno.",
-        "voterCap": "Popis birača premašuje granicu plana ({cap})."
+        "voterCap": "Popis birača premašuje granicu plana ({cap}).",
+        "liveResultsLocked": "Rezultati uživo dio su Pro plana.",
+        "voterReminderLocked": "Automatski podsjetnici biračima dio su Pro plana."
       },
       "step1": {
         "title": "Osnovni podaci",
@@ -1375,6 +1377,39 @@
         "requested": "Zahtjev je zaprimljen — provjerite e-poštu i potvrdite brisanje. Podaci se brišu u roku od 30 dana.",
         "requestFailed": "Slanje potvrde nije uspjelo. Pokušajte ponovno.",
         "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
+      }
+    },
+    "upgrade": {
+      "learnMore": "Saznajte više",
+      "context": {
+        "generic": {
+          "title": "Nadogradnja na Pro",
+          "body": "Pro otključava veće izbore, rezultate uživo, automatske podsjetnike biračima i trajno čuvanje dokaza u arhivi."
+        },
+        "liveResults": {
+          "title": "Rezultati uživo su dio Pro plana",
+          "body": "Na besplatnom planu zbroj po kandidatu vidite tek nakon zatvaranja glasovanja. Pro ga prikazuje dok glasovanje traje."
+        },
+        "voterReminder24h": {
+          "title": "Automatski podsjetnici su dio Pro plana",
+          "body": "Pro sam šalje podsjetnik biračima koji još nisu glasali, 24 sata prije roka. Na besplatnom planu podsjetnike šaljete ručno."
+        },
+        "voterCap": {
+          "title": "Veći popis birača je dio Pro plana",
+          "body": "Besplatni plan dopušta {free} birača po izborima. Pro podiže granicu na {pro}."
+        },
+        "brandedReports": {
+          "title": "Brendirani izvještaji su dio Pro plana",
+          "body": "Na Pro planu PDF izvještaj nosi logotip vaše organizacije umjesto Electius oznake."
+        },
+        "archiveRetention": {
+          "title": "Trajno čuvanje dokaza je dio Pro plana",
+          "body": "Na besplatnom planu teret dokaza obrezuje se nakon 12 mjeseci; zapis, korijenski hash i PDF ostaju zauvijek. Pro ne obrezuje ništa."
+        }
+      },
+      "gates": {
+        "brandedReports": "Na besplatnom planu izvještaj nosi Electius oznaku. Pro ga potpisuje logotipom vaše organizacije.",
+        "archiveRetention": "Besplatni plan čuva zapis, korijenski hash i PDF zauvijek, a teret dokaza obrezuje nakon 12 mjeseci."
       }
     }
   },

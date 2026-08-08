@@ -29,4 +29,7 @@ export const DASHBOARD_ONLY_PATHS = [
   "/voters",
   "/profile",
   "/settings",
+  // Odredište zaključanih Pro značajki. Nije stavka izbornika, ali JEST admin
+  // površina — bez ovog retka je apex poslužuje jednako (test to hvata).
+  "/upgrade",
 ];

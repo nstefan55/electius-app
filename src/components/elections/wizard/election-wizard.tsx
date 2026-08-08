@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { createElection, type WizardPayload } from "@/actions/create-election";
+import { voterCap, type Entitlement } from "@/lib/entitlements";
 import { StepBasicInfo } from "./step-basic-info";
 import { StepCandidates } from "./step-candidates";
 import { StepVoters } from "./step-voters";
@@ -39,8 +40,13 @@ function toPayload(data: WizardData): WizardPayload {
 // 5-step creation wizard — fills the 90% modal panel mounted by
 // /elections/new (design: Election Wizard.dc.html; presentation: user
 // decision 2026-07-23, centered modal over the dashboard).
-export function ElectionWizard({ voterCap }: { voterCap: number }) {
+// Pravo stiže cijelo, ne kao izračunata granica: korak 3 treba broj, korak 4
+// treba znati je li prekidač zaključan, a oba trebaju znati postoji li plan
+// iznad. `Entitlement` je diskriminirana unija primitiva, pa prelazi granicu
+// poslužitelj/klijent kakva jest — zato entitlements.ts namjerno nije server-only.
+export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
   const t = useTranslations("dashboard.wizard");
+  const cap = voterCap(entitlement);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -91,6 +97,36 @@ export function ElectionWizard({ voterCap }: { voterCap: number }) {
     setStep((s) => Math.min(5, s + 1));
   }
 
+  // Jedna staza za odbijanja, jer ih obje radnje mogu dobiti: zaštite plana
+  // stoje IZVAN `if (!draft)` u createElection, pa i spremanje skice može pasti
+  // na granicu birača ili zaključan Pro prekidač. Poruka uvijek vraća na korak
+  // koji je odbijanje izazvao — inače stoji uz sažetak, gdje se ništa ne mijenja.
+  function showError(res: { error: string; cap?: number }) {
+    if (res.error === "voterCap") {
+      setStep(3);
+      toast.error(t("errors.voterCap", { cap: res.cap ?? cap }));
+      return;
+    }
+    if (
+      res.error === "liveResultsLocked" ||
+      res.error === "voterReminderLocked"
+    ) {
+      // Bez ove grane odbijanje pada u generičko "nešto je pošlo po zlu", koje
+      // ne imenuje ni polje ni plan — točno stanje u kojem je liveResultsLocked
+      // isporučen bez ijedne poruke.
+      setStep(4);
+      toast.error(t(`errors.${res.error}`));
+      return;
+    }
+    toast.error(
+      res.error === "schedule"
+        ? t("errors.scheduleInvalid")
+        : res.error === "candidates"
+          ? t("errors.candidatesRequired")
+          : t("errors.createFailed"),
+    );
+  }
+
   function submit() {
     if (!validate(4)) return;
     startTransition(async () => {
@@ -98,19 +134,8 @@ export function ElectionWizard({ voterCap }: { voterCap: number }) {
       if (res.success) {
         setCreatedId(res.data.id);
         router.refresh(); // the /elections list behind the modal has a new row
-      } else if (res.error === "voterCap") {
-        // Vraćamo na korak 3: poruka mora stajati uz popis koji je predugačak,
-        // a ne uz sažetak na kojem se ništa ne može skratiti.
-        setStep(3);
-        toast.error(t("errors.voterCap", { cap: res.cap ?? voterCap }));
       } else {
-        toast.error(
-          res.error === "schedule"
-            ? t("errors.scheduleInvalid")
-            : res.error === "candidates"
-              ? t("errors.candidatesRequired")
-              : t("errors.createFailed"),
-        );
+        showError(res);
       }
     });
   }
@@ -129,7 +154,7 @@ export function ElectionWizard({ voterCap }: { voterCap: number }) {
         // dynamic and re-fetches fresh on navigation anyway.
         router.push("/elections");
       } else {
-        toast.error(t("errors.createFailed"));
+        showError(res);
       }
     });
   }
@@ -249,9 +274,11 @@ export function ElectionWizard({ voterCap }: { voterCap: number }) {
           {step === 1 && <StepBasicInfo data={data} patch={patch} />}
           {step === 2 && <StepCandidates data={data} patch={patch} />}
           {step === 3 && (
-            <StepVoters data={data} patch={patch} voterCap={voterCap} />
+            <StepVoters data={data} patch={patch} entitlement={entitlement} />
           )}
-          {step === 4 && <StepSettings data={data} patch={patch} />}
+          {step === 4 && (
+            <StepSettings data={data} patch={patch} entitlement={entitlement} />
+          )}
           {step === 5 && <StepReview data={data} goStep={setStep} />}
         </div>
       </div>

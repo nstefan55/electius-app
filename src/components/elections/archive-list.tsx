@@ -21,6 +21,7 @@ import {
 } from "@/lib/elections-view";
 import { voterSharePct } from "@/lib/results-view";
 import { CONTACT_EMAIL } from "@/lib/urls";
+import { upgradeHref } from "@/lib/upgrade-context";
 import { Pagination } from "@/components/ui/pagination";
 import { ARCHIVE_PER_PAGE } from "@/lib/constants/pagination";
 import { usePagination } from "@/lib/use-pagination";
@@ -38,8 +39,17 @@ import type { ArchivedElection } from "@/lib/db/elections";
 const ACTION =
   "inline-flex h-9.5 shrink-0 cursor-pointer items-center justify-center gap-1.75 rounded-md border border-border bg-white px-3.5 text-[0.84375rem] font-semibold text-neutral-600 transition-colors hover:border-brand-100 hover:bg-brand-50 hover:text-brand-700";
 
-export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
+export function ArchiveList({
+  elections,
+  // Free: teret dokaza se obrezuje nakon 12 mjeseci. Odluku donosi poslužitelj
+  // (razrješivač je server-only), lista je samo izriče.
+  freeRetention,
+}: {
+  elections: ArchivedElection[];
+  freeRetention: boolean;
+}) {
   const t = useTranslations("dashboard.election.lists.archive");
+  const tu = useTranslations("dashboard.upgrade");
 
   const [query, setQuery] = useState("");
   const [auditFor, setAuditFor] = useState<ArchivedElection | null>(null);
@@ -69,6 +79,17 @@ export function ArchiveList({ elections }: { elections: ArchivedElection[] }) {
             {t("title")}
           </h1>
           <p className="mt-1 text-sm text-neutral-600">{t("subtitle")}</p>
+          {freeRetention && (
+            <p className="mt-1.5 max-w-150 text-[0.8125rem] leading-relaxed text-neutral-600">
+              {tu("gates.archiveRetention")}{" "}
+              <Link
+                href={upgradeHref("archiveRetention")}
+                className="font-semibold text-brand-700 underline underline-offset-2"
+              >
+                {tu("learnMore")}
+              </Link>
+            </p>
+          )}
         </div>
         {elections.length > 0 && (
           <div className="flex h-11 w-85 max-w-[42vw] items-center gap-2.5 rounded-[10px] border border-border bg-white px-3.5 transition-colors focus-within:border-brand-700 focus-within:shadow-focus">

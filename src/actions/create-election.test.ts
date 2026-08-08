@@ -265,3 +265,53 @@ describe("createElection — rezultati uživo", () => {
     expect(prisma.election.create).not.toHaveBeenCalled();
   });
 });
+
+// Automatski podsjetnici biračima (pro-features-gating §7.1). Prije ovog reza
+// jedina zaštita bila je metla: Free administrator bi uključio prekidač,
+// vrijednost bi se spremila, pregled izbora bi je prikazao kao uključenu, i
+// 24 h prije kraja ne bi se dogodilo ništa — bez greške, bez traga, danima
+// kasnije, u bezglavom poslu bez sesije.
+describe("createElection — automatski podsjetnici", () => {
+  it("Free ne može uključiti podsjetnik i ništa se ne upisuje", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({
+      ...basePayload,
+      voterReminder24h: true,
+    });
+
+    expect(res).toEqual({ success: false, error: "voterReminderLocked" });
+    // Odbijanje koje ipak stvori izbore ostavlja stupac koji obećava slanje
+    // koje neće doći — točno stanje koje je ovaj rez uklonio.
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("Pro ga uključuje i vrijednost se upisuje", async () => {
+    const res = await createElection({
+      ...basePayload,
+      voterReminder24h: true,
+    });
+
+    expect(res.success).toBe(true);
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.voterReminder24h).toBe(true);
+  });
+
+  it("Free bez podsjetnika prolazi normalno", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    expect((await createElection(basePayload)).success).toBe(true);
+  });
+
+  it("zaštita vrijedi i za skicu — inače je skica zaobilaznica", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection(
+      { ...basePayload, voterReminder24h: true },
+      true,
+    );
+
+    expect(res).toEqual({ success: false, error: "voterReminderLocked" });
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+});
