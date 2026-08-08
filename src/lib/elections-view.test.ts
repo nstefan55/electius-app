@@ -32,6 +32,9 @@ function election(overrides: Partial<DashboardElection>): DashboardElection {
     voted: 0,
     opens: "",
     closes: "",
+    // Odluka poslužitelja (mutationsFrozen); nijedan pomoćnik u ovoj datoteci
+    // je ne čita — samo je popisi prosljeđuju u UI.
+    frozen: false,
     ...overrides,
   };
 }

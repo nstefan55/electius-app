@@ -52,9 +52,19 @@ const session = {
   },
 };
 
+// Otvoren prozor je zadana vrijednost: mutationsFrozen čita datume, pa bi ih
+// svaki test inače morao ponavljati. Testovi koji ispituju gotove izbore
+// prepisuju endsAt eksplicitno.
+const OPEN_WINDOW = {
+  startsAt: new Date("2026-07-01T00:00:00Z"),
+  endsAt: new Date("2099-01-01T00:00:00Z"),
+};
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockElection = (value: any) =>
-  vi.mocked(prisma.election.findFirst).mockResolvedValue(value);
+  vi
+    .mocked(prisma.election.findFirst)
+    .mockResolvedValue(value === null ? null : { ...OPEN_WINDOW, ...value });
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -219,7 +229,16 @@ describe("addVoters", () => {
 });
 
 describe("updateVoterName", () => {
+  // Akcija sada prvo čita birača (prozor je usporedba stupca sa stupcem i ne
+  // može u WHERE), pa svaki test mora ponuditi izbore uz njega.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mockVoter = (election: any) =>
+    vi
+      .mocked(prisma.voter.findFirst)
+      .mockResolvedValue({ election: { ...OPEN_WINDOW, ...election } } as never);
+
   it("scopes the write to the session org through the election relation", async () => {
+    mockVoter({ status: "ACTIVE" });
     vi.mocked(prisma.voter.updateMany).mockResolvedValue({ count: 1 });
 
     const result = await updateVoterName({
@@ -230,12 +249,19 @@ describe("updateVoterName", () => {
 
     expect(result).toEqual({ success: true });
     expect(vi.mocked(prisma.voter.updateMany).mock.calls[0]![0]!).toEqual({
-      where: { id: "v1", election: { organizationId: "org_1" } },
+      where: {
+        id: "v1",
+        election: {
+          organizationId: "org_1",
+          status: { in: ["DRAFT", "SCHEDULED", "ACTIVE"] },
+        },
+      },
       data: { firstName: "Ana", lastName: "Horvat" },
     });
   });
 
   it("stores an empty field as null rather than an empty string", async () => {
+    mockVoter({ status: "ACTIVE" });
     vi.mocked(prisma.voter.updateMany).mockResolvedValue({ count: 1 });
 
     await updateVoterName({ voterId: "v1", firstName: "Ana", lastName: "  " });
@@ -246,12 +272,39 @@ describe("updateVoterName", () => {
     });
   });
 
-  it("reports forbidden when the WHERE matches nothing (cross-org id)", async () => {
-    vi.mocked(prisma.voter.updateMany).mockResolvedValue({ count: 0 });
+  it("reports forbidden when the read matches nothing (cross-org id)", async () => {
+    vi.mocked(prisma.voter.findFirst).mockResolvedValue(null);
 
     expect(
       await updateVoterName({ voterId: "v1", firstName: "A", lastName: "B" }),
     ).toEqual({ success: false, error: "forbidden" });
+    expect(prisma.voter.updateMany).not.toHaveBeenCalled();
+  });
+
+  // G5 — zahtjev 3. Prije je ime birača bilo promjenjivo na SVAKOM statusu.
+  it.each(["CLOSED", "ARCHIVED"] as const)(
+    "writes nothing on %s",
+    async (status) => {
+      mockVoter({ status });
+
+      expect(
+        await updateVoterName({ voterId: "v1", firstName: "A", lastName: "B" }),
+      ).toEqual({ success: false, error: "electionEnded" });
+      expect(prisma.voter.updateMany).not.toHaveBeenCalled();
+    },
+  );
+
+  it("writes nothing on an ACTIVE election whose window is over", async () => {
+    mockVoter({
+      status: "ACTIVE",
+      startsAt: new Date("2026-07-01T00:00:00Z"),
+      endsAt: new Date("2026-07-10T00:00:00Z"),
+    });
+
+    expect(
+      await updateVoterName({ voterId: "v1", firstName: "A", lastName: "B" }),
+    ).toEqual({ success: false, error: "electionEnded" });
+    expect(prisma.voter.updateMany).not.toHaveBeenCalled();
   });
 });
 
@@ -438,5 +491,62 @@ describe("addVoters — granica plana", () => {
     // electionId mora stići do resolvera, inače kupnja pojedinog izbora nikad
     // neće moći podići granicu samo tim izborima.
     expect(resolveEntitlement).toHaveBeenCalledWith("e1", "org_1");
+  });
+
+});
+
+// G4 — zahtjev 3. Prije se redak UPISIVAO pa bi samo slanje bilo blokirano;
+// birači bi ušli u nazivnik izlaznosti gotovih izbora i mogli postignuti
+// kvorum gurnuti ispod praga.
+describe("addVoters — izbori kojima je rok prošao", () => {
+  const rows = [{ name: "Ana Horvat", email: "ana@example.com" }];
+  const ENDED = {
+    startsAt: new Date("2026-07-01T00:00:00Z"),
+    endsAt: new Date("2026-07-10T00:00:00Z"),
+  };
+
+  it("odbija upis u ACTIVE izbore kojima je prozor gotov", async () => {
+    mockElection({ status: "ACTIVE", ...ENDED, voters: [] });
+
+    const res = await addVoters({ electionId: "e1", rows });
+
+    expect(res).toEqual({ success: false, error: "electionEnded" });
+    // Zaštita koja odbija NAKON upisa gora je od nikakve zaštite.
+    expect(prisma.voter.createMany).not.toHaveBeenCalled();
+    expect(publishElection).not.toHaveBeenCalled();
+  });
+
+  it("odbijanje ide neuspješnim putem, nikad kroz `blocked`", async () => {
+    mockElection({ status: "ACTIVE", ...ENDED, voters: [] });
+
+    const res = await addVoters({ electionId: "e1", rows });
+
+    // `blocked` je kvalifikator uspjeha; dijalog ga čita tek nakon res.success,
+    // pa bi odbijanje kroz njega tiho ispalo u generičku poruku o grešci.
+    expect(res.success).toBe(false);
+    expect(res.blocked).toBeUndefined();
+  });
+
+  it("odbija prije deduplikacije i granice — sadržaj popisa ne mijenja odgovor", async () => {
+    mockElection({
+      status: "ACTIVE",
+      ...ENDED,
+      voters: [{ email: "ana@example.com" }],
+    });
+
+    // Svi redci su duplikati; bez provjere prozora ovo bi vratilo uspjeh.
+    const res = await addVoters({ electionId: "e1", rows });
+
+    expect(res).toEqual({ success: false, error: "electionEnded" });
+    expect(resolveEntitlement).not.toHaveBeenCalled();
+  });
+
+  it("i dalje prima birače dok je prozor otvoren", async () => {
+    mockElection({ status: "ACTIVE", voters: [] });
+
+    const res = await addVoters({ electionId: "e1", rows });
+
+    expect(res.success).toBe(true);
+    expect(prisma.voter.createMany).toHaveBeenCalled();
   });
 });

@@ -445,7 +445,8 @@
           "renameEmpty": "Enter an election name to continue",
           "error": "Something went wrong. Please try again.",
           "sealed": "Archived — Merkle root {root}",
-          "archiveNotClosed": "Close the election first, then archive it."
+          "archiveNotClosed": "Close the election first, then archive it.",
+          "electionEnded": "This election has ended — it can no longer be renamed."
         }
       },
       "status": {
@@ -1081,7 +1082,8 @@
         "removed": "Voter removed.",
         "notAllowed": "That action is not available for the election's current state.",
         "windowOver": "The voting deadline has passed — a new link would expire before it arrived.",
-        "failed": "Something went wrong. Please try again."
+        "failed": "Something went wrong. Please try again.",
+        "electionEnded": "This election has ended — the voter list can no longer be changed."
       },
       "edit": {
         "title": "Edit voter name",
@@ -1132,7 +1134,8 @@
         "capTitle": "Plan limit reached",
         "capBody": "This election can hold at most {cap} voters. It currently has {current} and you are adding {adding}.",
         "capLink": "See plans",
-        "capUsage": "{used} of {cap} voters used."
+        "capUsage": "{used} of {cap} voters used.",
+        "electionEnded": "The voting deadline has passed — voters can no longer be added."
       },
       "cap": {
         "usage": "{used} of {cap} voters used"

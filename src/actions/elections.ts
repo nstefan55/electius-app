@@ -8,7 +8,7 @@ import {
   publishElection,
   sendReminders,
 } from "@/lib/services/publication.service";
-import { windowOver } from "@/lib/services/token.service";
+import { deadlinePassed, mutationsFrozen } from "@/lib/services/token.service";
 import { deleteObject } from "@/lib/services/storage.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
@@ -20,17 +20,6 @@ type ActionResult = { success: boolean; error?: string };
 const MAX_TITLE = 255;
 
 // Cheap shared ownership check — one indexed `findFirst` per mutation.
-async function assertOwned(
-  id: string,
-  organizationId: string,
-): Promise<boolean> {
-  const owned = await prisma.election.findFirst({
-    where: { id, organizationId },
-    select: { id: true },
-  });
-  return owned !== null;
-}
-
 // Same check, narrowed to an open election — anything that emails voters is
 // only meaningful (and only allowed) while voting is running.
 async function assertOwnedActive(
@@ -54,9 +43,23 @@ export async function renameElection(
 
   try {
     const { organizationId } = await requireSession();
-    if (!(await assertOwned(id, organizationId))) {
-      return { success: false, error: "forbidden" };
+
+    // Vlasništvo ostaje u WHERE klauzuli; prozor se mora pročitati jer je to
+    // usporedba stupca sa stupcem, pa isti upit donosi i status i datume.
+    const election = await prisma.election.findFirst({
+      where: { id, organizationId },
+      select: { status: true, startsAt: true, endsAt: true },
+    });
+    if (!election) return { success: false, error: "forbidden" };
+
+    // Gotovi izbori se ne preimenuju (zahtjev 3). Kod zapečaćenih je oštrije:
+    // Archive.electionData čuva vlastitu kopiju naslova, pa bi preimenovanje
+    // razdvojilo živi redak od potpisanog zapisa — arhivska kartica, PDF
+    // izvještaj i izvozi čitali bi s dviju strana istog neslaganja.
+    if (mutationsFrozen(election)) {
+      return { success: false, error: "electionEnded" };
     }
+
     await prisma.election.update({
       where: { id },
       data: { title: name.slice(0, MAX_TITLE) },
@@ -165,12 +168,19 @@ export async function startElection(id: string): Promise<PublishActionResult> {
     // dana umjesto do datuma koji je admin postavio — tiho pretumačenje.
     // Ne može u WHERE klauzulu: usporedba stupca sa stupcem. Atomičnost čuva
     // updateMany ispod; datumi se ne mijenjaju paralelno, pa utrke nema.
+    //
+    // deadlinePassed, NE windowOver: pitanje je ima li nacrt stvaran rok koji je
+    // prošao. Nacrt bez roka nosi rezervirani datum i startsAt = trenutak
+    // stvaranja, pa bi ga windowOver (usidren u startsAt) nakon 30 dana trajno
+    // zabranio — iako redak ispod ionako prepisuje startsAt na sada.
     const draft = await prisma.election.findFirst({
       where: { id, organizationId, status: "DRAFT" },
       select: { startsAt: true, endsAt: true },
     });
     if (!draft) return { success: false, error: "invalidStatus" };
-    if (windowOver(draft)) return { success: false, error: "deadlinePassed" };
+    if (deadlinePassed(draft)) {
+      return { success: false, error: "deadlinePassed" };
+    }
 
     const { count } = await prisma.election.updateMany({
       where: { id, organizationId, status: "DRAFT" },

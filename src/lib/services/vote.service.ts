@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash, randomInt } from "crypto";
 import { prisma } from "@/lib/prisma";
-import { hashToken, windowOver } from "./token.service";
+import { hashToken, mutationsFrozen } from "./token.service";
 
 // Vote casting — stage 2 of the Security & Integrity Model (voter-flow-spec,
 // contract in election-publication-spec). The load-bearing invariant: a Vote
@@ -126,10 +126,17 @@ export async function getBallotState(segment: string): Promise<BallotState> {
 // endsAt i sljedećeg prolaza — i za slučaj da pinger uopće ne radi. Bez nje
 // birač dobiva "istekla poveznica" s pozivom da zatraži novu, koja je jednako
 // mrtva: zatvorena petlja bez izlaza.
-function votingOver(e: BallotElection, now: Date = new Date()): boolean {
-  return (
-    e.status === "CLOSED" || e.status === "ARCHIVED" || windowOver(e, now)
-  );
+//
+// Ista formula kao mutationsFrozen i namjerno njezin poziv, ne kopija: dva
+// pitanja ("smije li se još glasati" / "smije li admin još mijenjati") koja
+// danas imaju isti odgovor, pa im tijelo mora biti jedno. Tip je strukturni,
+// ne BallotElection — castVote čita uži izbor stupaca, a funkcija ionako gleda
+// samo status i datume.
+function votingOver(
+  e: { status: ElectionStatus; startsAt: Date; endsAt: Date },
+  now: Date = new Date(),
+): boolean {
+  return mutationsFrozen(e, now);
 }
 
 // --- vote casting -----------------------------------------------------------
@@ -174,6 +181,8 @@ export async function castVote(
           election: {
             select: {
               status: true,
+              startsAt: true,
+              endsAt: true,
               votingType: true,
               options: { select: { id: true } },
             },
@@ -186,8 +195,17 @@ export async function castVote(
   if (!token) throw new VoteError("invalid");
   const election = token.voter.election;
   if (token.used) throw new VoteError("used");
-  if (token.expiresAt.getTime() <= Date.now()) throw new VoteError("invalid");
+
+  const now = new Date();
+  // Vlastiti vijek tokena i prozor izbora su dvije činjenice; obje moraju
+  // vrijediti. Prva pokriva token skovan po starom pravilu (istek usidren u
+  // trenutak kovanja), druga sve ostalo.
+  if (token.expiresAt.getTime() <= now.getTime()) throw new VoteError("invalid");
   if (election.status !== "ACTIVE") throw new VoteError("invalid");
+  // Zajedničko pravilo, ne slučajnost. Prije se oslanjalo na to da se istek
+  // tokena podudara s krajem prozora — izvedeno jamstvo, a ovo je granica
+  // sigurnosti (provjera na stranici je samo UX).
+  if (votingOver(election, now)) throw new VoteError("invalid");
 
   // Selection rules: options must belong to this election, deduped; SINGLE ⇒
   // exactly 1; MULTI ⇒ ≥1, no upper cap (decision (a) — no maxChoices field).

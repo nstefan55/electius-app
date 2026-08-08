@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, randomBytes } from "crypto";
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import type { ElectionStatus } from "@/lib/elections-view";
 
 // Voter token minting (election-publication-spec §1). Stage 1 of the security
 // chain of custody: the 256-bit raw token exists ONLY in this module's return
@@ -22,13 +23,18 @@ export function hashToken(raw: string): string {
   return createHash("sha256").update(raw).digest("hex");
 }
 
-// Expiry rule: tokens die with the election. When endsAt is the wizard
-// placeholder (unscheduled close, endsAt <= startsAt) fall back to a 30-day
-// safety ceiling from activation. Defense-in-depth — the ballot flow also
-// checks election status, which covers early close.
-export function tokenExpiry(startsAt: Date, endsAt: Date, now: Date = new Date()): Date {
+// Pravilo isteka: tokeni umiru zajedno s izborima. Kad je endsAt rezervirani
+// datum čarobnjaka (nezakazano zatvaranje, endsAt <= startsAt), strop je 30
+// dana od POČETKA — ne od `now`.
+//
+// Sidro je bilo `now` i to je bio kvar (G2): strop se pomicao sa svakim
+// pozivom, pa `windowOver` nije bio "još nije isteklo" nego "ne može isteći".
+// Takvi izbori nisu se mogli zatvoriti nikad, a token skovan 29. dana živio je
+// do 59. — suprotno ugovoru ove funkcije. Zato `now` više nije ni parametar:
+// istek ovisi isključivo o datumima izbora, pa se kvar ne može vratiti.
+export function tokenExpiry(startsAt: Date, endsAt: Date): Date {
   if (endsAt.getTime() <= startsAt.getTime()) {
-    return new Date(now.getTime() + THIRTY_DAYS_MS);
+    return new Date(startsAt.getTime() + THIRTY_DAYS_MS);
   }
   return endsAt;
 }
@@ -41,7 +47,40 @@ export function windowOver(
   election: { startsAt: Date; endsAt: Date },
   now: Date = new Date(),
 ): boolean {
-  return tokenExpiry(election.startsAt, election.endsAt, now) <= now;
+  return tokenExpiry(election.startsAt, election.endsAt) <= now;
+}
+
+// Drugo pitanje, namjerno druga funkcija: ima li ovaj izbor STVARAN rok koji je
+// već prošao? Rezervirani datum (endsAt <= startsAt) nije rok — čarobnjak ga
+// nije ni postavio — pa nema što proći.
+//
+// Pita ga samo startElection, i mora ga pitati odvojeno: ondje straža čita
+// startsAt PRIJE nego ga isti upit prepiše na sada, pa bi windowOver nad
+// nacrtom starijim od 30 dana vratio true i zauvijek zabranio pokretanje —
+// bez rute za uređivanje kojom bi se datum popravio.
+export function deadlinePassed(
+  election: { startsAt: Date; endsAt: Date },
+  now: Date = new Date(),
+): boolean {
+  return (
+    election.endsAt.getTime() > election.startsAt.getTime() &&
+    election.endsAt.getTime() <= now.getTime()
+  );
+}
+
+// "Izbori su gotovi" za administratorsku stranu: nakon toga se popis birača i
+// naslov više ne diraju (zahtjev 3 — admin ne mijenja izbore koji su završili).
+// windowOver pokriva prozor između endsAt i sljedećeg prolaza čistača, i
+// slučaj da pinger uopće ne radi.
+export function mutationsFrozen(
+  election: { status: ElectionStatus; startsAt: Date; endsAt: Date },
+  now: Date = new Date(),
+): boolean {
+  return (
+    election.status === "CLOSED" ||
+    election.status === "ARCHIVED" ||
+    windowOver(election, now)
+  );
 }
 
 // Re-mint a single voter's token (voter-flow spec: QR entry / "request a new

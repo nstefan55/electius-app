@@ -445,7 +445,8 @@
           "renameEmpty": "Unesite naziv izbora za nastavak",
           "error": "Nešto je pošlo po zlu. Pokušajte ponovno.",
           "sealed": "Arhivirano — Merkle korijen {root}",
-          "archiveNotClosed": "Najprije zatvorite izbore, pa ih onda arhivirajte."
+          "archiveNotClosed": "Najprije zatvorite izbore, pa ih onda arhivirajte.",
+          "electionEnded": "Izbori su završili — više se ne mogu preimenovati."
         }
       },
       "status": {
@@ -1081,7 +1082,8 @@
         "removed": "Birač je uklonjen.",
         "notAllowed": "Ova radnja nije moguća u trenutačnom stanju izbora.",
         "windowOver": "Rok za glasanje je prošao — nova poveznica bila bi istekla prije nego što stigne.",
-        "failed": "Nešto je pošlo po zlu. Pokušajte ponovno."
+        "failed": "Nešto je pošlo po zlu. Pokušajte ponovno.",
+        "electionEnded": "Izbori su završili — popis birača se više ne mijenja."
       },
       "edit": {
         "title": "Uredi ime birača",
@@ -1132,7 +1134,8 @@
         "capTitle": "Dosegnuta granica plana",
         "capBody": "Ovi izbori mogu imati najviše {cap} birača. Trenutačno ih je {current}, a dodajete još {adding}.",
         "capLink": "Pogledaj planove",
-        "capUsage": "Iskorišteno {used} od {cap} birača."
+        "capUsage": "Iskorišteno {used} od {cap} birača.",
+        "electionEnded": "Rok za glasanje je prošao — birači se više ne mogu dodati."
       },
       "cap": {
         "usage": "Iskorišteno {used} od {cap} birača"

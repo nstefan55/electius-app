@@ -49,6 +49,10 @@ export default async function ElectionVotersPage({
     <VoterRoster
       electionId={id}
       electionStatus={election.status}
+      // Odluka poslužitelja: status sam ne razlikuje ACTIVE izbore kojima je
+      // prozor gotov, a mutationsFrozen je server-only. Klijent dobiva gotovu
+      // odluku i nikad je ne izvodi sam.
+      frozen={election.frozen}
       roster={roster}
       query={{ q, status: status ?? "" }}
       voterCap={cap}

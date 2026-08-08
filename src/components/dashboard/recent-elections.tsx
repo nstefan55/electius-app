@@ -81,7 +81,7 @@ export function RecentElections({
   const shown = rows.slice(0, visible);
   const remaining = rows.length - shown.length;
 
-  const run = <T extends { success: boolean }>(
+  const run = <T extends { success: boolean; error?: string }>(
     fn: () => Promise<T>,
     onOk: (res: T) => void,
   ) =>
@@ -91,7 +91,14 @@ export function RecentElections({
         onOk(res);
         router.refresh();
       } else {
-        toast.error(t("actions.toast.error"));
+        // Rezerva za staru stranicu: stavka je skrivena, ali radnja je granica.
+        toast.error(
+          t(
+            res.error === "electionEnded"
+              ? "actions.toast.electionEnded"
+              : "actions.toast.error",
+          ),
+        );
         router.refresh(); // pull back the authoritative rows on failure
       }
     });
@@ -321,13 +328,17 @@ export function RecentElections({
                           className="z-50 outline-none"
                         >
                           <Menu.Popup className="min-w-44 rounded-lg border border-border bg-white p-1.5 shadow-md outline-none">
-                            <Menu.Item
-                              className={MENU_ITEM}
-                              onClick={() => startRename(e)}
-                            >
-                              <Pencil className="size-4" />
-                              {t("actions.rename")}
-                            </Menu.Item>
+                            {/* Gotovi izbori se ne preimenuju (zahtjev 3);
+                                odluku donosi poslužitelj, vidi elections-list. */}
+                            {!e.frozen && (
+                              <Menu.Item
+                                className={MENU_ITEM}
+                                onClick={() => startRename(e)}
+                              >
+                                <Pencil className="size-4" />
+                                {t("actions.rename")}
+                              </Menu.Item>
+                            )}
                             <Menu.Item
                               className={MENU_ITEM}
                               onClick={() => onDuplicate(e.id)}

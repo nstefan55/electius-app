@@ -10,6 +10,7 @@ import {
 } from "@/lib/services/publication.service";
 import { voterCap } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
+import { mutationsFrozen } from "@/lib/services/token.service";
 
 // Upravljanje biračima (voter-management-spec). Svaka akcija je org-scoped i
 // nosi status izbora u WHERE klauzuli — nikad pročitaj-pa-provjeri.
@@ -73,9 +74,28 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
         organizationId,
         status: { in: [...OPEN_STATUSES] },
       },
-      select: { status: true, voters: { select: { email: true } } },
+      select: {
+        status: true,
+        startsAt: true,
+        endsAt: true,
+        voters: { select: { email: true } },
+      },
     });
     if (!election) return { success: false, error: "invalidStatus" };
+
+    // Rok je prošao → odbij UPIS, ne samo slanje (zahtjev 3). Prije se redak
+    // ubacivao pa bi publishElection vratio blocked: birači bi ušli u nazivnik
+    // izlaznosti gotovih izbora i mogli postignuti kvorum gurnuti ispod praga —
+    // upis koji mijenja rezultat nakon što je glasanje završilo.
+    //
+    // Odbijanje ide NEUSPJEŠNIM putem, nikad kroz `blocked`: `blocked` je
+    // kvalifikator uspjeha ("dodani su, ali pozivnica nije poslana") i dijalog
+    // ga čita tek nakon res.success — ista greška koju je granica birača već
+    // zabilježila. Provjera stoji prije deduplikacije i granice: gotovi izbori
+    // se odbijaju bez obzira na sadržaj popisa.
+    if (mutationsFrozen(election)) {
+      return { success: false, error: "electionEnded" };
+    }
 
     // @@unique([email, electionId]) bi odbio cijeli createMany na duplikatu, pa
     // se filtrira unaprijed: prvo unutar unosa, zatim prema postojećem popisu.
@@ -137,8 +157,26 @@ export async function updateVoterName(input: unknown): Promise<ActionResult> {
 
   try {
     const { organizationId } = await requireSession();
-    const { count } = await prisma.voter.updateMany({
+
+    // Prozor se mora pročitati (usporedba stupca sa stupcem ne ide u WHERE),
+    // pa isti oblik kao startElection: pročitaj pa odbij za prozor, a
+    // vlasništvo i status ostaju u WHERE klauzuli upisa ispod.
+    const voter = await prisma.voter.findFirst({
       where: { id: voterId, election: { organizationId } },
+      select: {
+        election: { select: { status: true, startsAt: true, endsAt: true } },
+      },
+    });
+    if (!voter) return { success: false, error: "forbidden" };
+    if (mutationsFrozen(voter.election)) {
+      return { success: false, error: "electionEnded" };
+    }
+
+    const { count } = await prisma.voter.updateMany({
+      where: {
+        id: voterId,
+        election: { organizationId, status: { in: [...OPEN_STATUSES] } },
+      },
       data: { firstName: firstName || null, lastName: lastName || null },
     });
     return count === 0

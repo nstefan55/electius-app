@@ -114,6 +114,13 @@ export function AddVotersDialog({
           });
           return;
         }
+        // Rezerva: gumb je skriven na gotovim izborima, ali stranica može biti
+        // stara — a radnja je granica, ne UI. `closed` govori o statusu; ovo o
+        // roku, pa ima vlastitu poruku.
+        if (res.error === "electionEnded") {
+          toast.error(t("electionEnded"));
+          return;
+        }
         toast.error(t(res.error === "invalidStatus" ? "closed" : "failed"));
         return;
       }

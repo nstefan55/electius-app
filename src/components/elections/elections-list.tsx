@@ -146,14 +146,24 @@ export function ElectionsList({
     `${statusFilter}|${turnoutFilter}|${windowFilter}`,
   );
 
-  const run = (fn: () => Promise<{ success: boolean }>, onOk: () => void) =>
+  const run = (
+    fn: () => Promise<{ success: boolean; error?: string }>,
+    onOk: () => void,
+  ) =>
     startTransition(async () => {
       const res = await fn();
       if (res.success) {
         onOk();
         router.refresh();
       } else {
-        toast.error(tp("actions.toast.error"));
+        // Rezerva za staru stranicu: stavka je skrivena, ali radnja je granica.
+        toast.error(
+          tp(
+            res.error === "electionEnded"
+              ? "actions.toast.electionEnded"
+              : "actions.toast.error",
+          ),
+        );
         router.refresh(); // pull back the authoritative rows on failure
       }
     });
@@ -455,13 +465,19 @@ export function ElectionsList({
                                 <Eye className="size-4" />
                                 {t("viewResults")}
                               </Menu.Item>
-                              <Menu.Item
-                                className={MENU_ITEM}
-                                onClick={() => startRename(e)}
-                              >
-                                <Pencil className="size-4" />
-                                {tp("actions.rename")}
-                              </Menu.Item>
+                              {/* Gotovi izbori se ne preimenuju (zahtjev 3).
+                                  `frozen` dolazi s poslužitelja jer status sam
+                                  ne razlikuje ACTIVE izbore kojima je rok
+                                  prošao, a čistač ih još nije zatvorio. */}
+                              {!e.frozen && (
+                                <Menu.Item
+                                  className={MENU_ITEM}
+                                  onClick={() => startRename(e)}
+                                >
+                                  <Pencil className="size-4" />
+                                  {tp("actions.rename")}
+                                </Menu.Item>
+                              )}
                               <Menu.Item
                                 className={MENU_ITEM}
                                 onClick={() => onDuplicate(e.id)}
