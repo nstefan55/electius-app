@@ -57,6 +57,35 @@ export function canUseLiveResults(e: Entitlement): boolean {
   }
 }
 
+// Automatski podsjetnici biračima 24 h prije zatvaranja — oglašeno kao Pro.
+// Imenovano pravilo, a ne `kind === "free"` na pozivnom mjestu, jer isti uvjet
+// čitaju tri strane: čarobnjak (zaključan prekidač), createElection (granica
+// povjerenja) i metla (šalje ili preskače). Tri kopije razišle bi se prvom
+// promjenom tiera.
+export function canUseAutoReminders(e: Entitlement): boolean {
+  switch (e.kind) {
+    case "free":
+      return false;
+    case "pro":
+    case "purchased":
+      return true;
+  }
+}
+
+// Postoji li plan iznad ovoga — pitanje o PONUDI, ne o zaključanosti. Pro
+// organizacija na 480 od 500 birača vidi istu najavu granice, ali ponuditi joj
+// nadogradnju znači prodavati ono što već ima. Zato svaka poveznica na /upgrade
+// visi o ovome, a ne o samoj granici.
+export function canUpgrade(e: Entitlement): boolean {
+  switch (e.kind) {
+    case "free":
+      return true;
+    case "pro":
+    case "purchased":
+      return false;
+  }
+}
+
 // Kalendarska godina, nikad 365 * 24 * 60 * 60 * 1000 — u prijelaznoj godini to
 // pada dan ranije, a ništa to ne bi primijetilo jer expiresAt još nitko ne čita.
 // Jedina izvedba tog pravila: archive.service.ts je imao vlastiti oneYearFrom i

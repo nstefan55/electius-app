@@ -4,7 +4,11 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
 import { candidateRowSchema, voterRowSchema } from "@/lib/wizard-csv";
-import { canUseLiveResults, voterCap } from "@/lib/entitlements";
+import {
+  canUseAutoReminders,
+  canUseLiveResults,
+  voterCap,
+} from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 
 // Election creation wizard (all-elections phase 2). One action, two modes:
@@ -119,6 +123,16 @@ export async function createElection(
     // odgodio isto stanje do pokretanja izbora.
     if (w.liveResults && !canUseLiveResults(entitlement)) {
       return { success: false, error: "liveResultsLocked" };
+    }
+
+    // Automatski podsjetnik je jednako Pro, ali se do sada NIJE provjeravao
+    // ovdje — jedina zaštita bila je metla, danima kasnije i bez sesije. Free
+    // administrator bi uključio prekidač, vrijednost bi se spremila, pregled
+    // izbora bi je prikazao kao uključenu, i 24 h prije kraja ne bi se dogodilo
+    // ništa: bez greške, bez traga, u bezglavom poslu. Stoji uz LIVE i jednako
+    // IZVAN `if (!draft)` — skica nije zaobilaznica, samo odgoda istog stanja.
+    if (w.voterReminder24h && !canUseAutoReminders(entitlement)) {
+      return { success: false, error: "voterReminderLocked" };
     }
 
     const election = await prisma.election.create({

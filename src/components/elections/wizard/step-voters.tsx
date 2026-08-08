@@ -6,7 +6,8 @@ import { X } from "lucide-react";
 import toast from "react-hot-toast";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { parseVotersCsv, voterRowSchema } from "@/lib/wizard-csv";
-import { nearCap } from "@/lib/entitlements";
+import { canUpgrade, nearCap, voterCap, type Entitlement } from "@/lib/entitlements";
+import { upgradeHref } from "@/lib/upgrade-context";
 import { Link } from "@/i18n/navigation";
 import {
   CsvDropZone,
@@ -18,14 +19,43 @@ import {
   type StepProps,
 } from "./wizard-shared";
 
+// Novi tab, uvijek. Stanje čarobnjaka je samo u klijentu i nigdje se ne
+// sprema, pa odlazak sa stranice uništava napola složene izbore i upravo
+// uvezeni CSV. Spremanje skice to ne spašava — skica se ne može ponovno
+// otvoriti u čarobnjaku (način uređivanja nije izgrađen).
+function UpgradeLink({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={upgradeHref("voterCap")}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={className}
+    >
+      {children}
+    </Link>
+  );
+}
+
 // Step 3 — voter list: manual add (name + email, both required) or CSV
 // import. Emails are deduped case-insensitively — one voter, one vote.
 export function StepVoters({
   data,
   patch,
-  voterCap,
-}: StepProps & { voterCap: number }) {
+  entitlement,
+}: StepProps & { entitlement: Entitlement }) {
   const t = useTranslations("dashboard.wizard.step3");
+  const tu = useTranslations("dashboard.upgrade");
+  const cap = voterCap(entitlement);
+  // Ponuda visi o planu, ne o granici: Pro organizacija na 480 od 500 birača
+  // vidi istu najavu, ali poveznica "Pogledaj planove" ondje prodaje ono što
+  // već ima.
+  const upsell = canUpgrade(entitlement);
   const [mode, setMode] = useState<"manual" | "csv">("manual");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -145,23 +175,30 @@ export function StepVoters({
         {/* Granica plana. Preko granice je odbijanje (createElection ga
             provodi), na ≥80% samo tiha najava — otkriti granicu tek pri
             spremanju, s 300 pripremljenih redaka, je najskuplji trenutak. */}
-        {data.voters.length > voterCap ? (
+        {data.voters.length > cap ? (
           <div className="mt-4 rounded-md border-l-[3px] border-error-500 bg-error-50 px-4 py-3.5 text-[0.84375rem] leading-relaxed text-error-700">
             <p className="font-semibold">{t("capTitle")}</p>
             <p className="mt-0.5">
-              {t("capBody", { cap: voterCap, current: data.voters.length })}
+              {t("capBody", { cap, current: data.voters.length })}
             </p>
-            <Link
-              href="/settings"
-              className="mt-1.5 inline-block font-semibold underline underline-offset-2"
-            >
-              {t("capLink")}
-            </Link>
+            {upsell && (
+              <UpgradeLink className="mt-1.5 inline-block font-semibold underline underline-offset-2">
+                {t("capLink")}
+              </UpgradeLink>
+            )}
           </div>
         ) : (
-          nearCap(data.voters.length, voterCap) && (
+          nearCap(data.voters.length, cap) && (
             <p className="mt-4 text-[0.84375rem] text-neutral-600">
-              {t("capUsage", { used: data.voters.length, cap: voterCap })}
+              {t("capUsage", { used: data.voters.length, cap })}
+              {upsell && (
+                <>
+                  {" "}
+                  <UpgradeLink className="font-semibold text-brand-700 underline underline-offset-2">
+                    {tu("learnMore")}
+                  </UpgradeLink>
+                </>
+              )}
             </p>
           )
         )}

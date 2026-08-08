@@ -13,6 +13,13 @@ import {
   type WizardData,
 } from "./wizard-shared";
 import { ProBadge, SoonBadge } from "@/components/ui/plan-badge";
+import {
+  canUseAutoReminders,
+  canUseLiveResults,
+  type Entitlement,
+} from "@/lib/entitlements";
+import { upgradeHref, type UpgradeFeature } from "@/lib/upgrade-context";
+import { Link } from "@/i18n/navigation";
 
 // Prekidači (design OPTION_DEFS). Kvorum je besplatan od 2026-08-03 — zakonski
 // uvjet valjanosti skupštine, ne dodatna pogodnost.
@@ -87,11 +94,29 @@ function DateTimeField({
 }
 
 // Step 4 — start mode (manual / scheduled) + safeguard toggles.
-export function StepSettings({ data, patch }: StepProps) {
+export function StepSettings({
+  data,
+  patch,
+  entitlement,
+}: StepProps & { entitlement: Entitlement }) {
   const t = useTranslations("dashboard.wizard.step4");
+  const tu = useTranslations("dashboard.upgrade");
 
   const toggle = (key: OptionKey) =>
     patch({ [key]: !data[key] } as Partial<WizardData>);
+
+  // Vraća ZAKLJUČANU značajku ili null — ne boolean, jer se iz iste vrijednosti
+  // gradi i href, pa se parametar i zaštita ne mogu razići.
+  //
+  // `locked` nije `soon`: `soon` znači "nije izgrađeno", `locked` znači
+  // "izgrađeno, ali još nije vaše". Različite oznake, različit tekst, i samo
+  // jedno od toga se smije prodavati.
+  const lockedFeature = (key: OptionKey): UpgradeFeature | null =>
+    key === "liveResults" && !canUseLiveResults(entitlement)
+      ? "liveResults"
+      : key === "voterReminder24h" && !canUseAutoReminders(entitlement)
+        ? "voterReminder24h"
+        : null;
 
   return (
     <div>
@@ -142,7 +167,12 @@ export function StepSettings({ data, patch }: StepProps) {
         <h2 className="mt-4 mb-1 font-heading text-base font-semibold text-neutral-800">
           {t("options")}
         </h2>
-        {OPTIONS.map(({ key, pro, soon }) => (
+        {OPTIONS.map(({ key, pro, soon }) => {
+          // `soon` ima prednost nad zaključavanjem: značajka koja ne postoji ne
+          // smije se nuditi na prodaju.
+          const feature = soon ? null : lockedFeature(key);
+          const inert = soon || feature !== null;
+          return (
           <div
             key={key}
             className="border-b border-neutral-100 py-4 last:border-b-0"
@@ -158,9 +188,26 @@ export function StepSettings({ data, patch }: StepProps) {
                 </div>
                 <div className="mt-0.75 text-[0.8125rem] leading-relaxed text-muted-foreground">
                   {t(`toggles.${key}.desc`)}
+                  {/* Poveznica je JEDINI fokusabilni element zaključanog retka —
+                      i zato je objašnjenje uopće dohvatljivo tipkovnicom. Nikad
+                      samo na hover: inertan prekidač se ne može fokusirati, a
+                      dodir hover nema. */}
+                  {feature && (
+                    <>
+                      {" "}
+                      <Link
+                        href={upgradeHref(feature)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-semibold text-brand-700 underline underline-offset-2"
+                      >
+                        {tu("learnMore")}
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
-              {soon ? (
+              {inert ? (
                 // Nacrtani prekidač, ne kontrola (isti obrazac kao kartica
                 // prilagodbi na /settings). Skriven od čitača ekrana jer je
                 // slika, a NE aria-disabled na retku: opis mora ostati čitljiv,
@@ -208,7 +255,8 @@ export function StepSettings({ data, patch }: StepProps) {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </StepCard>
     </div>
   );

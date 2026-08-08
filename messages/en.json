@@ -540,7 +540,9 @@
         "candidatesRequired": "Add at least two candidates to continue",
         "scheduleInvalid": "Check the dates — closing must come after opening",
         "createFailed": "Something went wrong. Please try again.",
-        "voterCap": "The voter list exceeds your plan limit ({cap})."
+        "voterCap": "The voter list exceeds your plan limit ({cap}).",
+        "liveResultsLocked": "Live results are a Pro feature.",
+        "voterReminderLocked": "Automatic voter reminders are a Pro feature."
       },
       "step1": {
         "title": "Basic information",
@@ -1375,6 +1377,39 @@
         "requested": "Deletion requested — check your email to confirm. Data is erased within 30 days.",
         "requestFailed": "We couldn't send the confirmation. Please try again.",
         "rateLimited": "Too many attempts. Please try again in a few minutes."
+      }
+    },
+    "upgrade": {
+      "learnMore": "Learn more",
+      "context": {
+        "generic": {
+          "title": "Upgrade to Pro",
+          "body": "Pro unlocks larger elections, live results, automatic voter reminders and permanent proof retention in the archive."
+        },
+        "liveResults": {
+          "title": "Live results are a Pro feature",
+          "body": "On the Free plan you see the per-candidate tally only after voting closes. Pro shows it while voting is open."
+        },
+        "voterReminder24h": {
+          "title": "Automatic reminders are a Pro feature",
+          "body": "Pro sends a reminder to voters who have not voted yet, 24 hours before the deadline. On the Free plan you send reminders manually."
+        },
+        "voterCap": {
+          "title": "A larger voter list is a Pro feature",
+          "body": "The Free plan allows {free} voters per election. Pro raises the limit to {pro}."
+        },
+        "brandedReports": {
+          "title": "Branded reports are a Pro feature",
+          "body": "On Pro the PDF report carries your organization's logo instead of the Electius mark."
+        },
+        "archiveRetention": {
+          "title": "Permanent proof retention is a Pro feature",
+          "body": "On the Free plan the proof payload is pruned after 12 months; the record, root hash and PDF are kept forever. Pro prunes nothing."
+        }
+      },
+      "gates": {
+        "brandedReports": "On the Free plan the report carries the Electius mark. Pro signs it with your organization's logo.",
+        "archiveRetention": "The Free plan keeps the record, root hash and PDF forever, and prunes the proof payload after 12 months."
       }
     }
   },

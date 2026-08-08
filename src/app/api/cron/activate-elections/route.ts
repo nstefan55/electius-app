@@ -10,6 +10,7 @@ import {
 import { windowOver } from "@/lib/services/token.service";
 import { pruneExpiredArchives } from "@/lib/services/archive.service";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
+import { canUseAutoReminders } from "@/lib/entitlements";
 
 // Election lifecycle sweep (election-publication-spec §5 + expired-token-sends
 // fix + pro-features §2): opens due SCHEDULED elections and publishes their
@@ -125,8 +126,10 @@ export async function POST(request: Request) {
     // postavlja, pa izbori koji sutra postanu Pro još uvijek mogu dobiti svoj
     // podsjetnik. Dok je naplata isključena razrješivač svima vraća pro i ne
     // dira bazu.
-    const { kind } = await resolveEntitlement(e.id, e.organizationId);
-    if (kind === "free") continue;
+    // Isto imenovano pravilo koje čitaju čarobnjak i createElection — inače bi
+    // isti uvjet postojao u tri izvedbe (invarijanta #5).
+    const entitlement = await resolveEntitlement(e.id, e.organizationId);
+    if (!canUseAutoReminders(entitlement)) continue;
 
     // Zauzmi pa pošalji — biljeg se postavlja PRIJE slanja, istim atomskim
     // oblikom kao ostali prolazi (uvjet u WHERE klauzuli, broj JE provjera).

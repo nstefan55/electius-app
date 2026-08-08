@@ -15,7 +15,13 @@ import {
 import { parseVotersCsv, voterRowSchema, type VoterRow } from "@/lib/wizard-csv";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { ElectionStatus } from "@/lib/elections-view";
-import { nearCap } from "@/lib/entitlements";
+import {
+  canUpgrade,
+  nearCap,
+  voterCap,
+  type Entitlement,
+} from "@/lib/entitlements";
+import { upgradeHref } from "@/lib/upgrade-context";
 
 // Dodavanje birača nakon kreiranja izbora. Isti ulazi kao čarobnjakov korak 3
 // (ručno + CSV), pa se `parseVotersCsv` i `CsvDropZone` dijele, ne pišu ponovno.
@@ -27,17 +33,20 @@ export function AddVotersDialog({
   electionStatus,
   open,
   onOpenChange,
-  voterCap,
+  entitlement,
   voterCount,
 }: {
   electionId: string;
   electionStatus: ElectionStatus;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  voterCap: number;
+  entitlement: Entitlement;
   voterCount: number;
 }) {
   const t = useTranslations("dashboard.voters.add");
+  const tu = useTranslations("dashboard.upgrade");
+  const cap = voterCap(entitlement);
+  const upsell = canUpgrade(entitlement);
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
@@ -109,7 +118,7 @@ export function AddVotersDialog({
         // Kroz njega bi odbijanje tiho završilo u generičkoj poruci o grešci.
         if (res.error === "voterCap") {
           setCapError({
-            cap: res.cap ?? voterCap,
+            cap: res.cap ?? cap,
             current: res.current ?? voterCount,
           });
           return;
@@ -304,24 +313,42 @@ export function AddVotersDialog({
                       adding: rows.length,
                     })}
                   </p>
-                  <Link
-                    href="/settings"
-                    className="mt-1.5 inline-block font-semibold underline underline-offset-2"
-                  >
-                    {t("capLink")}
-                  </Link>
+                  {/* Novi tab, za razliku od popisa iza dijaloga: ovdje stoje
+                      pripremljeni redci, često cijeli uvezeni CSV, i odlazak
+                      sa stranice ih briše. Isti razlog zbog kojeg čarobnjak
+                      otvara novi tab. */}
+                  {upsell && (
+                    <Link
+                      href={upgradeHref("voterCap")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1.5 inline-block font-semibold underline underline-offset-2"
+                    >
+                      {t("capLink")}
+                    </Link>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Tiha najava prije odbijanja: granica se ne otkriva tek kad je
                 pripremljeno 300 redaka. */}
-            {!capError && nearCap(voterCount + rows.length, voterCap) && (
+            {!capError && nearCap(voterCount + rows.length, cap) && (
               <p className="mt-5 text-[0.84375rem] text-neutral-600">
-                {t("capUsage", {
-                  used: voterCount + rows.length,
-                  cap: voterCap,
-                })}
+                {t("capUsage", { used: voterCount + rows.length, cap })}
+                {upsell && (
+                  <>
+                    {" "}
+                    <Link
+                      href={upgradeHref("voterCap")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-brand-700 underline underline-offset-2"
+                    >
+                      {tu("learnMore")}
+                    </Link>
+                  </>
+                )}
               </p>
             )}
 

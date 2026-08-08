@@ -26,10 +26,16 @@ import {
 } from "@/actions/voters";
 import { AddVotersDialog } from "@/components/voters/add-voters-dialog";
 import { Pagination } from "@/components/ui/pagination";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import type { RosterVoter, VoterRoster as Roster } from "@/lib/db/voters";
 import { formatCount, type ElectionStatus } from "@/lib/elections-view";
-import { nearCap } from "@/lib/entitlements";
+import {
+  canUpgrade,
+  nearCap,
+  voterCap,
+  type Entitlement,
+} from "@/lib/entitlements";
+import { upgradeHref } from "@/lib/upgrade-context";
 import { cn } from "@/lib/utils";
 
 // Popis birača za /elections/[id]/voters (voter-management-spec). Bez vlastitog
@@ -58,7 +64,7 @@ export function VoterRoster({
   frozen,
   roster,
   query,
-  voterCap,
+  entitlement,
 }: {
   electionId: string;
   electionStatus: ElectionStatus;
@@ -68,9 +74,14 @@ export function VoterRoster({
   frozen: boolean;
   roster: Roster;
   query: { q: string; status: string };
-  voterCap: number;
+  entitlement: Entitlement;
 }) {
   const t = useTranslations("dashboard.voters");
+  const tu = useTranslations("dashboard.upgrade");
+  const cap = voterCap(entitlement);
+  // Poveznica visi o planu, ne o granici — Pro na 480 od 500 vidi istu najavu,
+  // a nadogradnja mu ne postoji.
+  const upsell = canUpgrade(entitlement);
   const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -157,9 +168,22 @@ export function VoterRoster({
         <Summary label={t("summary.pending")} value={num(counts.pending)} />
 
         {/* Tiha najava granice — tek od 80%, i nikad kao upozorenje. */}
-        {nearCap(counts.total, voterCap) && (
+        {nearCap(counts.total, cap) && (
           <span className="ml-auto text-[0.8125rem] text-neutral-600">
-            {t("cap.usage", { used: counts.total, cap: voterCap })}
+            {t("cap.usage", { used: counts.total, cap })}
+            {/* Isti tab: popis je obična stranica i nema nespremljenog stanja
+                koje bi odlazak uništio (za razliku od čarobnjaka). */}
+            {upsell && (
+              <>
+                {" "}
+                <Link
+                  href={upgradeHref("voterCap")}
+                  className="font-semibold text-brand-700 underline underline-offset-2"
+                >
+                  {tu("learnMore")}
+                </Link>
+              </>
+            )}
           </span>
         )}
         {canAdd && (
@@ -400,7 +424,7 @@ export function VoterRoster({
         electionStatus={electionStatus}
         open={addOpen}
         onOpenChange={setAddOpen}
-        voterCap={voterCap}
+        entitlement={entitlement}
         voterCount={counts.total}
       />
 
