@@ -5,7 +5,6 @@ import { useTranslations } from "next-intl";
 import {
   FIELD_LABEL,
   INPUT_CLASS,
-  ProBadge,
   SelectCard,
   StepCard,
   StepHeading,
@@ -13,6 +12,7 @@ import {
   type StepProps,
   type WizardData,
 } from "./wizard-shared";
+import { ProBadge } from "@/components/ui/plan-badge";
 
 // Prekidači (design OPTION_DEFS). Kvorum je besplatan od 2026-08-03 — zakonski
 // uvjet valjanosti skupštine, ne dodatna pogodnost.

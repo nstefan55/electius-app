@@ -19,6 +19,7 @@ import {
 import { authClient } from "@/lib/auth/client";
 import { cn } from "@/lib/utils";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
+import { BetaBadge, ProBadge } from "@/components/ui/plan-badge";
 import type { ShellUser } from "@/components/dashboard/dashboard-shell";
 
 interface NavItem {
@@ -40,6 +41,8 @@ const MENU_ITEM =
 
 interface SidebarNavProps {
   user: ShellUser;
+  /** BETA_BADGE_ENABLED, razriješen u (app)/layout.tsx. */
+  beta: boolean;
   /** Desktop icon-only collapse. The mobile drawer is always expanded. */
   collapsed?: boolean;
   /** Fired on any nav click — used to close the mobile drawer. */
@@ -48,6 +51,7 @@ interface SidebarNavProps {
 
 export function SidebarNav({
   user,
+  beta,
   collapsed = false,
   onNavigate,
 }: SidebarNavProps) {
@@ -81,9 +85,14 @@ export function SidebarNav({
           />
         </span>
         {!collapsed && (
-          <span className="font-heading text-xl font-bold tracking-tight">
-            Electius
-          </span>
+          <>
+            <span className="font-heading text-xl font-bold tracking-tight">
+              Electius
+            </span>
+            {/* Skrivena na sklopljenoj traci: znak ostaje, natpis ne, pa bi
+                sama pilula ispod 30px znaka čitala kao oznaka ZA znak. */}
+            {beta && <BetaBadge />}
+          </>
         )}
       </div>
 
@@ -147,7 +156,15 @@ export function SidebarNav({
                     {user.organization}
                   </div>
                 </div>
-                <ChevronsUpDown className="size-4 shrink-0 text-white/60" />
+                {/* Pilula krajnje desno, nad strelicama (odstupanje od spec
+                    §4.5, koji je traži na retku imena). Na retku imena pilula s
+                    razmakom pojede 41 od ~114px pa se skraćuje svako ime, čak i
+                    "Demo User"; u vlastitom stupcu košta samo razliku prema
+                    strelicama. Stupac je shrink-0 — reže se ime, nikad oznaka. */}
+                <div className="flex shrink-0 flex-col items-center gap-1.5">
+                  {user.showPro && <ProBadge />}
+                  <ChevronsUpDown className="size-4 text-white/60" />
+                </div>
               </>
             )}
           </Menu.Trigger>

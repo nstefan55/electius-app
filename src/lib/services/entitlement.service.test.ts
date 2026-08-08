@@ -73,3 +73,31 @@ describe("resolveEntitlement", () => {
     });
   });
 });
+
+describe("showProBadge", () => {
+  it("s isključenom naplatom je false, iako razrješivač svima vraća pro", async () => {
+    const { showProBadge } = await load(undefined);
+
+    // Sama presuda razrješivača NIJE odgovor: vratila bi pro svima, pa bi
+    // pilula sjedila na svakoj ljusci dok /settings ne tvrdi nikakav plan.
+    await expect(showProBadge("org_1")).resolves.toBe(false);
+    expect(prisma.user.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("s uključenom naplatom je true za organizaciju koja plaća", async () => {
+    const { showProBadge } = await load("true");
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({
+      id: "u_1",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await expect(showProBadge("org_1")).resolves.toBe(true);
+  });
+
+  it("s uključenom naplatom je false za Free organizaciju", async () => {
+    const { showProBadge } = await load("true");
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
+
+    await expect(showProBadge("org_1")).resolves.toBe(false);
+  });
+});

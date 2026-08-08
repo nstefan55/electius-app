@@ -5,6 +5,10 @@
       "hr": "Hrvatski",
       "en": "Engleski"
     },
+    "badges": {
+      "proNote": "plan",
+      "betaNote": "verzija"
+    },
     "loading": "Učitavanje…",
     "pagination": {
       "label": "Stranicanje",
