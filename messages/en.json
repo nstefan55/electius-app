@@ -7,7 +7,8 @@
     },
     "badges": {
       "proNote": "plan",
-      "betaNote": "version"
+      "betaNote": "version",
+      "soonNote": "feature"
     },
     "loading": "Loading…",
     "pagination": {

@@ -7,7 +7,8 @@
     },
     "badges": {
       "proNote": "plan",
-      "betaNote": "verzija"
+      "betaNote": "verzija",
+      "soonNote": "značajka"
     },
     "loading": "Učitavanje…",
     "pagination": {
