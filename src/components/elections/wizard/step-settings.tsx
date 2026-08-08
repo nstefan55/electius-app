@@ -25,6 +25,11 @@ import { Link } from "@/i18n/navigation";
 // uvjet valjanosti skupštine, ne dodatna pogodnost.
 const OPTIONS = [
   { key: "liveResults", pro: true, soon: false },
+  // Jedini pisač stupca resultsVisible (public-results-page-spec D1c). Javna
+  // stranica je besplatna na svakom planu. Stoji uz liveResults jer su to dvije
+  // okomite osi istog pitanja: resultsMode = kad ADMINISTRATOR vidi zbroj,
+  // resultsVisible = je li JAVNA stranica upaljena.
+  { key: "publicResults", pro: false, soon: false },
   { key: "quorum", pro: false, soon: false },
   // autoCloseOnDeadline maknut: glasanje se UVIJEK zatvara na rok (čistač u
   // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je

@@ -660,6 +660,10 @@
             "label": "Rezultati uživo tijekom glasovanja",
             "desc": "Pratite zbroj po kandidatu dok glasovanje traje. Isključeno, rezultate vidite tek nakon zatvaranja — i vi i birači."
           },
+          "publicResults": {
+            "label": "Javna stranica rezultata",
+            "desc": "Objavi zbroj glasova na javnoj poveznici. Vidljiva je tek nakon zatvaranja glasovanja — birači do nje dolaze sa završnog zaslona."
+          },
           "quorum": {
             "label": "Prag kvoruma",
             "desc": "Zahtijevaj minimalni udio glasača s pravom glasa za valjanost rezultata."
@@ -959,7 +963,15 @@
           "share": "Postotak",
           "fileSuffix": "rezultati"
         },
-        "auditSealed": "Zapisi zapečaćeni"
+        "auditSealed": "Zapisi zapečaćeni",
+        "share": {
+          "title": "Podijelite rezultate",
+          "body": "Javna stranica rezultata je uključena. Skenirajte kod ili podijelite poveznicu — nije potrebna prijava.",
+          "copy": "Kopiraj",
+          "copied": "Poveznica je kopirana.",
+          "copyFailed": "Kopiranje nije uspjelo.",
+          "note": "Stranica prikazuje samo zbirne rezultate i odaziv. Pojedinačni glasovi ostaju anonimni."
+        }
       },
       "report": {
         "title": "Pregled PDF izvještaja",
@@ -1952,7 +1964,14 @@
       }
     },
     "results": {
-      "subtitle": "Predložak (/results/[id]). Prikaz rezultata dolazi u zasebnoj specifikaciji."
+      "closedBadge": "Izbori zatvoreni",
+      "meta": "{org} · zatvoreno {closes}",
+      "metaNoDate": "{org}",
+      "turnoutLabel": "Odaziv",
+      "winner": "Prvo mjesto",
+      "anon": "Prikazani su samo zbirni rezultati — pojedinačni glasovi su anonimni.",
+      "hiddenTitle": "Rezultati nisu objavljeni",
+      "hiddenSub": "Rezultate ovih izbora objavljuje organizator. Ako mislite da bi trebali biti dostupni, obratite se organizatoru."
     }
   }
 }

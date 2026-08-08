@@ -25,6 +25,7 @@ export type WizardData = {
   startAt: string; // datetime-local value, "" = not set
   closeAt: string;
   liveResults: boolean;
+  publicResults: boolean;
   quorum: boolean;
   quorumPct: number;
   adminTurnoutReminder: boolean;
@@ -43,6 +44,7 @@ export const INITIAL_WIZARD_DATA: WizardData = {
   startAt: "",
   closeAt: "",
   liveResults: false,
+  publicResults: false,
   quorum: false,
   quorumPct: 50,
   adminTurnoutReminder: false,

@@ -5,6 +5,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import { getElectionDetail, getElectionResults } from "@/lib/db/elections";
 import { resultsDetailAccess } from "@/lib/elections-view";
 import { ElectionResults } from "@/components/elections/election-results";
+import { ResultsShare } from "@/components/elections/results-share";
 
 // Kanonska stranica rezultata — odredište redaka s /results i akcija s /archive.
 // Čita isti cache()-omotani upit kao layout, pa dodatnog dohvaćanja nema; autorizaciju
@@ -33,21 +34,31 @@ export default async function ElectionResultsPage({
   const results = await getElectionResults(id, organizationId);
   if (!results) notFound();
 
+  // Blok za dijeljenje se prikazuje samo kad javna stranica doista radi. Uvjet
+  // je namjerno ISTI izraz koji ta ruta koristi da odluči hoće li prikazati
+  // zbroj: QR koji vodi na "Rezultati nisu objavljeni" obećava nešto što se
+  // prekrši u trenutku skeniranja. `access` je ovdje već "closed" ili "live" —
+  // zapečaćeno se vratilo iznad — pa javna stranica traži još i CLOSED/ARCHIVED.
+  const shareable = results.resultsVisible && access === "closed";
+
   return (
-    <ElectionResults
-      orgName={user.organization}
-      electionType={results.electionType}
-      votingType={results.votingType}
-      quorumThreshold={results.quorumThreshold}
-      opens={results.opens}
-      closes={results.closes}
-      voters={results.voters}
-      votesCast={results.votesCast}
-      options={results.options}
-      days={results.days}
-      locale={await getLocale()}
-      sealed={results.sealed}
-    />
+    <div className="flex flex-col gap-6">
+      <ElectionResults
+        orgName={user.organization}
+        electionType={results.electionType}
+        votingType={results.votingType}
+        quorumThreshold={results.quorumThreshold}
+        opens={results.opens}
+        closes={results.closes}
+        voters={results.voters}
+        votesCast={results.votesCast}
+        options={results.options}
+        days={results.days}
+        locale={await getLocale()}
+        sealed={results.sealed}
+      />
+      {shareable && <ResultsShare electionId={id} />}
+    </div>
   );
 }
 

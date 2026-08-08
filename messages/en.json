@@ -660,6 +660,10 @@
             "label": "Live results during voting",
             "desc": "Watch the per-candidate tally while voting is open. Off, results stay hidden until close — from you and from voters alike."
           },
+          "publicResults": {
+            "label": "Public results page",
+            "desc": "Publish the tally on a public link. It appears only after voting closes — voters reach it from the closing screen."
+          },
           "quorum": {
             "label": "Quorum threshold",
             "desc": "Require a minimum share of eligible voters to participate for the result to be valid."
@@ -959,7 +963,15 @@
           "share": "Share",
           "fileSuffix": "results"
         },
-        "auditSealed": "Records sealed"
+        "auditSealed": "Records sealed",
+        "share": {
+          "title": "Share the results",
+          "body": "The public results page is on. Scan the code or share the link — no sign-in needed.",
+          "copy": "Copy",
+          "copied": "Link copied.",
+          "copyFailed": "Could not copy the link.",
+          "note": "The page shows aggregate results and turnout only. Individual votes stay anonymous."
+        }
       },
       "report": {
         "title": "PDF report preview",
@@ -1952,7 +1964,14 @@
       }
     },
     "results": {
-      "subtitle": "Placeholder (/results/[id]). The results display ships in a separate spec."
+      "closedBadge": "Election closed",
+      "meta": "{org} · closed {closes}",
+      "metaNoDate": "{org}",
+      "turnoutLabel": "Turnout",
+      "winner": "First place",
+      "anon": "Only aggregate results are shown — individual votes are anonymous.",
+      "hiddenTitle": "Results are not published",
+      "hiddenSub": "Results for this election are published by the organizer. If you believe they should be available, contact the organizer."
     }
   }
 }
