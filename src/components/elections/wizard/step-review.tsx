@@ -77,6 +77,7 @@ export function StepReview({
 
   const enabled = [
     data.liveResults && t4("toggles.liveResults.label"),
+    data.publicResults && t4("toggles.publicResults.label"),
     data.quorum && t4("quorumChip", { pct: data.quorumPct }),
     data.adminTurnoutReminder && t4("toggles.adminTurnoutReminder.label"),
     data.voterReminder24h && t4("toggles.voterReminder24h.label"),

@@ -359,6 +359,9 @@ export const getElectionResults = cache(
         quorumThreshold: true,
         startsAt: true,
         endsAt: true,
+        // Je li javna stranica upaljena. Stoji OVDJE, a ne u ELECTION_SELECT:
+        // /elections, /results i nadzorna ploča ovaj stupac nikad ne prikazuju.
+        resultsVisible: true,
         options: {
           orderBy: { orderIndex: "asc" },
           select: {
@@ -390,6 +393,7 @@ export const getElectionResults = cache(
       electionType: e.electionType,
       votingType: e.votingType,
       quorumThreshold: e.quorumThreshold,
+      resultsVisible: e.resultsVisible,
       opens: e.startsAt.toISOString(),
       closes: e.endsAt.toISOString(),
       voters: e._count.voters,
@@ -416,15 +420,42 @@ export async function getStoredReport(id: string, organizationId: string) {
   });
 }
 
-// Public apex results page (/vote-host /results/[id]) — the resultsVisible gate + title only.
-// Null → notFound(); resultsVisible=false → notFound() too (never leak unpublished results).
-// The detailed public-results UI selects more later (public-results spec).
+// Javna stranica rezultata (/results/[id] na apeksu). JEDINI upit nad izborima
+// bez organizationId u WHERE — posjetitelj nema organizaciju.
+//
+// `select` JE granica anonimnosti. Nema redaka birača i nema vremena listića:
+// getElectionResults čita `votes: { createdAt }` za graf po danima, ovdje grafa
+// nema, pa vrijeme pojedinog listića ne smije doći ni do ruba ove rute.
+// Organizacija samo imenom — nikad contactEmail ni logoUrl. Kvorum se ne čita
+// jer je sud o valjanosti za organizatora, a ova stranica javlja što se
+// dogodilo (public-results-page-spec §6).
+//
+// ponytail: findUnique bez ograničenja, uz nekoliko opcija po izboru. Dovoljno
+// za MVP; zatvoreni izbori su zamrznuti, pa su i najbolji kandidat za predmemoriju.
 export async function getPublicResultsElection(id: string) {
   return prisma.election.findUnique({
     where: { id },
-    select: { id: true, title: true, resultsVisible: true },
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      resultsMode: true,
+      resultsVisible: true,
+      startsAt: true,
+      endsAt: true,
+      organization: { select: { name: true } },
+      options: {
+        orderBy: { orderIndex: "asc" },
+        select: { id: true, text: true, _count: { select: { votes: true } } },
+      },
+      _count: { select: { voters: true, votes: true } },
+    },
   });
 }
+
+export type PublicResultsElection = NonNullable<
+  Awaited<ReturnType<typeof getPublicResultsElection>>
+>;
 
 // Live turnout for the hero panel's polling (see actions/dashboard.ts).
 // Org-scoped so polling can't be pointed at another org's election id.

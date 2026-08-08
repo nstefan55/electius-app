@@ -33,6 +33,7 @@ const wizardSchema = z.object({
   startAt: z.string().max(30),
   closeAt: z.string().max(30),
   liveResults: z.boolean(),
+  publicResults: z.boolean(),
   quorumThreshold: z.number().int().min(1).max(100).nullable(),
   adminTurnoutReminder: z.boolean(),
   voterReminder24h: z.boolean(),
@@ -145,6 +146,11 @@ export async function createElection(
         startsAt,
         endsAt,
         resultsMode: w.liveResults ? "LIVE" : "AFTER_CLOSE",
+        // Jedini pisač ovog stupca u cijelom kodu. Bez njega je /results/[id]
+        // nedohvatljiv za svaki izbor koji postoji (duplicateElection samo
+        // prepisuje zadanu vrijednost izvornika). Nije Pro — javna stranica
+        // rezultata je besplatna na svakom planu.
+        resultsVisible: w.publicResults,
         allowAbstain: w.allowAbstain,
         quorumThreshold: w.quorumThreshold,
         adminTurnoutReminder: w.adminTurnoutReminder,

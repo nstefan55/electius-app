@@ -55,6 +55,7 @@ const basePayload = {
   startAt: "",
   closeAt: "2999-06-01T12:00",
   liveResults: false,
+  publicResults: false,
   quorumThreshold: null,
   adminTurnoutReminder: false,
   voterReminder24h: false,
@@ -214,6 +215,35 @@ describe("createElection — granica plana", () => {
     await createElection(withVoters(1));
 
     expect(resolveEntitlement).toHaveBeenCalledWith(null, "org_1");
+  });
+});
+
+describe("createElection — javna stranica rezultata", () => {
+  // Ovo je JEDINI pisač stupca resultsVisible. Ako polje tiho ispadne iz
+  // payloada, /results/[id] se vraća u stanje "nedohvatljiv za svaki izbor koji
+  // postoji" — bez greške, bez traga, bez ijednog crvenog testa drugdje.
+  it("zadano piše false", async () => {
+    await createElection(basePayload);
+
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.resultsVisible).toBe(false);
+  });
+
+  it("uključen prekidač piše true", async () => {
+    await createElection({ ...basePayload, publicResults: true });
+
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.resultsVisible).toBe(true);
+  });
+
+  it("nije Pro — Free organizacija smije objaviti rezultate", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({ ...basePayload, publicResults: true });
+
+    expect(res.success).toBe(true);
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.resultsVisible).toBe(true);
   });
 });
 
