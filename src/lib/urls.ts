@@ -11,7 +11,6 @@
 // These paths are unprefixed; under localePrefix: "always" the target host 307-redirects
 // them to the default locale (/login → /hr/login, /vote/x → /hr/vote/x). Correct for the
 // hr-only MVP.
-// TODO(i18n): cross-host locale hand-off (en → /en/login) lands with the en catalog + auth spec.
 const APP = process.env.NEXT_PUBLIC_APP_URL ?? "";
 const APEX = process.env.NEXT_PUBLIC_MARKETING_URL ?? "";
 
