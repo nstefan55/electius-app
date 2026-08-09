@@ -42,29 +42,6 @@
       "privacy": "Privacy policy",
       "terms": "Terms of service"
     },
-    "otpEmail": {
-      "subject": "Your verification code",
-      "heading": "Verify your email address",
-      "body": "Thanks for creating an Electius account. Enter this code in the app to verify your email address:",
-      "expiry": "The code is valid for 10 minutes and stops working after 5 wrong attempts.",
-      "ignore": "If you didn't request this code, you can safely ignore this message."
-    },
-    "resetEmail": {
-      "subject": "Reset your password",
-      "heading": "Reset your password",
-      "body": "We received a request to reset the password for your Electius account. Click the button below to set a new password.",
-      "cta": "Set a new password",
-      "fallback": "If the button doesn't work, copy this link into your browser:",
-      "expiry": "The link is valid for 1 hour and can be used only once. If you didn't request a password change, you can safely ignore this message — your password stays unchanged."
-    },
-    "deleteAccountEmail": {
-      "subject": "Confirm your Electius account deletion",
-      "heading": "Confirm account deletion",
-      "body": "We received a request to delete your Electius account and all of your organization's data — elections, voter lists, results and archives. Click the button below to confirm the deletion.",
-      "cta": "Confirm account deletion",
-      "fallback": "If the button doesn't work, copy this link into your browser:",
-      "expiry": "The link can be used only once and expires shortly. If you didn't request a deletion, ignore this message — your account stays untouched."
-    },
     "confirmDeletion": {
       "title": "Confirm account deletion",
       "subtitle": "One more step and your account and all its data are gone for good.",
@@ -1831,22 +1808,6 @@
     }
   },
   "voter": {
-    "inviteEmail": {
-      "subject": "You're invited to vote: {title}",
-      "heading": "You've been invited to vote",
-      "body": "{org} has invited you to vote in \"{title}\". Click the button below to open your ballot — no sign-in required.",
-      "cta": "Start voting",
-      "fallback": "If the button doesn't work, copy this link into your browser:",
-      "expiry": "This link is single-use, personal, and valid until the election closes. If you weren't expecting this email, feel free to ignore it."
-    },
-    "reminderEmail": {
-      "subject": "Reminder: voting in \"{title}\" closes soon",
-      "heading": "Your ballot is still waiting",
-      "body": "Voting in \"{title}\" ({org}) closes on {closes}. You haven't voted yet — open your ballot with the button below, no sign-in required.",
-      "cta": "Start voting",
-      "fallback": "If the button doesn't work, copy this link into your browser:",
-      "expiry": "Only the most recent link you received works — this one replaces any earlier ones. It is single-use and personal. If you have already voted, feel free to ignore this message."
-    },
     "flow": {
       "stepLabel": "Step {step} of 5",
       "invite": {
