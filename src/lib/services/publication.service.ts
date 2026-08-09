@@ -102,6 +102,7 @@ export async function publishElection(
   if (minted.length === 0) return { sent: 0, failed: 0 };
 
   const invitation: InvitationElection = {
+    id: electionId,
     title: election.title,
     organizationName: election.organization.name,
   };
@@ -170,6 +171,7 @@ export async function resendVoterLink(
   if (!voter) return;
 
   await inviteVoter(voter.id, voter.status, {
+    id: electionId,
     title: election.title,
     organizationName: election.organization.name,
     startsAt: election.startsAt,
@@ -315,6 +317,7 @@ export async function sendReminders(
   if (minted.length === 0) return { sent: 0, failed: 0 };
 
   const reminder = {
+    id: electionId,
     title: election.title,
     organizationName: election.organization.name,
     endsAt: election.endsAt,

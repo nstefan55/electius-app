@@ -1,8 +1,10 @@
 import "server-only";
 
-import { Resend } from "resend";
+import { createHash } from "crypto";
+import { Resend, type Tag } from "resend";
 import { formatVotingDateTime } from "@/lib/elections-view";
 import { voteUrl } from "@/lib/urls";
+import { hashToken } from "./token.service";
 import hr from "../../../messages/hr.json";
 import en from "../../../messages/en.json";
 
@@ -18,10 +20,135 @@ type Locale = keyof typeof CATALOGS;
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Resend requires a verified sender domain; onboarding@resend.dev works
-// out of the box for dev. Set RESEND_FROM_EMAIL in prod (e.g.
-// "Electius <noreply@electius.com>") once the domain is verified in Resend.
-const FROM = process.env.RESEND_FROM_EMAIL ?? "Electius <onboarding@resend.dev>";
+// ───────── Prijenosni sloj (email-delivery-and-admin-turnout-spec §Faza 1) ────
+//
+// Svako slanje ide kroz send() ili sendBatch(). To je jedino mjesto gdje žive
+// pošiljatelj, oznake i ključevi idempotentnosti — pet staza koje su ih same
+// slagale značilo je pet prilika da se raziđu.
+
+// Vrsta poruke. Ide u oznaku `type` na svakom slanju i jedino je po čemu se
+// Resendovi zapisi mogu filtrirati; isti niz webhook čita natrag kad stigne
+// odbijanje. `turnout` još nema pošiljatelja — dolazi u fazi 3.
+export type EmailType =
+  | "otp"
+  | "reset"
+  | "delete-account"
+  | "invite"
+  | "reminder"
+  | "turnout";
+
+// Pošiljatelj se razrješava pri PRVOM slanju, ne pri učitavanju modula — isti
+// stav kao stripeClient(). Ovaj modul visi o BetterAuthu, a njega uvozi svaka
+// prijavljena stranica: bacanje na vrhu modula srušilo bi cijelu aplikaciju
+// kojoj varijabla nedostaje, umjesto samo slanja koje je stvarno traži.
+//
+// Zamjenske vrijednosti nema namjerno (2.4). Stari `onboarding@resend.dev`
+// isporučivao je poštu s Resendove pješčane domene — dostavljivo, pogrešno i
+// aplikaciji nevidljivo. Ista tiha klasa kvara kao Upstash i R2.
+function sender(): string {
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!from) {
+    throw new Error(
+      "RESEND_FROM_EMAIL is not set — refusing to send from a fallback domain",
+    );
+  }
+  return from;
+}
+
+// cuid nije osobni podatak, a jedini je trag po kojem se odbijena poruka vraća
+// do retka birača (webhook dobiva oznake natrag). Adresa birača NIKAD ne ulazi
+// u oznaku — Resendovi zapisi nisu mjesto za popis glasača.
+function tagsFor(type: EmailType, electionId?: string): Tag[] {
+  const tags: Tag[] = [{ name: "type", value: type }];
+  if (electionId) tags.push({ name: "electionId", value: electionId });
+  return tags;
+}
+
+// Ono što se stvarno šalje danas. Faza 2 ovo zamjenjuje s `template` + varijable
+// (SDK ih tipizira kao isključive grane), pa je izdvojeno da promjena bude na
+// jednom mjestu.
+interface EmailBody {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
+interface SendMeta {
+  type: EmailType;
+  electionId?: string;
+  // Samo za slanja koja se smiju ponoviti bez namjere (metla, ponovni poziv
+  // funkcije). Poruke koje korisnik sam traži — OTP, reset, potvrda brisanja —
+  // ključ NE nose: ondje je ponovni zahtjev zahtjev za NOVOM porukom.
+  idempotencyKey?: string;
+}
+
+function requestOptions(meta: SendMeta) {
+  return meta.idempotencyKey
+    ? { idempotencyKey: meta.idempotencyKey }
+    : undefined;
+}
+
+async function send(body: EmailBody, meta: SendMeta): Promise<void> {
+  const { error } = await resend.emails.send(
+    { ...body, from: sender(), tags: tagsFor(meta.type, meta.electionId) },
+    requestOptions(meta),
+  );
+
+  // Tiho neposlana poruka ostavlja račun neupotrebljivim (nepotvrđena prijava,
+  // reset koji korisnik čeka) ili birača bez glasačkog listića.
+  if (error) throw new Error(`resend: ${error.message}`);
+}
+
+async function sendBatch(bodies: EmailBody[], meta: SendMeta): Promise<void> {
+  const from = sender();
+  const tags = tagsFor(meta.type, meta.electionId);
+
+  const { error } = await resend.batch.send(
+    bodies.map((body) => ({ ...body, from, tags })),
+    requestOptions(meta),
+  );
+
+  if (error) throw new Error(`resend: ${error.message}`);
+}
+
+// Ključ se mora promijeniti kad se promijene tokeni (§1.4).
+//
+// Obje staze s čarobnom poveznicom ponovno kuju tokene pri svakom pozivu
+// (delete + create), pa ponovni pokušaj neuspjelog komada legitimno nosi DRUGE
+// poveznice. Ključ izveden iz birača bio bi stabilan preko ponovnog kovanja i
+// tiho ugušio upravo taj pokušaj — a na njemu počiva invarijanta #7 ("slanje se
+// ne poništava, status je red za ponavljanje"). Tiho, i samo na stazi kvara.
+//
+// Otisak skupa tokena ima točno traženo svojstvo: token je 256 nasumičnih bitova,
+// pa novo kovanje daje novi ključ (ponovni pokušaj prolazi), dok istinski
+// dvostruki zahtjev — ponovni poziv iste invokacije, s istim skovanim tokenima —
+// daje isti ključ i biva odbačen.
+//
+// Uzima se POHRANJENI otisak (hashToken), ne sirovi token: to je ista vrijednost
+// koju baza već drži, pa u izvod ne ulazi ništa tajno (invarijanta #2). Otisci se
+// sortiraju jer poredak primatelja ovisi o upitu, a skup tokena ne.
+//
+// Specifikacija je tražila id-eve tokena; oni ne postoje — mintTokensFor piše
+// kroz createMany, koji vraća broj, a ne retke. Otisak je ista tvrdnja bez
+// dodatnog upita.
+function ballotIdempotencyKey(
+  kind: Extract<EmailType, "invite" | "reminder">,
+  electionId: string,
+  recipients: InvitationRecipient[],
+): string {
+  const digest = createHash("sha256")
+    .update(
+      recipients
+        .map((r) => hashToken(r.rawToken))
+        .sort()
+        .join(":"),
+    )
+    .digest("hex")
+    .slice(0, 16);
+
+  return `${kind}:${electionId}:${digest}`;
+}
 
 // Shared branded action-link template (verification + password reset + voter
 // invitations use the same layout: heading, body, CTA button, plain-link
@@ -68,20 +195,21 @@ function actionEmailHtml(url: string, t: ActionEmailCopy): string {
       </div>`;
 }
 
-async function sendActionEmail(to: string, url: string, t: ActionEmailCopy) {
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to,
-    subject: t.subject,
-    text: actionEmailText(url, t),
-    html: actionEmailHtml(url, t),
-  });
-
-  if (error) {
-    // Surface the failure — a silently unsent email strands the account
-    // (unverifiable signup / a reset request the user is waiting on).
-    throw new Error(`resend: ${error.message}`);
-  }
+async function sendActionEmail(
+  to: string,
+  url: string,
+  t: ActionEmailCopy,
+  type: EmailType,
+) {
+  await send(
+    {
+      to,
+      subject: t.subject,
+      text: actionEmailText(url, t),
+      html: actionEmailHtml(url, t),
+    },
+    { type },
+  );
 }
 
 // ───────── Verification OTP (otp-implementation-auth-spec §3) ─────────
@@ -113,19 +241,19 @@ export async function sendOtpEmail(
   locale: Locale = "hr",
 ) {
   const t = CATALOGS[locale].auth.otpEmail;
-  const { error } = await resend.emails.send({
-    from: FROM,
-    to,
-    subject: t.subject,
-    text: `${t.body}\n\n${otp}\n\n${t.expiry}\n${t.ignore}`,
-    html: otpEmailHtml(otp, t),
-  });
 
-  if (error) {
-    // Same fail-loudly policy as every sender — a silently unsent code
-    // strands an unverifiable account.
-    throw new Error(`resend: ${error.message}`);
-  }
+  // Bez ključa idempotentnosti: svaki poziv nosi NOVU šifru, a "pošalji
+  // ponovno" je zahtjev za novom porukom. Ključ bi ovdje ugušio upravo ono
+  // što korisnik traži.
+  await send(
+    {
+      to,
+      subject: t.subject,
+      text: `${t.body}\n\n${otp}\n\n${t.expiry}\n${t.ignore}`,
+      html: otpEmailHtml(otp, t),
+    },
+    { type: "otp" },
+  );
 }
 
 export async function sendResetPasswordEmail(
@@ -133,7 +261,7 @@ export async function sendResetPasswordEmail(
   url: string,
   locale: Locale = "hr",
 ) {
-  await sendActionEmail(to, url, CATALOGS[locale].auth.resetEmail);
+  await sendActionEmail(to, url, CATALOGS[locale].auth.resetEmail, "reset");
 }
 
 // Potvrda brisanja računa (profile-settings-phase-4-spec §2). Poveznica JE drugi
@@ -143,7 +271,12 @@ export async function sendDeleteAccountEmail(
   url: string,
   locale: Locale = "hr",
 ) {
-  await sendActionEmail(to, url, CATALOGS[locale].auth.deleteAccountEmail);
+  await sendActionEmail(
+    to,
+    url,
+    CATALOGS[locale].auth.deleteAccountEmail,
+    "delete-account",
+  );
 }
 
 // ───────── Voter invitations (election-publication-spec §3) ─────────
@@ -156,6 +289,9 @@ export interface InvitationRecipient {
 }
 
 export interface InvitationElection {
+  // Nosi ga oznaka `electionId` i prefiks ključa idempotentnosti — jedini put
+  // kojim se odbijena poruka vraća do izbora.
+  id: string;
   title: string;
   organizationName: string;
 }
@@ -170,6 +306,8 @@ export interface InvitationElection {
 // organizacije) interpoliraju se u HTML, pa se ondje bježe; subject i čisti
 // tekst ostaju sirovi.
 async function sendBallotLinkEmails(
+  kind: Extract<EmailType, "invite" | "reminder">,
+  electionId: string,
   recipients: InvitationRecipient[],
   raw: ActionEmailCopy,
   vars: Record<string, string>,
@@ -186,22 +324,22 @@ async function sendBallotLinkEmails(
   const tText = copy(vars);
   const tHtml = copy(escaped);
 
-  const { error } = await resend.batch.send(
+  await sendBatch(
     recipients.map((r) => {
       const url = voteUrl(r.rawToken);
       return {
-        from: FROM,
         to: r.email,
         subject: tText.subject,
         text: actionEmailText(url, tText),
         html: actionEmailHtml(url, tHtml),
       };
     }),
+    {
+      type: kind,
+      electionId,
+      idempotencyKey: ballotIdempotencyKey(kind, electionId, recipients),
+    },
   );
-
-  if (error) {
-    throw new Error(`resend: ${error.message}`);
-  }
 }
 
 export async function sendInvitationEmails(
@@ -212,6 +350,8 @@ export async function sendInvitationEmails(
   if (recipients.length === 0) return;
 
   await sendBallotLinkEmails(
+    "invite",
+    election.id,
     recipients,
     CATALOGS[locale].voter.inviteEmail,
     { title: election.title, org: election.organizationName },
@@ -246,6 +386,8 @@ export async function sendReminderEmails(
   const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
 
   await sendBallotLinkEmails(
+    "reminder",
+    election.id,
     recipients,
     CATALOGS[locale].voter.reminderEmail,
     { title: election.title, org: election.organizationName, closes },
