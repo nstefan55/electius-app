@@ -42,29 +42,6 @@
       "privacy": "Pravila privatnosti",
       "terms": "Uvjeti korištenja"
     },
-    "otpEmail": {
-      "subject": "Vaš kod za potvrdu",
-      "heading": "Potvrdite svoju e-mail adresu",
-      "body": "Hvala što ste otvorili Electius račun. Unesite ovaj kod u aplikaciju kako biste potvrdili svoju e-mail adresu:",
-      "expiry": "Kod vrijedi 10 minuta i prestaje vrijediti nakon 5 pogrešnih pokušaja.",
-      "ignore": "Ako niste zatražili ovaj kod, slobodno zanemarite ovu poruku."
-    },
-    "resetEmail": {
-      "subject": "Ponovno postavljanje lozinke",
-      "heading": "Ponovno postavljanje lozinke",
-      "body": "Zaprimili smo zahtjev za ponovno postavljanje lozinke vašeg Electius računa. Kliknite gumb u nastavku kako biste postavili novu lozinku.",
-      "cta": "Postavi novu lozinku",
-      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
-      "expiry": "Poveznica vrijedi 1 sat i može se iskoristiti samo jednom. Ako niste zatražili promjenu lozinke, slobodno zanemarite ovu poruku — lozinka ostaje nepromijenjena."
-    },
-    "deleteAccountEmail": {
-      "subject": "Potvrdite brisanje Electius računa",
-      "heading": "Potvrdite brisanje računa",
-      "body": "Zaprimili smo zahtjev za brisanje vašeg Electius računa i svih podataka vaše organizacije — izbora, popisa birača, rezultata i arhiva. Kliknite gumb u nastavku kako biste brisanje potvrdili.",
-      "cta": "Potvrdi brisanje računa",
-      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
-      "expiry": "Poveznica se može iskoristiti samo jednom i uskoro istječe. Ako niste zatražili brisanje, zanemarite ovu poruku — račun ostaje netaknut."
-    },
     "confirmDeletion": {
       "title": "Potvrda brisanja računa",
       "subtitle": "Još jedan korak i račun te svi podaci nestaju zauvijek.",
@@ -1831,22 +1808,6 @@
     }
   },
   "voter": {
-    "inviteEmail": {
-      "subject": "Pozivnica za glasovanje: {title}",
-      "heading": "Pozvani ste glasovati",
-      "body": "{org} vas poziva da glasujete u izborima „{title}”. Kliknite gumb u nastavku kako biste otvorili svoj glasački listić — prijava nije potrebna.",
-      "cta": "Glasujte",
-      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
-      "expiry": "Poveznica je jednokratna, osobna i vrijedi do zatvaranja izbora. Ako niste očekivali ovu poruku, slobodno je zanemarite."
-    },
-    "reminderEmail": {
-      "subject": "Podsjetnik: glasovanje „{title}” uskoro se zatvara",
-      "heading": "Vaš glasački listić još čeka",
-      "body": "Glasovanje u izborima „{title}” ({org}) zatvara se {closes}. Još niste glasovali — listić otvarate gumbom u nastavku, prijava nije potrebna.",
-      "cta": "Glasujte",
-      "fallback": "Ako gumb ne radi, kopirajte ovu poveznicu u preglednik:",
-      "expiry": "Vrijedi samo posljednja poveznica koju ste primili — ova zamjenjuje sve ranije. Jednokratna je i osobna. Ako ste u međuvremenu glasovali, slobodno zanemarite ovu poruku."
-    },
     "flow": {
       "stepLabel": "Korak {step} od 5",
       "invite": {

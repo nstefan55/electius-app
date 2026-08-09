@@ -2,21 +2,19 @@ import "server-only";
 
 import { createHash } from "crypto";
 import { Resend, type Tag } from "resend";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { formatVotingDateTime } from "@/lib/elections-view";
 import { voteUrl } from "@/lib/urls";
 import { hashToken } from "./token.service";
-import hr from "../../../messages/hr.json";
-import en from "../../../messages/en.json";
 
-// Email transport (project-overview §Service Layer): verification OTP,
-// password reset, voter invitations. Copy lives in the i18n catalogs
-// (auth.otpEmail etc.) — emails run outside next-intl's request context, so
-// the service reads the catalogs directly instead of useTranslations.
-// ponytail: locale defaults to hr (MVP) — BetterAuth's send hooks don't know
-// the UI locale; thread it through when en ships.
-
-const CATALOGS = { hr, en } as const;
-type Locale = keyof typeof CATALOGS;
+// Email transport (project-overview §Service Layer): verification OTP, password
+// reset, account deletion, voter invitations and reminders.
+//
+// Tekst više NIJE ovdje (faza 2). Svih pet poruka živi kao objavljen predložak u
+// Resendu, a kod šalje samo alias i varijable — ispravak teksta je uređivanje u
+// nadzornoj ploči, ne promjena koda, novi build i podizanje verzije.
+// ponytail: locale i dalje pada na hr — nijedan pozivatelj ga ne prosljeđuje;
+// provlačenje jezika je faza 4.
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -36,6 +34,28 @@ export type EmailType =
   | "invite"
   | "reminder"
   | "turnout";
+
+// Alias predloška u Resendu. Stabilan je i čitljiv, pa u kodu stoji on, a ne id.
+// Jezik je DIO aliasa: predložak nosi tekst, pa je odabir jezika odabir
+// predloška — nema drugog mjesta na kojem se jezik poruke odlučuje.
+//
+// `turnout` namjerno nije ovdje: predložak još ne postoji, pa bi unos vodio na
+// alias koji Resend ne poznaje. Exclude ga čini pogreškom prevođenja, tako da
+// faza 3 mora dodati i predložak i ovaj redak.
+const TEMPLATE: Record<Exclude<EmailType, "turnout">, string> = {
+  otp: "otp",
+  reset: "reset",
+  "delete-account": "delete-account",
+  invite: "voter-invite",
+  reminder: "voter-reminder",
+};
+
+function templateId(
+  type: Exclude<EmailType, "turnout">,
+  locale: Locale,
+): string {
+  return `electius-${TEMPLATE[type]}-${locale}`;
+}
 
 // Pošiljatelj se razrješava pri PRVOM slanju, ne pri učitavanju modula — isti
 // stav kao stripeClient(). Ovaj modul visi o BetterAuthu, a njega uvozi svaka
@@ -64,14 +84,11 @@ function tagsFor(type: EmailType, electionId?: string): Tag[] {
   return tags;
 }
 
-// Ono što se stvarno šalje danas. Faza 2 ovo zamjenjuje s `template` + varijable
-// (SDK ih tipizira kao isključive grane), pa je izdvojeno da promjena bude na
-// jednom mjestu.
+// SDK tipizira predložak i sirovi sadržaj kao isključive grane (`html?: never`
+// uz `template`), pa je zamjena jednog drugim pogreška prevođenja.
 interface EmailBody {
   to: string;
-  subject: string;
-  text: string;
-  html: string;
+  template: { id: string; variables: Record<string, string> };
 }
 
 interface SendMeta {
@@ -150,26 +167,11 @@ function ballotIdempotencyKey(
   return `${kind}:${electionId}:${digest}`;
 }
 
-// Shared branded action-link template (verification + password reset + voter
-// invitations use the same layout: heading, body, CTA button, plain-link
-// fallback, expiry note).
-interface ActionEmailCopy {
-  subject: string;
-  heading: string;
-  body: string;
-  cta: string;
-  fallback: string;
-  expiry: string;
-}
-
-// ponytail: {name} placeholder interpolation by hand — these catalogs are read
-// directly (outside next-intl's request context), so ICU formatting isn't available.
-function fill(template: string, vars: Record<string, string>): string {
-  return template.replace(/\{(\w+)\}/g, (m, key) => vars[key] ?? m);
-}
-
-// Admin-controlled values (election title, org name) get interpolated into the
-// email HTML — escape them there. Subject + plain-text stay raw.
+// `{{{trostruka vitičasta}}}` u predlošku NE bježi (provjereno slanjem), a jedan
+// predložak istim skupom varijabli puni i naslov i čisti tekst i HTML. Zato
+// svaka vrijednost pod kontrolom administratora ide u PARU: sirova za naslov i
+// tekst, pobjegla za HTML. Jedna varijabla ne može biti oboje — pobjegla bi u
+// čistom tekstu ispisala `&#39;`, a sirova bi pustila `<b>` u sandučić birača.
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -179,89 +181,41 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#39;");
 }
 
-function actionEmailText(url: string, t: ActionEmailCopy): string {
-  return `${t.body}\n\n${url}\n\n${t.expiry}`;
-}
-
-function actionEmailHtml(url: string, t: ActionEmailCopy): string {
-  return `
-      <div style="font-family:'Noto Sans',system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#0A0A0A">
-        <h1 style="font-size:20px;color:#1F2937;margin:0 0 16px">${t.heading}</h1>
-        <p style="font-size:16px;line-height:1.6;margin:0 0 24px">${t.body}</p>
-        <a href="${url}" style="display:inline-block;background:#1D4ED8;color:#FFFFFF;text-decoration:none;font-weight:600;padding:14px 32px;border-radius:8px">${t.cta}</a>
-        <p style="font-size:14px;line-height:1.5;color:#4B5563;margin:24px 0 0">${t.fallback}</p>
-        <p style="font-size:12px;line-height:1.5;color:#4B5563;margin:8px 0 0;word-break:break-all">${url}</p>
-        <p style="font-size:12px;line-height:1.5;color:#4B5563;margin:24px 0 0">${t.expiry}</p>
-      </div>`;
-}
-
-async function sendActionEmail(
-  to: string,
-  url: string,
-  t: ActionEmailCopy,
-  type: EmailType,
-) {
-  await send(
-    {
-      to,
-      subject: t.subject,
-      text: actionEmailText(url, t),
-      html: actionEmailHtml(url, t),
-    },
-    { type },
-  );
-}
-
 // ───────── Verification OTP (otp-implementation-auth-spec §3) ─────────
-
-// The code IS the content — no link, no CTA button (the whole point is typing
-// it). Plugin-generated digits only, so no HTML escaping needed.
-interface OtpEmailCopy {
-  subject: string;
-  heading: string;
-  body: string;
-  expiry: string;
-  ignore: string;
-}
-
-function otpEmailHtml(otp: string, t: OtpEmailCopy): string {
-  return `
-      <div style="font-family:'Noto Sans',system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;color:#0A0A0A">
-        <h1 style="font-size:20px;color:#1F2937;margin:0 0 16px">${t.heading}</h1>
-        <p style="font-size:16px;line-height:1.6;margin:0 0 24px">${t.body}</p>
-        <p style="font-family:'Roboto Mono',ui-monospace,monospace;font-size:32px;letter-spacing:8px;font-weight:600;background:#F3F4F6;border-radius:8px;padding:16px 24px;text-align:center;margin:0 0 24px">${otp}</p>
-        <p style="font-size:14px;line-height:1.5;color:#4B5563;margin:0 0 8px">${t.expiry}</p>
-        <p style="font-size:12px;line-height:1.5;color:#4B5563;margin:0">${t.ignore}</p>
-      </div>`;
-}
 
 export async function sendOtpEmail(
   to: string,
   otp: string,
-  locale: Locale = "hr",
+  locale: Locale = DEFAULT_LOCALE,
 ) {
-  const t = CATALOGS[locale].auth.otpEmail;
-
+  // Šifra JE sadržaj — predložak nema ni CTA gumb ni poveznicu, i jedina mu je
+  // varijabla CODE, pa se poveznica ovdje ne može ni proslijediti.
   // Bez ključa idempotentnosti: svaki poziv nosi NOVU šifru, a "pošalji
-  // ponovno" je zahtjev za novom porukom. Ključ bi ovdje ugušio upravo ono
-  // što korisnik traži.
+  // ponovno" je zahtjev za novom porukom.
   await send(
-    {
-      to,
-      subject: t.subject,
-      text: `${t.body}\n\n${otp}\n\n${t.expiry}\n${t.ignore}`,
-      html: otpEmailHtml(otp, t),
-    },
+    { to, template: { id: templateId("otp", locale), variables: { CODE: otp } } },
     { type: "otp" },
+  );
+}
+
+async function sendActionLinkEmail(
+  to: string,
+  url: string,
+  type: Extract<EmailType, "reset" | "delete-account">,
+  locale: Locale,
+) {
+  await send(
+    { to, template: { id: templateId(type, locale), variables: { URL: url } } },
+    { type },
   );
 }
 
 export async function sendResetPasswordEmail(
   to: string,
   url: string,
-  locale: Locale = "hr",
+  locale: Locale = DEFAULT_LOCALE,
 ) {
-  await sendActionEmail(to, url, CATALOGS[locale].auth.resetEmail, "reset");
+  await sendActionLinkEmail(to, url, "reset", locale);
 }
 
 // Potvrda brisanja računa (profile-settings-phase-4-spec §2). Poveznica JE drugi
@@ -269,14 +223,9 @@ export async function sendResetPasswordEmail(
 export async function sendDeleteAccountEmail(
   to: string,
   url: string,
-  locale: Locale = "hr",
+  locale: Locale = DEFAULT_LOCALE,
 ) {
-  await sendActionEmail(
-    to,
-    url,
-    CATALOGS[locale].auth.deleteAccountEmail,
-    "delete-account",
-  );
+  await sendActionLinkEmail(to, url, "delete-account", locale);
 }
 
 // ───────── Voter invitations (election-publication-spec §3) ─────────
@@ -296,48 +245,40 @@ export interface InvitationElection {
   organizationName: string;
 }
 
-// Batched invitation send — ≤100 recipients per call (Resend batch limit,
-// chunking is the publication service's job). A batch call is atomic:
-// it succeeds or fails whole, which is exactly the spec's per-chunk
-// failure granularity. Throws on failure so the caller can leave the
-// chunk's voters PENDING (retryable).
-// Jedna staza slanja za oba teksta — razlikuje se samo blok kataloga i skup
-// varijabli. Vrijednosti pod kontrolom administratora (naslov, ime
-// organizacije) interpoliraju se u HTML, pa se ondje bježe; subject i čisti
-// tekst ostaju sirovi.
+// Batched send — ≤100 recipients per call (Resend batch limit, chunking is the
+// publication service's job). A batch call is atomic: it succeeds or fails
+// whole, which is exactly the spec's per-chunk failure granularity. Throws on
+// failure so the caller can leave the chunk's voters PENDING (retryable).
+//
+// Jedna staza slanja za oba teksta — razlikuju se samo predloškom i skupom
+// varijabli. Svaki element serije nosi VLASTITE varijable, pa je osobna
+// poveznica po biraču izraziva kao varijabla; bez toga se ove dvije poruke ne bi
+// mogle preseliti na predloške.
 async function sendBallotLinkEmails(
   kind: Extract<EmailType, "invite" | "reminder">,
-  electionId: string,
+  election: InvitationElection,
   recipients: InvitationRecipient[],
-  raw: ActionEmailCopy,
-  vars: Record<string, string>,
-  escaped: Record<string, string>,
+  locale: Locale,
+  extra: Record<string, string> = {},
 ) {
-  const copy = (v: Record<string, string>): ActionEmailCopy => ({
-    subject: fill(raw.subject, v),
-    heading: fill(raw.heading, v),
-    body: fill(raw.body, v),
-    cta: raw.cta,
-    fallback: raw.fallback,
-    expiry: fill(raw.expiry, v),
-  });
-  const tText = copy(vars);
-  const tHtml = copy(escaped);
+  const id = templateId(kind, locale);
+  const shared = {
+    TITLE: election.title,
+    TITLE_HTML: escapeHtml(election.title),
+    ORG: election.organizationName,
+    ORG_HTML: escapeHtml(election.organizationName),
+    ...extra,
+  };
 
   await sendBatch(
-    recipients.map((r) => {
-      const url = voteUrl(r.rawToken);
-      return {
-        to: r.email,
-        subject: tText.subject,
-        text: actionEmailText(url, tText),
-        html: actionEmailHtml(url, tHtml),
-      };
-    }),
+    recipients.map((r) => ({
+      to: r.email,
+      template: { id, variables: { ...shared, URL: voteUrl(r.rawToken) } },
+    })),
     {
       type: kind,
-      electionId,
-      idempotencyKey: ballotIdempotencyKey(kind, electionId, recipients),
+      electionId: election.id,
+      idempotencyKey: ballotIdempotencyKey(kind, election.id, recipients),
     },
   );
 }
@@ -345,21 +286,11 @@ async function sendBallotLinkEmails(
 export async function sendInvitationEmails(
   recipients: InvitationRecipient[],
   election: InvitationElection,
-  locale: Locale = "hr",
+  locale: Locale = DEFAULT_LOCALE,
 ) {
   if (recipients.length === 0) return;
 
-  await sendBallotLinkEmails(
-    "invite",
-    election.id,
-    recipients,
-    CATALOGS[locale].voter.inviteEmail,
-    { title: election.title, org: election.organizationName },
-    {
-      title: escapeHtml(election.title),
-      org: escapeHtml(election.organizationName),
-    },
-  );
+  await sendBallotLinkEmails("invite", election, recipients, locale);
 }
 
 // ───────── Podsjetnici (pro-features §2) ─────────
@@ -376,25 +307,19 @@ export interface ReminderElection extends InvitationElection {
 export async function sendReminderEmails(
   recipients: InvitationRecipient[],
   election: ReminderElection,
-  locale: Locale = "hr",
+  locale: Locale = DEFAULT_LOCALE,
 ) {
   if (recipients.length === 0) return;
 
-  // Datum se oblikuje ovdje, uz tekst: locale koji bira katalog isti je onaj
-  // koji oblikuje rok, pa se format i jezik ne mogu razići. Isti UTC formatter
-  // koji koriste zaslon i izvještaj (invarijanta #5).
+  // Datum se oblikuje ovdje, uz odabir predloška: jezik koji bira tekst isti je
+  // onaj koji oblikuje rok, pa se format i jezik ne mogu razići. Isti UTC
+  // formatter koji koriste zaslon i izvještaj (invarijanta #5).
+  //
+  // CLOSES nema pobjeglog blizanca jer nije pod kontrolom administratora — to je
+  // izlaz našeg formattera (Intl), bez znakova koje bi trebalo bježati.
   const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
 
-  await sendBallotLinkEmails(
-    "reminder",
-    election.id,
-    recipients,
-    CATALOGS[locale].voter.reminderEmail,
-    { title: election.title, org: election.organizationName, closes },
-    {
-      title: escapeHtml(election.title),
-      org: escapeHtml(election.organizationName),
-      closes: escapeHtml(closes),
-    },
-  );
+  await sendBallotLinkEmails("reminder", election, recipients, locale, {
+    CLOSES: closes,
+  });
 }
