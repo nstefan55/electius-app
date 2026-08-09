@@ -231,6 +231,12 @@ model Voter {
   status    VoterStatus @default(PENDING)
   createdAt DateTime    @default(now())
 
+  // Zadnje odbijanje/pritužba/gušenje koje je Resendov webhook prijavio za ovu
+  // adresu. Odvojeno od `status` namjerno: status je red za ponavljanje
+  // (invarijanta #7), a ovo je činjenica o dostavi. Birač s mrtvom adresom
+  // inače zauvijek ostaje INVITED i tiho vuče izlaznost prema dolje.
+  deliveryFailedAt DateTime?
+
   electionId String
   election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
 

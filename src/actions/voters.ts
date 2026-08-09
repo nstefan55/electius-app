@@ -232,6 +232,7 @@ export async function resendVoterInvite(
         status: true,
         election: {
           select: {
+            id: true,
             title: true,
             startsAt: true,
             endsAt: true,
@@ -243,6 +244,7 @@ export async function resendVoterInvite(
     if (!voter) return { success: false, error: "invalidStatus" };
 
     const result = await inviteVoter(voterId, voter.status, {
+      id: voter.election.id,
       title: voter.election.title,
       organizationName: voter.election.organization.name,
       startsAt: voter.election.startsAt,

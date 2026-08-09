@@ -54,6 +54,7 @@ const election = {
 
 // Ono što inviteVoter proslijedi dalje: tekst e-pošte + rok za provjeru prozora.
 const sendable = {
+  id: "el_1",
   title: "Studentski izbori",
   organizationName: "VVG",
   startsAt: OPENS,
@@ -164,7 +165,7 @@ describe("publishElection", () => {
 
     expect(sendInvitationEmails).toHaveBeenCalledWith(
       [mintedVoter(1)],
-      { title: "Studentski izbori", organizationName: "VVG" },
+      { id: "el_1", title: "Studentski izbori", organizationName: "VVG" },
     );
   });
 });
@@ -428,7 +429,12 @@ describe("sendReminders", () => {
     // endsAt putuje s njim: rok se oblikuje uz tekst, u istom jeziku.
     expect(sendReminderEmails).toHaveBeenCalledWith(
       [mintedVoter(1), mintedVoter(2)],
-      { title: "Studentski izbori", organizationName: "VVG", endsAt: FUTURE },
+      {
+        id: "el_1",
+        title: "Studentski izbori",
+        organizationName: "VVG",
+        endsAt: FUTURE,
+      },
     );
     expect(sendInvitationEmails).not.toHaveBeenCalled();
     expect(result).toEqual({ sent: 2, failed: 0 });
