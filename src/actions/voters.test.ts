@@ -350,6 +350,8 @@ describe("resendVoterInvite", () => {
       startsAt: OPENS,
       endsAt: CLOSES,
       organization: { name: "Org" },
+      // Birač nema svoj jezik — poveznica ide na jeziku stvaratelja izbora.
+      createdBy: { locale: "hr" },
     },
   };
 
@@ -381,6 +383,23 @@ describe("resendVoterInvite", () => {
       organizationName: "Org",
       startsAt: OPENS,
       endsAt: CLOSES,
+      locale: "hr",
+    });
+  });
+
+  it("prosljeđuje jezik stvaratelja izbora, ne zadani", async () => {
+    // Test iznad koristi hr fixture, pa bi ga prošla i implementacija koja
+    // stupac ignorira. Razlikuje ih tek jezik koji NIJE zadani.
+    vi.mocked(prisma.voter.findFirst).mockResolvedValue({
+      ...voter,
+      election: { ...voter.election, createdBy: { locale: "en" } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+
+    await resendVoterInvite("v1");
+
+    expect(vi.mocked(inviteVoter).mock.calls[0]![2]).toMatchObject({
+      locale: "en",
     });
   });
 

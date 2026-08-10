@@ -61,17 +61,18 @@ describe("sender resolution (§1.2)", () => {
 
     // Prije ovoga je poruka tiho odlazila s onboarding@resend.dev — dostavljivo,
     // pogrešno, i aplikaciji nevidljivo.
-    await expect(sendOtpEmail("a@example.com", "483920")).rejects.toThrow(
+    await expect(sendOtpEmail("a@example.com", "483920", "hr")).rejects.toThrow(
       "RESEND_FROM_EMAIL",
     );
     expect(emailSend).not.toHaveBeenCalled();
   });
 
   it("puts the configured sender on both single and batch sends", async () => {
-    await sendOtpEmail("a@example.com", "483920");
+    await sendOtpEmail("a@example.com", "483920", "hr");
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "raw" }],
       election,
+      "hr",
     );
 
     expect(emailSend.mock.calls[0][0].from).toBe(
@@ -85,16 +86,18 @@ describe("sender resolution (§1.2)", () => {
 
 describe("template selection (§Faza 2)", () => {
   it("references a published alias per email, never raw content", async () => {
-    await sendOtpEmail("a@example.com", "483920");
-    await sendResetPasswordEmail("a@example.com", "https://x/reset");
-    await sendDeleteAccountEmail("a@example.com", "https://x/delete");
+    await sendOtpEmail("a@example.com", "483920", "hr");
+    await sendResetPasswordEmail("a@example.com", "https://x/reset", "hr");
+    await sendDeleteAccountEmail("a@example.com", "https://x/delete", "hr");
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "raw" }],
       election,
+      "hr",
     );
     await sendReminderEmails(
       [{ email: "a@example.com", rawToken: "raw" }],
       reminderElection,
+      "hr",
     );
 
     expect(templateOf(emailSend.mock.calls[0][0]).id).toBe("electius-otp-hr");
@@ -120,17 +123,57 @@ describe("template selection (§Faza 2)", () => {
   it("picks the copy by putting the locale in the alias", async () => {
     // Jezik poruke odlučuje se SAMO ovdje — predložak nosi tekst, pa pogrešan
     // alias znači tiho pogrešan jezik u sandučiću.
+    //
+    // Svih PET pošiljatelja koji primaju jezik provjerava se ovdje (šesti,
+    // izlaznost, ima jezik po primatelju i vlastiti test): dok je locale imao
+    // zadanu vrijednost, pošiljatelj koji ga ignorira prolazio je neopaženo, jer
+    // je hr ionako bio ishod.
     await sendOtpEmail("a@example.com", "483920", "en");
+    await sendResetPasswordEmail("a@example.com", "https://x/reset", "en");
+    await sendDeleteAccountEmail("a@example.com", "https://x/delete", "en");
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "raw" }],
       election,
       "en",
     );
+    await sendReminderEmails(
+      [{ email: "a@example.com", rawToken: "raw" }],
+      reminderElection,
+      "en",
+    );
 
     expect(templateOf(emailSend.mock.calls[0][0]).id).toBe("electius-otp-en");
+    expect(templateOf(emailSend.mock.calls[1][0]).id).toBe("electius-reset-en");
+    expect(templateOf(emailSend.mock.calls[2][0]).id).toBe(
+      "electius-delete-account-en",
+    );
     expect(templateOf(batchSend.mock.calls[0][0][0]).id).toBe(
       "electius-voter-invite-en",
     );
+    expect(templateOf(batchSend.mock.calls[1][0][0]).id).toBe(
+      "electius-voter-reminder-en",
+    );
+  });
+
+  it("oblikuje rok na jeziku koji je odabrao predložak", async () => {
+    // Jezik bira tekst I datum. Da se datum oblikuje izvan pošiljatelja, engleska
+    // bi poruka nosila hrvatski format — pogreška koju nijedan tip ne hvata.
+    await sendReminderEmails(
+      [{ email: "a@example.com", rawToken: "raw" }],
+      reminderElection,
+      "en",
+    );
+    const en = templateOf(batchSend.mock.calls[0][0][0]).variables.CLOSES;
+
+    batchSend.mockClear();
+    await sendReminderEmails(
+      [{ email: "a@example.com", rawToken: "raw" }],
+      reminderElection,
+      "hr",
+    );
+    const hr = templateOf(batchSend.mock.calls[0][0][0]).variables.CLOSES;
+
+    expect(en).not.toBe(hr);
   });
 });
 
@@ -139,6 +182,7 @@ describe("tags (§1.3)", () => {
     await sendInvitationEmails(
       [{ email: "voter@example.com", rawToken: "raw" }],
       election,
+      "hr",
     );
 
     const [payloads] = batchSend.mock.calls[0];
@@ -152,8 +196,8 @@ describe("tags (§1.3)", () => {
   });
 
   it("tags each auth email with its own type and no election", async () => {
-    await sendOtpEmail("admin@example.com", "483920");
-    await sendResetPasswordEmail("admin@example.com", "https://x/reset");
+    await sendOtpEmail("admin@example.com", "483920", "hr");
+    await sendResetPasswordEmail("admin@example.com", "https://x/reset", "hr");
 
     expect(emailSend.mock.calls[0][0].tags).toEqual([
       { name: "type", value: "otp" },
@@ -167,6 +211,7 @@ describe("tags (§1.3)", () => {
     await sendReminderEmails(
       [{ email: "a@example.com", rawToken: "raw" }],
       reminderElection,
+      "hr",
     );
 
     const [payloads] = batchSend.mock.calls[0];
@@ -186,6 +231,7 @@ describe("idempotency keys (§1.4)", () => {
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "token-before-remint" }],
       election,
+      "hr",
     );
     const before = keyOf(batchSend.mock.calls[0]);
 
@@ -193,6 +239,7 @@ describe("idempotency keys (§1.4)", () => {
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "token-after-remint" }],
       election,
+      "hr",
     );
     const after = keyOf(batchSend.mock.calls[0]);
 
@@ -209,6 +256,7 @@ describe("idempotency keys (§1.4)", () => {
         { email: "b@example.com", rawToken: "tok-b" },
       ],
       election,
+      "hr",
     );
     const first = keyOf(batchSend.mock.calls[0]);
 
@@ -219,6 +267,7 @@ describe("idempotency keys (§1.4)", () => {
         { email: "a@example.com", rawToken: "tok-a" },
       ],
       election,
+      "hr",
     );
 
     expect(keyOf(batchSend.mock.calls[0])).toBe(first);
@@ -227,15 +276,15 @@ describe("idempotency keys (§1.4)", () => {
   it("scopes the key by election and by kind", async () => {
     const recipients = [{ email: "a@example.com", rawToken: "tok" }];
 
-    await sendInvitationEmails(recipients, election);
+    await sendInvitationEmails(recipients, election, "hr");
     const invite = keyOf(batchSend.mock.calls[0]);
 
     batchSend.mockClear();
-    await sendInvitationEmails(recipients, { ...election, id: "el_2" });
+    await sendInvitationEmails(recipients, { ...election, id: "el_2" }, "hr");
     const otherElection = keyOf(batchSend.mock.calls[0]);
 
     batchSend.mockClear();
-    await sendReminderEmails(recipients, reminderElection);
+    await sendReminderEmails(recipients, reminderElection, "hr");
     const reminder = keyOf(batchSend.mock.calls[0]);
 
     expect(invite).toMatch(/^invite:el_1:[0-9a-f]{16}$/);
@@ -249,6 +298,7 @@ describe("idempotency keys (§1.4)", () => {
     await sendInvitationEmails(
       [{ email: "a@example.com", rawToken: "super-secret-raw" }],
       election,
+      "hr",
     );
 
     // Ključ je otisak POHRANJENIH otisaka — sirovi token u njega ne ulazi
@@ -258,8 +308,8 @@ describe("idempotency keys (§1.4)", () => {
 
   it("sends user-triggered auth mail with no key at all", async () => {
     // "Pošalji ponovno" je zahtjev za NOVOM porukom — ključ bi ga ugušio.
-    await sendOtpEmail("a@example.com", "483920");
-    await sendResetPasswordEmail("a@example.com", "https://x/reset");
+    await sendOtpEmail("a@example.com", "483920", "hr");
+    await sendResetPasswordEmail("a@example.com", "https://x/reset", "hr");
 
     expect(keyOf(emailSend.mock.calls[0])).toBeUndefined();
     expect(keyOf(emailSend.mock.calls[1])).toBeUndefined();
@@ -273,8 +323,8 @@ describe("permissive batching (§Faza 4)", () => {
   // komadu. Uz to je i tip odgovora uvjetovan literalom — bez njega polje
   // `errors` ne postoji ni na tipu, pa se odbijeni ne mogu ni pročitati.
   it("traži permissive provjeru na svakom skupnom slanju", async () => {
-    await sendInvitationEmails(one, election);
-    await sendReminderEmails(one, reminderElection);
+    await sendInvitationEmails(one, election, "hr");
+    await sendReminderEmails(one, reminderElection, "hr");
 
     expect(optionsOf(batchSend.mock.calls[0])).toMatchObject({
       batchValidation: "permissive",
@@ -301,11 +351,11 @@ describe("permissive batching (§Faza 4)", () => {
       rawToken: `raw${i}`,
     }));
 
-    expect(await sendInvitationEmails(recipients, election)).toEqual([1, 3]);
+    expect(await sendInvitationEmails(recipients, election, "hr")).toEqual([1, 3]);
   });
 
   it("prazno polje kad je prošao cijeli komad", async () => {
-    expect(await sendInvitationEmails(one, election)).toEqual([]);
+    expect(await sendInvitationEmails(one, election, "hr")).toEqual([]);
   });
 
   // Dvije različite činjenice: "Resend nije primio poziv" i dalje baca, pa
@@ -313,7 +363,7 @@ describe("permissive batching (§Faza 4)", () => {
   it("i dalje baca kad padne CIJELI poziv", async () => {
     batchSend.mockResolvedValue({ data: null, error: { message: "boom" } });
 
-    await expect(sendInvitationEmails(one, election)).rejects.toThrow(
+    await expect(sendInvitationEmails(one, election, "hr")).rejects.toThrow(
       "resend: boom",
     );
   });
@@ -321,7 +371,7 @@ describe("permissive batching (§Faza 4)", () => {
 
 describe("sendOtpEmail", () => {
   it("passes the code as its only variable, so no link can reach the message", async () => {
-    await sendOtpEmail("a@example.com", "483920");
+    await sendOtpEmail("a@example.com", "483920", "hr");
 
     const [payload] = emailSend.mock.calls[0];
     expect(payload.to).toBe("a@example.com");
@@ -335,7 +385,7 @@ describe("sendOtpEmail", () => {
   it("throws on a Resend error so a failed send fails loudly", async () => {
     emailSend.mockResolvedValue({ data: null, error: { message: "boom" } });
 
-    await expect(sendOtpEmail("a@example.com", "111111")).rejects.toThrow(
+    await expect(sendOtpEmail("a@example.com", "111111", "hr")).rejects.toThrow(
       "resend: boom",
     );
   });
@@ -343,7 +393,7 @@ describe("sendOtpEmail", () => {
 
 describe("sendInvitationEmails", () => {
   it("no-ops on an empty batch without calling Resend", async () => {
-    await sendInvitationEmails([], election);
+    await sendInvitationEmails([], election, "hr");
     expect(batchSend).not.toHaveBeenCalled();
   });
 
@@ -354,6 +404,7 @@ describe("sendInvitationEmails", () => {
         { email: "b@example.com", rawToken: "raw-token-b" },
       ],
       election,
+      "hr",
     );
 
     const payloads = batchSend.mock.calls[0][0];
@@ -371,7 +422,9 @@ describe("sendInvitationEmails", () => {
       ...election,
       title: 'Izbori <b>2026</b> & "co"',
       organizationName: "Ivan & Co",
-    });
+    },
+      "hr",
+    );
 
     const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
 
@@ -393,6 +446,7 @@ describe("sendInvitationEmails", () => {
       sendInvitationEmails(
         [{ email: "a@example.com", rawToken: "raw" }],
         election,
+        "hr",
       ),
     ).rejects.toThrow("resend: boom");
   });
@@ -435,7 +489,7 @@ describe("sendTurnoutEmails", () => {
   });
 
   it("NIKAD ne nosi zbroj po kandidatima (§3.3)", async () => {
-    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, figures);
 
     // Za AFTER_CLOSE izbore zbroj je zapečaćen i od administratora, pa bi brojke
     // po kandidatu u sandučiću zaobišle pečat koji svaki zaslon poštuje. Tip to
@@ -461,7 +515,7 @@ describe("sendTurnoutEmails", () => {
   });
 
   it("nosi topicId — jedina poruka koja ga smije nositi (§3.2)", async () => {
-    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, figures);
     expect(batchSend.mock.calls[0][0][0].topicId).toBe("topic_1");
 
     // Transakcijske poruke ga NE nose: birač koji je jednom kliknuo "odjava"
@@ -470,6 +524,7 @@ describe("sendTurnoutEmails", () => {
     await sendInvitationEmails(
       [{ email: "v@example.com", rawToken: "raw" }],
       election,
+      "hr",
     );
     expect(batchSend.mock.calls[0][0][0].topicId).toBeUndefined();
   });
@@ -478,14 +533,14 @@ describe("sendTurnoutEmails", () => {
     vi.stubEnv("RESEND_TURNOUT_TOPIC_ID", undefined);
 
     await expect(
-      sendTurnoutEmails(["admin@example.com"], turnoutElection, figures),
+      sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, figures),
     ).rejects.toThrow("RESEND_TURNOUT_TOPIC_ID");
     expect(batchSend).not.toHaveBeenCalled();
   });
 
   it("ključ idempotentnosti je izbori + prečka, stabilan preko ponovnih prolaza", async () => {
-    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
-    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, figures);
 
     // Bez kovanja tokena ovdje nema ničega što bi se mijenjalo među prolazima,
     // pa je isti ključ ISPRAVAN — za razliku od staza s čarobnom poveznicom,
@@ -494,7 +549,7 @@ describe("sendTurnoutEmails", () => {
     expect(keyOf(batchSend.mock.calls[1])).toBe("turnout:el_1:50");
 
     // Druga prečka je druga poruka.
-    await sendTurnoutEmails(["admin@example.com"], turnoutElection, {
+    await sendTurnoutEmails([{ email: "admin@example.com", locale: "hr" }], turnoutElection, {
       ...figures,
       milestone: 75,
     });
@@ -503,10 +558,9 @@ describe("sendTurnoutEmails", () => {
 
   it("jedan unos po administratoru, svaki sa svojom poveznicom za odjavu", async () => {
     await sendTurnoutEmails(
-      ["a@example.com", "b@example.com"],
+      [{ email: "a@example.com", locale: "hr" }, { email: "b@example.com", locale: "hr" }],
       turnoutElection,
-      figures,
-    );
+      figures);
 
     // Zajednički To: dao bi svima istu odjavu i usput otkrio adrese
     // administratora jednu drugoj.
@@ -515,15 +569,14 @@ describe("sendTurnoutEmails", () => {
   });
 
   it("kvorum je crtica kad nije postavljen, inače potreban/ukupno", async () => {
-    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "a@example.com", locale: "hr" }], turnoutElection, figures);
     expect(templateOf(batchSend.mock.calls[0][0][0]).variables.QUORUM).toBe("—");
 
     batchSend.mockClear();
     await sendTurnoutEmails(
-      ["a@example.com"],
+      [{ email: "a@example.com", locale: "hr" }],
       { ...turnoutElection, quorumThreshold: 70 },
-      figures,
-    );
+      figures);
     // quorumRequiredVoters(200, 70) = 140 — dijeljena derivacija, ne ovdje
     // izračunata (invarijanta #5).
     expect(templateOf(batchSend.mock.calls[0][0][0]).variables.QUORUM).toBe(
@@ -533,10 +586,9 @@ describe("sendTurnoutEmails", () => {
 
   it("administratorov naslov ide u paru: sirov i pobjegao", async () => {
     await sendTurnoutEmails(
-      ["a@example.com"],
+      [{ email: "a@example.com", locale: "hr" }],
       { ...turnoutElection, title: "O'Brien & <b>Co</b>" },
-      figures,
-    );
+      figures);
 
     const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
     expect(vars.TITLE).toBe("O'Brien & <b>Co</b>");
@@ -544,15 +596,37 @@ describe("sendTurnoutEmails", () => {
   });
 
   it("jezik bira predložak", async () => {
-    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures, "en");
+    await sendTurnoutEmails([{ email: "a@example.com", locale: "en" }], turnoutElection, figures);
     expect(templateOf(batchSend.mock.calls[0][0][0]).id).toBe(
       "electius-admin-turnout-en",
     );
 
     batchSend.mockClear();
-    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails([{ email: "a@example.com", locale: "hr" }], turnoutElection, figures);
     expect(templateOf(batchSend.mock.calls[0][0][0]).id).toBe(
       "electius-admin-turnout-hr",
+    );
+  });
+
+  it("svaki administrator dobiva SVOJ jezik u istoj seriji", async () => {
+    // Ovdje jezik nije svojstvo izbora nego osobe: dvoje ljudi u istoj
+    // organizaciji dobivaju istu obavijest na različitim jezicima. Zato se i
+    // varijable grade po primatelju — CLOSES je naš Intl izlaz, pa bi zajednički
+    // skup varijabli dao englesku poruku s hrvatskim datumom.
+    await sendTurnoutEmails(
+      [
+        { email: "hr@example.com", locale: "hr" },
+        { email: "en@example.com", locale: "en" },
+      ],
+      turnoutElection,
+      figures,
+    );
+
+    const [payloads] = batchSend.mock.calls[0];
+    expect(templateOf(payloads[0]).id).toBe("electius-admin-turnout-hr");
+    expect(templateOf(payloads[1]).id).toBe("electius-admin-turnout-en");
+    expect(templateOf(payloads[0]).variables.CLOSES).not.toBe(
+      templateOf(payloads[1]).variables.CLOSES,
     );
   });
 

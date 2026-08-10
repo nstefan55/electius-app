@@ -11,6 +11,7 @@ import {
 import { voterCap } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { mutationsFrozen } from "@/lib/services/token.service";
+import { resolveLocale } from "@/i18n/config";
 
 // Upravljanje biračima (voter-management-spec). Svaka akcija je org-scoped i
 // nosi status izbora u WHERE klauzuli — nikad pročitaj-pa-provjeri.
@@ -237,6 +238,7 @@ export async function resendVoterInvite(
             startsAt: true,
             endsAt: true,
             organization: { select: { name: true } },
+            createdBy: { select: { locale: true } },
           },
         },
       },
@@ -249,6 +251,9 @@ export async function resendVoterInvite(
       organizationName: voter.election.organization.name,
       startsAt: voter.election.startsAt,
       endsAt: voter.election.endsAt,
+      // ponytail: jezik stvaratelja izbora, isto kao skupno slanje — birač
+      // nema svoj redak. Uz dodatna mjesta ide Organization.locale.
+      locale: resolveLocale(voter.election.createdBy.locale),
     });
     if (result === "windowOver") {
       return { success: false, error: "windowOver" };

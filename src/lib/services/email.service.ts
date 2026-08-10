@@ -2,7 +2,7 @@ import "server-only";
 
 import { createHash } from "crypto";
 import { Resend, type Tag } from "resend";
-import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { type Locale } from "@/i18n/config";
 import {
   formatVotingDateTime,
   quorumRequiredVoters,
@@ -16,8 +16,12 @@ import { hashToken } from "./token.service";
 // Tekst više NIJE ovdje (faza 2). Svih pet poruka živi kao objavljen predložak u
 // Resendu, a kod šalje samo alias i varijable — ispravak teksta je uređivanje u
 // nadzornoj ploči, ne promjena koda, novi build i podizanje verzije.
-// ponytail: locale i dalje pada na hr — nijedan pozivatelj ga ne prosljeđuje;
-// provlačenje jezika je faza 4.
+//
+// `locale` je OBAVEZAN na svakom pošiljatelju, bez zadane vrijednosti. Upravo je
+// zadana vrijednost (`= DEFAULT_LOCALE`) bila razlog zašto je svih osam poziva
+// godinama tiho slalo hr: izostavljanje se prevodilo. Sada je pogreška
+// prevođenja. Jezik primatelja dolazi iz User.locale — administratorima vlastiti,
+// biračima jezik onoga tko je izbore stvorio.
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -234,7 +238,7 @@ function escapeHtml(s: string): string {
 export async function sendOtpEmail(
   to: string,
   otp: string,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale,
 ) {
   // Šifra JE sadržaj — predložak nema ni CTA gumb ni poveznicu, i jedina mu je
   // varijabla CODE, pa se poveznica ovdje ne može ni proslijediti.
@@ -261,7 +265,7 @@ async function sendActionLinkEmail(
 export async function sendResetPasswordEmail(
   to: string,
   url: string,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale,
 ) {
   await sendActionLinkEmail(to, url, "reset", locale);
 }
@@ -271,7 +275,7 @@ export async function sendResetPasswordEmail(
 export async function sendDeleteAccountEmail(
   to: string,
   url: string,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale,
 ) {
   await sendActionLinkEmail(to, url, "delete-account", locale);
 }
@@ -334,7 +338,7 @@ async function sendBallotLinkEmails(
 export async function sendInvitationEmails(
   recipients: InvitationRecipient[],
   election: InvitationElection,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale,
 ): Promise<RejectedIndices> {
   if (recipients.length === 0) return [];
 
@@ -355,7 +359,7 @@ export interface ReminderElection extends InvitationElection {
 export async function sendReminderEmails(
   recipients: InvitationRecipient[],
   election: ReminderElection,
-  locale: Locale = DEFAULT_LOCALE,
+  locale: Locale,
 ): Promise<RejectedIndices> {
   if (recipients.length === 0) return [];
 
@@ -411,6 +415,16 @@ export interface TurnoutFigures {
   votersTotal: number;
 }
 
+// Administrator sa svojim jezikom, ne gola adresa. Za razliku od pošte biračima
+// — koja uzima jezik onoga tko je izbore stvorio, jer birač nema svoj redak —
+// svaki administrator ima vlastiti User.locale, pa dvoje ljudi u istoj
+// organizaciji mogu dobiti istu obavijest na različitim jezicima. Serija je
+// ionako po primatelju, pa to ne košta ništa.
+export interface TurnoutRecipient {
+  email: string;
+  locale: Locale;
+}
+
 /**
  * Obavijest administratorima da je izlaznost prešla prečku (§4.3).
  *
@@ -424,32 +438,33 @@ export interface TurnoutFigures {
  * metla ponovno krenula.
  */
 export async function sendTurnoutEmails(
-  recipients: string[],
+  recipients: TurnoutRecipient[],
   election: TurnoutElection,
   figures: TurnoutFigures,
-  locale: Locale = DEFAULT_LOCALE,
 ): Promise<RejectedIndices> {
   if (recipients.length === 0) return [];
-
-  // Datum se oblikuje ovdje, uz odabir predloška — isti razlog kao kod
-  // podsjetnika: jezik koji bira tekst isti je onaj koji oblikuje datum.
-  //
-  // Rok, a ne odbrojavanje: "još 2 dana" je netočno čim se poruka otvori sat
-  // vremena kasnije, a datum ostaje istinit. Isto obrazloženje po kojem
-  // podsjetnik navodi rok umjesto preostalog vremena.
-  const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
 
   // Bez riječi, pa ne treba ni prijevod ni pobjegli blizanac: koliko birača
   // treba (dijeljena derivacija quorumRequiredVoters) od koliko ih ima. Redak
   // iznad već pokazuje koliko ih je glasalo, pa je usporedba izravna.
   // Crtica kad kvorum nije postavljen — predložak nema uvjete, a prazna
   // vrijednost izgledala bi kao kvar prikaza.
+  //
+  // Jedini podatak koji NE ovisi o jeziku, pa se računa jednom za cijelu seriju.
   const quorum =
     election.quorumThreshold == null
       ? "—"
       : `${quorumRequiredVoters(figures.votersTotal, election.quorumThreshold)}/${figures.votersTotal}`;
 
-  const variables: TurnoutEmailVars = {
+  // Varijable se grade PO PRIMATELJU jer se po primatelju bira i predložak:
+  // CLOSES je naš Intl izlaz, pa jezik koji bira tekst mora biti onaj koji
+  // oblikuje datum — inače administrator dobije englesku poruku s hrvatskim
+  // datumom. Isto pravilo kao kod podsjetnika, samo što ovdje jezik nije
+  // svojstvo izbora nego osobe.
+  //
+  // Rok, a ne odbrojavanje: "još 2 dana" je netočno čim se poruka otvori sat
+  // vremena kasnije, a datum ostaje istinit.
+  const variablesFor = (locale: Locale): TurnoutEmailVars => ({
     TITLE: election.title,
     TITLE_HTML: escapeHtml(election.title),
     ORG: election.organizationName,
@@ -458,21 +473,21 @@ export async function sendTurnoutEmails(
     TURNOUT_PCT: figures.turnoutPct,
     VOTES_CAST: figures.votesCast,
     VOTERS_TOTAL: figures.votersTotal,
-    CLOSES: closes,
+    CLOSES: formatVotingDateTime(election.endsAt.toISOString(), locale),
     QUORUM: quorum,
     // Pregled izbora, nikad stranica rezultata (D6): zapečaćeni izbori je nemaju,
     // a poveznica koja na nekim izborima vodi u 404 gora je od one koja nikad ne
     // vodi.
     URL: electionOverviewUrl(election.id),
-  };
+  });
 
   // I ovdje `permissive` (kroz sendBatch): prečka je već zauzeta u bazi prije
   // slanja, pa bi uz `strict` jedna neispravna administratorska adresa progutala
   // obavijest SVIMA ostalima — i to nepovratno, jer se stupac namjerno ne vraća.
   return sendBatch(
-    recipients.map((to) => ({
-      to,
-      template: { id: templateId("turnout", locale), variables },
+    recipients.map(({ email, locale }) => ({
+      to: email,
+      template: { id: templateId("turnout", locale), variables: variablesFor(locale) },
       topicId: turnoutTopicId(),
     })),
     {

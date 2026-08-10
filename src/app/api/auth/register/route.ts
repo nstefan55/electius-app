@@ -75,6 +75,11 @@ export async function POST(request: NextRequest) {
         name,
         email,
         password,
+        // Isti već normalizirani jezik koji ide u callbackURL sada i ostaje na
+        // retku. Mora se postaviti OVDJE, a ne poslije: OTP šalje sendOnSignUp
+        // iz same signUpEmail, pa bi naknadni update stigao nakon poruke i prva
+        // bi uvijek bila hr. Prima ga user.additionalFields u lib/auth.
+        locale: safeLocale,
         callbackURL: `/${safeLocale}/setup`,
       },
       returnHeaders: true,

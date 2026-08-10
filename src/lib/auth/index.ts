@@ -20,6 +20,8 @@ import {
   stampArchiveRetention,
 } from "@/lib/services/billing.service";
 import { confirmDeletionUrl } from "@/lib/urls";
+import { DEFAULT_LOCALE } from "@/i18n/config";
+import { localeForEmail } from "@/lib/db/user";
 import { RATE_LIMIT_RULES } from "@/lib/auth/rate-limit-rules";
 import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import {
@@ -115,6 +117,12 @@ function billingPlugin() {
   });
 }
 
+// Sve tri poruke koje BetterAuth šalje sam idu kroz localeForEmail (lib/db/user),
+// dakle kroz upit, a ne kroz `user` iz kuke: sendVerificationOTP dobiva samo
+// adresu, a `user` u reset/delete kukama tipiziran je na osnovni oblik korisnika,
+// bez additionalFields (provjereno prevođenjem). Vrijednost jest na objektu u
+// izvođenju, ali čitati je kroz cast znači tvrditi ono što tipovi poriču.
+
 // BetterAuth server instance, mounted at /api/auth/[...all]; auth lives on the
 // dashboard host only (BETTER_AUTH_URL/BETTER_AUTH_SECRET read from env — see
 // domain-architecture-spec §5.A), with both public hosts trusted as origins
@@ -155,7 +163,7 @@ export const auth = betterAuth({
     // (1h default expiry). Deliberately NOT gated on emailVerificationEnabled —
     // reset must work regardless of the verification toggle.
     sendResetPassword: async ({ user, url }) => {
-      await sendResetPasswordEmail(user.email, url);
+      await sendResetPasswordEmail(user.email, url, await localeForEmail(user.email));
     },
     // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
     // per-password random salt embedded in its `salt:key` format) by leaving
@@ -173,13 +181,38 @@ export const auth = betterAuth({
   // drugi faktor: posjed sandučića potvrđuje identitet i kad je sesija oteta,
   // pa modal u aplikaciji sam po sebi ne može obrisati ništa.
   user: {
+    // Jezik mora biti postavljiv PRI STVARANJU retka, ne nakon njega: OTP za
+    // potvrdu e-pošte šalje sendOnSignUp iz same signUpEmail, pa bi naknadni
+    // update stigao prekasno i prva poruka bi uvijek bila hr. Deklaracija ovdje
+    // je ono što signUpEmail tjera da primi `locale` u tijelu zahtjeva
+    // (AdditionalUserFieldsInput).
+    //
+    // NE tipizira `user` u kukama ispod — provjereno prevođenjem: one su
+    // tipizirane na osnovni oblik korisnika, pa jezik i za reset i za brisanje
+    // računa čita localeForEmail, isto kao OTP staza.
+    //
+    // input ostaje otvoren (za razliku od npr. role): jezik nije povlastica.
+    // Ali /sign-up/email se može gađati izravno, pa vrijednost NIJE pouzdana —
+    // zato je svako čitanje provučeno kroz resolveLocale, a naša ruta
+    // /api/auth/register svejedno normalizira prije slanja.
+    additionalFields: {
+      locale: {
+        type: "string",
+        required: false,
+        defaultValue: DEFAULT_LOCALE,
+      },
+    },
     deleteUser: {
       enabled: true,
       // Šaljemo vlastitu poveznicu, ne BetterAuthov `url`: njegov vodi ravno na
       // GET /delete-user/callback, koji bez sesije vraća JSON 404 na praznoj
       // stranici (npr. poštu se otvori na mobitelu). Token je isti.
       sendDeleteAccountVerification: async ({ user, token }) => {
-        await sendDeleteAccountEmail(user.email, confirmDeletionUrl(token));
+        await sendDeleteAccountEmail(
+          user.email,
+          confirmDeletionUrl(token),
+          await localeForEmail(user.email),
+        );
       },
       // Kaskada organizacije teče prije nego BetterAuth obriše korisnika —
       // elections.createdById je RESTRICT, pa je ovo jedini ispravan trenutak.
@@ -269,7 +302,7 @@ export const auth = betterAuth({
         // OTP types are deliberately dead branches (spec §Security) — a
         // leaked verification code can never log anyone in by itself.
         if (type === "email-verification") {
-          await sendOtpEmail(email, otp);
+          await sendOtpEmail(email, otp, await localeForEmail(email));
         }
       },
     }),

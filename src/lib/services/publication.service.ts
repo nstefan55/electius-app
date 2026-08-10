@@ -17,6 +17,7 @@ import {
   type RejectedIndices,
 } from "./email.service";
 import { turnoutPct } from "@/lib/elections-view";
+import { resolveLocale, type Locale } from "@/i18n/config";
 
 // Publication pipeline (election-publication-spec §2): tokens → chunked Resend
 // batch sends → per-voter INVITED tracking. Runs synchronously in-request
@@ -44,10 +45,15 @@ export interface PublishResult {
   blocked?: "windowOver";
 }
 
-// Izbori s podacima koje slanje treba: tekst e-pošte + rok za provjeru prozora.
+// Izbori s podacima koje slanje treba: tekst e-pošte + rok za provjeru prozora
+// + jezik. Jezik je OBAVEZNO polje, a ne neobavezni argument, upravo zato da ga
+// pozivatelj ne može izostaviti — inače bi jedan zaboravljen poziv tiho poslao
+// hrvatsku pozivnicu, što se ne vidi ni u jednom testu ni logu, nego tek u
+// nečijem sandučiću.
 export type SendableElection = InvitationElection & {
   startsAt: Date;
   endsAt: Date;
+  locale: Locale;
 };
 
 // Slanje odbijeno u trenutku poziva — Resend je poziv primio i OVOG primatelja
@@ -141,6 +147,7 @@ export async function publishElection(
       startsAt: true,
       endsAt: true,
       organization: { select: { name: true } },
+      createdBy: { select: { locale: true } },
     },
   });
   if (!election) return { sent: 0, failed: 0 };
@@ -158,7 +165,16 @@ export async function publishElection(
     title: election.title,
     organizationName: election.organization.name,
   };
-  return sendInChunks(minted, (batch) => sendInvitationEmails(batch, invitation));
+  // ponytail: birač nema svoj redak ni jezik, pa cijeli listić ide na jeziku
+  // onoga tko je izbore stvorio. Danas je to točno jer je shema 1 organizacija ↔
+  // 1 administrator. Čim postoje dodatna mjesta, jezik glasačkog listića odlučuje
+  // to koji je kolega slučajno stvorio izbore, a nigdje u sučelju to ne piše.
+  // Lijek je Organization.locale u migraciji za mjesta + ova jedna linija —
+  // upisano uz "Extra admin seats" u future-updates-spec.md.
+  const locale = resolveLocale(election.createdBy.locale);
+  return sendInChunks(minted, (batch) =>
+    sendInvitationEmails(batch, invitation, locale),
+  );
 }
 
 // Jedan birač, jedna poveznica — dijele je resend iz glasačkog toka i redak u
@@ -176,7 +192,7 @@ export async function inviteVoter(
   const minted = await mintTokenForVoter(voterId);
   if (!minted) return "notFound";
 
-  const rejected = await sendInvitationEmails([minted], election);
+  const rejected = await sendInvitationEmails([minted], election, election.locale);
 
   // Odbijanje pri slanju više NIJE bacanje (permissive), pa se mora pročitati.
   // Bez ove grane bi jedini primatelj bio odbijen, a birač svejedno prešao u
@@ -215,6 +231,7 @@ export async function resendVoterLink(
       startsAt: true,
       endsAt: true,
       organization: { select: { name: true } },
+      createdBy: { select: { locale: true } },
     },
   });
   // Prozor se provjerava PRIJE traženja birača — grana ovisi o izborima, ne o
@@ -238,6 +255,9 @@ export async function resendVoterLink(
     organizationName: election.organization.name,
     startsAt: election.startsAt,
     endsAt: election.endsAt,
+    // ponytail: i ovdje jezik stvaratelja — birač koji sam traži novu poveznicu
+    // dobiva isti jezik kao izvorna pozivnica, što je jedino dosljedno.
+    locale: resolveLocale(election.createdBy.locale),
   });
 }
 
@@ -370,6 +390,7 @@ export async function sendReminders(
       title: true,
       endsAt: true,
       organization: { select: { name: true } },
+      createdBy: { select: { locale: true } },
     },
   });
   if (!election) return { sent: 0, failed: 0 };
@@ -384,7 +405,13 @@ export async function sendReminders(
     organizationName: election.organization.name,
     endsAt: election.endsAt,
   };
-  return sendInChunks(minted, (batch) => sendReminderEmails(batch, reminder));
+  // ponytail: isti dug kao kod pozivnice — jezik izbora je jezik njihova
+  // stvaratelja dok postoji samo jedno administratorsko mjesto. Vidi
+  // publishElection i "Extra admin seats" u future-updates-spec.md.
+  const locale = resolveLocale(election.createdBy.locale);
+  return sendInChunks(minted, (batch) =>
+    sendReminderEmails(batch, reminder, locale),
+  );
 }
 
 // ───────── Obavijesti o izlaznosti (email-delivery §4) ─────────
@@ -419,16 +446,31 @@ export async function sendAdminTurnout(
       quorumThreshold: true,
       _count: { select: { voters: true, votes: true } },
       organization: {
-        select: { name: true, admins: { select: { email: true } } },
+        select: {
+          name: true,
+          admins: { select: { email: true, locale: true } },
+        },
       },
     },
   });
   if (!election) return { sent: 0 };
 
   // Dedup po malim slovima: ista adresa upisana različitim slovima je jedan
-  // sandučić, a dvije poruke o istoj prečki su kvar.
+  // sandučić, a dvije poruke o istoj prečki su kvar. Map umjesto Seta jer svaki
+  // administrator sada nosi i svoj jezik; kod dvostruke adrese pobjeđuje
+  // POSLJEDNJI upis — Map tako radi, a razlika je dosegljiva samo ako dva retka
+  // imaju istu adresu u različitim slovima (email je @unique, ali osjetljiv na
+  // velika i mala slova), pa je izbor jezika među njima ionako proizvoljan.
+  //
+  // Ovdje NEMA duga oko jezika, za razliku od pošte biračima: obavijest o
+  // izlaznosti ide administratorima, a oni svaki imaju vlastiti User.locale.
   const recipients = [
-    ...new Set(election.organization.admins.map((a) => a.email.toLowerCase())),
+    ...new Map(
+      election.organization.admins.map((a) => [
+        a.email.toLowerCase(),
+        { email: a.email.toLowerCase(), locale: resolveLocale(a.locale) },
+      ]),
+    ).values(),
   ];
   if (recipients.length === 0) return { sent: 0 };
 

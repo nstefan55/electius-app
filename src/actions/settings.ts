@@ -5,6 +5,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { ACCESSIBILITY_KEYS } from "@/lib/accessibility";
+import { LOCALES } from "@/i18n/config";
 
 // Settings mutations (profile-settings phase 1). requireSession() first, then
 // writes scoped to the session's own user/organization — a foreign id can
@@ -54,6 +55,28 @@ export async function setAccessibilityPref(
     await prisma.user.update({
       where: { email: session.user.email },
       data: { [parsed.data.key]: parsed.data.value },
+    });
+    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
+// Jezik je do sada bio SAMO segment URL-a: kartica je navigirala i nije pisala
+// ništa, pa je izbor umirao na sljedećem dolasku na /hr. Ovaj upis je ono što
+// navigaciju čini trajnom — i jedino po čemu metla i BetterAuthove kuke, koje
+// nemaju ni zahtjev ni sesiju, mogu znati čiji je jezik koji.
+const localeSchema = z.object({ locale: z.enum(LOCALES) });
+
+export async function setLocale(input: unknown): Promise<ActionResult> {
+  const parsed = localeSchema.safeParse(input);
+  if (!parsed.success) return { success: false, error: "invalid" };
+
+  const session = await requireSession();
+  try {
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { locale: parsed.data.locale },
     });
     return { success: true };
   } catch {
