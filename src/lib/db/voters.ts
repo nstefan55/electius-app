@@ -22,6 +22,11 @@ export interface RosterVoter {
   lastName: string | null;
   email: string;
   status: VoterStatus;
+  // Boolean, ne datum: redak prikazuje SAMO da adresa ne radi, a trenutak kvara
+  // ne mijenja nijednu radnju. Vremenska oznaka koju nitko ne ispisuje ne treba
+  // prijeći na klijenta — isti razlog zbog kojeg javna stranica rezultata ne
+  // dobiva vrijeme pojedinog listića.
+  deliveryFailed: boolean;
 }
 
 export interface VoterRoster {
@@ -30,20 +35,32 @@ export interface VoterRoster {
   pageCount: number;
   matched: number; // redaka nakon pretrage/filtra
   counts: ReturnType<typeof voterCounts>;
+  // Neisporučeni na CIJELIM izborima, ne na stranici — kao i counts. Uz 10
+  // redaka po stranici oznaka na retku sama po sebi ne znači ništa: na popisu od
+  // 285 birača kvar na 19. stranici nitko nikad ne vidi.
+  deliveryFailed: number;
 }
+
+// "FAILED" nije VoterStatus nego zasebna činjenica (adresa ne radi), ali dijeli
+// isti padajući izbornik i isti URL parametar — jedna kontrola "suzi popis",
+// bez drugog parametra i bez druge staze kroz WHERE.
+export type RosterFilter = VoterStatus | "FAILED";
 
 export interface RosterQuery {
   page?: number;
   q?: string;
-  status?: VoterStatus;
+  status?: RosterFilter;
 }
 
 // Pretraga i filtar idu u WHERE, ne u klijent: uz stranicanje bi pretraga po
 // dohvaćenoj stranici promašila podudaranja na svim ostalima.
-function rosterWhere(electionId: string, q?: string, status?: VoterStatus) {
+function rosterWhere(electionId: string, q?: string, status?: RosterFilter) {
   const term = q?.trim();
   const where: Prisma.VoterWhereInput = { electionId };
-  if (status) where.status = status;
+  // "FAILED" gađa stupac dostave, ne status — birač kojem je pozivnica odbijena
+  // i dalje je PENDING ili INVITED (status je red za ponavljanje, invarijanta #7).
+  if (status === "FAILED") where.deliveryFailedAt = { not: null };
+  else if (status) where.status = status;
   if (term) {
     where.OR = [
       { email: { contains: term, mode: "insensitive" } },
@@ -71,12 +88,17 @@ export async function getVoterRoster(
 
   // groupBy je ovdje siguran bez org uvjeta — dolazi se do njega samo ako je
   // gornji vlasnički upit prošao.
-  const [matched, byStatus] = await Promise.all([
+  const [matched, byStatus, deliveryFailed] = await Promise.all([
     prisma.voter.count({ where }),
     prisma.voter.groupBy({
       by: ["status"],
       where: { electionId },
       _count: { _all: true },
+    }),
+    // Bez filtra pretrage: brojka je činjenica o izborima, a služi tome da se
+    // filtar uopće poželi uključiti. Ista okolnost kao byStatus.
+    prisma.voter.count({
+      where: { electionId, deliveryFailedAt: { not: null } },
     }),
   ]);
 
@@ -87,7 +109,7 @@ export async function getVoterRoster(
   const pageCount = pageCountOf(matched, ROSTER_PAGE_SIZE);
   const current = clampPage(page, pageCount);
 
-  const voters = await prisma.voter.findMany({
+  const rows = await prisma.voter.findMany({
     where,
     // Stabilan poredak; Postgres stavlja NULL na kraj kod ASC.
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }, { email: "asc" }],
@@ -99,6 +121,7 @@ export async function getVoterRoster(
       lastName: true,
       email: true,
       status: true,
+      deliveryFailedAt: true,
     },
   });
 
@@ -106,7 +129,11 @@ export async function getVoterRoster(
     byStatus.find((g) => g.status === "PENDING")?._count._all ?? 0;
 
   return {
-    voters,
+    // Vremenska oznaka ostaje na poslužitelju; van ide samo činjenica.
+    voters: rows.map(({ deliveryFailedAt, ...v }) => ({
+      ...v,
+      deliveryFailed: deliveryFailedAt !== null,
+    })),
     page: current,
     pageCount,
     matched,
@@ -115,5 +142,6 @@ export async function getVoterRoster(
       notInvited,
       voted: election._count.votes,
     }),
+    deliveryFailed,
   };
 }

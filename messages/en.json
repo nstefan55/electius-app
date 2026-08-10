@@ -1079,7 +1079,8 @@
         "notAllowed": "That action is not available for the election's current state.",
         "windowOver": "The voting deadline has passed — a new link would expire before it arrived.",
         "failed": "Something went wrong. Please try again.",
-        "electionEnded": "This election has ended — the voter list can no longer be changed."
+        "electionEnded": "This election has ended — the voter list can no longer be changed.",
+        "deliveryRejected": "The address was rejected on send — check that it is correct."
       },
       "edit": {
         "title": "Edit voter name",
@@ -1135,6 +1136,12 @@
       },
       "cap": {
         "usage": "{used} of {cap} voters used"
+      },
+      "delivery": {
+        "badge": "Not delivered",
+        "filter": "Delivery failed",
+        "summary": "Not delivered: {count}",
+        "summaryAction": "Not delivered: {count} — show only these voters"
       }
     },
     "profile": {
