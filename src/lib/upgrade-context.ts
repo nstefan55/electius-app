@@ -4,7 +4,7 @@
 // zaglavlje. Bez Prisme, bez env-a, bez `server-only` — zaštite ga zovu i s
 // klijenta da izgrade href.
 //
-// Pet vrijednosti za šest mjesta: obje granice birača (čarobnjakov korak 3 i
+// Šest vrijednosti za sedam mjesta: obje granice birača (čarobnjakov korak 3 i
 // popis birača) dijele `voterCap`, jer je zaštita ista i tekst bi bio isti.
 //
 // Nepoznata ili odsutna vrijednost pada na generičko zaglavlje, nikad na
@@ -14,6 +14,7 @@
 export const UPGRADE_FEATURES = [
   "liveResults",
   "voterReminder24h",
+  "adminTurnoutReminder",
   "voterCap",
   "brandedReports",
   "archiveRetention",

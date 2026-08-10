@@ -10,6 +10,7 @@ import {
   quorumRequiredVoters,
   timeLeftParts,
   turnoutPct,
+  turnoutMilestoneDue,
   matchesTurnout,
   matchesWindow,
   resultsAccess,
@@ -455,5 +456,51 @@ describe("matchesQuery", () => {
   it("passes everything through on an empty or whitespace-only query", () => {
     expect(matchesQuery(e("Bilo što"), "")).toBe(true);
     expect(matchesQuery(e("Bilo što"), "   ")).toBe(true);
+  });
+});
+
+// Prečke izlaznosti (email-delivery §4.1/§4.5). Čisto pravilo — upit u metli je
+// samo predfilter, pa se cijela odluka mora dati provjeriti ovdje.
+describe("turnoutMilestoneDue", () => {
+  it("šuti ispod prve prečke", () => {
+    expect(turnoutMilestoneDue(0, 0)).toBeNull();
+    expect(turnoutMilestoneDue(24, 0)).toBeNull();
+  });
+
+  it("javlja prečku točno na granici", () => {
+    // 25 >= 25. Granica je uključiva, inače izbori koji stanu točno na prečki
+    // nikad ne dobiju poruku.
+    expect(turnoutMilestoneDue(25, 0)).toBe(25);
+    expect(turnoutMilestoneDue(50, 25)).toBe(50);
+    expect(turnoutMilestoneDue(75, 50)).toBe(75);
+  });
+
+  it("javlja NAJVIŠU dosegnutu prečku, ne sljedeću po redu", () => {
+    // Skok s 10 % na 80 % daje jednu poruku o 75 %, ne tri poruke redom. Metla
+    // šalje najviše jednu po prolazu, pa bi "sljedeća po redu" značila tri
+    // prolaza i dvije poruke s brojkama koje su već zastarjele.
+    expect(turnoutMilestoneDue(80, 0)).toBe(75);
+    expect(turnoutMilestoneDue(60, 0)).toBe(50);
+  });
+
+  it("ne ponavlja već javljenu prečku", () => {
+    expect(turnoutMilestoneDue(30, 25)).toBeNull();
+    expect(turnoutMilestoneDue(99, 75)).toBeNull();
+    expect(turnoutMilestoneDue(100, 75)).toBeNull();
+  });
+
+  it("staje na 75 — ljestvica ima točno tri prečke", () => {
+    // Najviše tri poruke po izborima, ikad. 100 % nije prečka.
+    expect(turnoutMilestoneDue(100, 0)).toBe(75);
+    expect(turnoutMilestoneDue(100, 50)).toBe(75);
+  });
+
+  it("PAD izlaznosti ne šalje ništa, a kasniji uspon šalje točno jednom", () => {
+    // "Izlaznost samo raste" je NETOČNO: addVoters na otvorenim izborima diže
+    // nazivnik, pa turnoutPct pada. Biljeg je monoton, izlaznost nije — i upravo
+    // zato usporedba ide prema javljenom, a ne prema prethodnoj izlaznosti.
+    expect(turnoutMilestoneDue(30, 50)).toBeNull(); // pao ispod javljenog
+    expect(turnoutMilestoneDue(55, 50)).toBeNull(); // vratio se, ali ispod 75
+    expect(turnoutMilestoneDue(76, 50)).toBe(75); // prešao sljedeću — jednom
   });
 });

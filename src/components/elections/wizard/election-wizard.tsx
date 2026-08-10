@@ -110,7 +110,8 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
     }
     if (
       res.error === "liveResultsLocked" ||
-      res.error === "voterReminderLocked"
+      res.error === "voterReminderLocked" ||
+      res.error === "adminTurnoutLocked"
     ) {
       // Bez ove grane odbijanje pada u generičko "nešto je pošlo po zlu", koje
       // ne imenuje ni polje ni plan — točno stanje u kojem je liveResultsLocked

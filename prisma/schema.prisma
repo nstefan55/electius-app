@@ -190,6 +190,20 @@ model Election {
   // podsjetnik — administrator bi isključio Pro značajku koristeći Pro značajku.
   autoReminderSentAt DateTime?
 
+  // Dokle je administrator obaviješten o izlaznosti (email-delivery §4.5). Ljestvica
+  // je 25/50/75, a stupac drži POSLJEDNJU prijeđenu prečku — `lt` u WHERE klauzuli
+  // je cijeli mehanizam idempotentnosti.
+  //
+  // Stupac, a ne ključ u JSON-u: negirani JSON path filter vraća NULL na retku bez
+  // ključa, pa bi metla tiho ne našla ništa (isti razlog kao Archive.prunedAt).
+  //
+  // Oprez: OVAJ stupac je monoton, izlaznost NIJE. addVoters prima birače na
+  // otvorenim ACTIVE izborima i time diže nazivnik, pa turnoutPct može pasti.
+  // Zato ljestvica radi na `lt`, a ne na pretpostavci da izlaznost samo raste:
+  // nakon poruke o 50 % pad na 30 % ne šalje ništa, a kasniji uspon preko 75 %
+  // šalje točno jednom.
+  adminTurnoutNotifiedPct Int @default(0)
+
   // Spremljeni PDF izvještaj (election-report-storage-spec). Ključ, ne URL: URL
   // bi ukalupio host kante, pa bi svaki redak bio kriv nakon selidbe ili CDN-a.
   reportKey         String? // R2 object key u privatnoj kanti

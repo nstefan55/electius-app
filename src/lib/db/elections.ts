@@ -254,6 +254,9 @@ export const getElectionOverview = cache(
         votingType: true,
         quorumThreshold: true,
         voterReminder24h: true,
+        // Bez ovoga je prekidač nevidljiv čim se izbori stvore — administrator ga
+        // uključi u čarobnjaku i nigdje više ne vidi da je uključen.
+        adminTurnoutReminder: true,
         _count: {
           select: {
             options: true,
@@ -269,6 +272,7 @@ export const getElectionOverview = cache(
       votingType: e.votingType,
       quorumThreshold: e.quorumThreshold,
       voterReminder24h: e.voterReminder24h,
+      adminTurnoutReminder: e.adminTurnoutReminder,
       candidates: e._count.options,
       // PENDING voters were never emailed, so "invitations sent" = voters - this.
       notInvited: e._count.voters,

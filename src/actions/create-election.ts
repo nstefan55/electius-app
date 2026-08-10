@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
 import { candidateRowSchema, voterRowSchema } from "@/lib/wizard-csv";
 import {
+  canUseAdminTurnout,
   canUseAutoReminders,
   canUseLiveResults,
   voterCap,
@@ -134,6 +135,14 @@ export async function createElection(
     // IZVAN `if (!draft)` — skica nije zaobilaznica, samo odgoda istog stanja.
     if (w.voterReminder24h && !canUseAutoReminders(entitlement)) {
       return { success: false, error: "voterReminderLocked" };
+    }
+
+    // Obavijesti o izlaznosti — treći Pro prekidač, ista zaštita na istom mjestu.
+    // Vlastito pravilo, ne canUseAutoReminders: dva odvojena stupca i dva
+    // odvojena prekidača ne smiju dijeliti jednu zaštitu, inače promjena tiera za
+    // jedan tiho pomakne i drugi.
+    if (w.adminTurnoutReminder && !canUseAdminTurnout(entitlement)) {
+      return { success: false, error: "adminTurnoutLocked" };
     }
 
     const election = await prisma.election.create({

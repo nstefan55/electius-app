@@ -3,8 +3,11 @@ import "server-only";
 import { createHash } from "crypto";
 import { Resend, type Tag } from "resend";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
-import { formatVotingDateTime } from "@/lib/elections-view";
-import { voteUrl } from "@/lib/urls";
+import {
+  formatVotingDateTime,
+  quorumRequiredVoters,
+} from "@/lib/elections-view";
+import { electionOverviewUrl, voteUrl } from "@/lib/urls";
 import { hashToken } from "./token.service";
 
 // Email transport (project-overview §Service Layer): verification OTP, password
@@ -39,21 +42,20 @@ export type EmailType =
 // Jezik je DIO aliasa: predložak nosi tekst, pa je odabir jezika odabir
 // predloška — nema drugog mjesta na kojem se jezik poruke odlučuje.
 //
-// `turnout` namjerno nije ovdje: predložak još ne postoji, pa bi unos vodio na
-// alias koji Resend ne poznaje. Exclude ga čini pogreškom prevođenja, tako da
-// faza 3 mora dodati i predložak i ovaj redak.
-const TEMPLATE: Record<Exclude<EmailType, "turnout">, string> = {
+// Popis je potpun: faza 2 ga je držala na Exclude<EmailType, "turnout"> upravo
+// zato da dodavanje pošiljatelja izlaznosti bez predloška bude pogreška
+// prevođenja, a ne slanje na alias koji Resend ne poznaje. Predlošci
+// electius-admin-turnout-{hr,en} sada postoje i objavljeni su.
+const TEMPLATE: Record<EmailType, string> = {
   otp: "otp",
   reset: "reset",
   "delete-account": "delete-account",
   invite: "voter-invite",
   reminder: "voter-reminder",
+  turnout: "admin-turnout",
 };
 
-function templateId(
-  type: Exclude<EmailType, "turnout">,
-  locale: Locale,
-): string {
+function templateId(type: EmailType, locale: Locale): string {
   return `electius-${TEMPLATE[type]}-${locale}`;
 }
 
@@ -84,11 +86,35 @@ function tagsFor(type: EmailType, electionId?: string): Tag[] {
   return tags;
 }
 
+// Tema pretplate (email-delivery §4.4). Nosi je SAMO poruka o izlaznosti — ona
+// je jedina obavijest; ostalih pet su transakcijske i moraju stići i biraču koji
+// je jednom kliknuo "odjava", inače im je tiho oduzeto pravo glasa (§3.2).
+//
+// Baca ako varijabla nedostaje, po uzoru na requiredPriceId: sigurne zamjenske
+// vrijednosti nema. Slanje bez topicId-a prolazi, ali IGNORIRA odjavu — a tema
+// postoji točno zato da je poštuje. Bolje nijedna poruka nego poruka koja gazi
+// preferenciju primatelja.
+function turnoutTopicId(): string {
+  const id = process.env.RESEND_TURNOUT_TOPIC_ID;
+  if (!id) {
+    throw new Error(
+      "RESEND_TURNOUT_TOPIC_ID is not set — refusing to send a notification that ignores unsubscribes",
+    );
+  }
+  return id;
+}
+
 // SDK tipizira predložak i sirovi sadržaj kao isključive grane (`html?: never`
 // uz `template`), pa je zamjena jednog drugim pogreška prevođenja.
+//
+// Brojevi su dopušteni jer ih Resend prima (`Record<string, string | number>`) i
+// jer poruka o izlaznosti šalje same brojke; nizovi i objekti nisu — što je §3.3
+// koji provodi sam prijenos, a ne komentar.
 interface EmailBody {
   to: string;
-  template: { id: string; variables: Record<string, string> };
+  template: { id: string; variables: Record<string, string | number> };
+  // Samo obavijesti (§3.2). Transakcijske poruke ga NE nose.
+  topicId?: string;
 }
 
 interface SendMeta {
@@ -322,4 +348,112 @@ export async function sendReminderEmails(
   await sendBallotLinkEmails("reminder", election, recipients, locale, {
     CLOSES: closes,
   });
+}
+
+// ───────── Obavijesti o izlaznosti administratoru (email-delivery §4) ─────────
+
+// Varijable poruke o izlaznosti. Tip JE zaštita (§3.3): NIJEDNO polje ne nosi
+// zbroj po kandidatima, pa je dodavanje takvog podatka pogreška prevođenja, a ne
+// stvar pregleda koda. Isti postupak kao VoterExportRow (bez tokena) i
+// ElectionSnapshot (bez osobnih podataka birača).
+//
+// Zašto je to pravilo, a ne opreznost: za izbore s AFTER_CLOSE rezultatima zbroj
+// je zapečaćen i od administratora (resultsAccess vraća "sealed"), pa bi poruka
+// s brojkama po kandidatu isporučila u sandučić upravo ono što svaki zaslon
+// odbija pokazati. Resendove varijable su usto samo string|number, pa popis
+// kandidata ovdje nije ni izraziv.
+interface TurnoutEmailVars {
+  [key: string]: string | number;
+  TITLE: string;
+  TITLE_HTML: string;
+  ORG: string;
+  ORG_HTML: string;
+  MILESTONE: number;
+  TURNOUT_PCT: number;
+  VOTES_CAST: number;
+  VOTERS_TOTAL: number;
+  CLOSES: string;
+  QUORUM: string;
+  URL: string;
+}
+
+export interface TurnoutElection extends InvitationElection {
+  endsAt: Date;
+  quorumThreshold: number | null;
+}
+
+export interface TurnoutFigures {
+  milestone: number;
+  turnoutPct: number;
+  votesCast: number;
+  votersTotal: number;
+}
+
+/**
+ * Obavijest administratorima da je izlaznost prešla prečku (§4.3).
+ *
+ * Serija s jednim unosom po administratoru, a ne jedna poruka s više primatelja:
+ * RESEND_UNSUBSCRIBE_URL je po primatelju, pa bi zajednički To: dao svima istu
+ * poveznicu za odjavu — i usput otkrio adrese administratora jednu drugoj.
+ *
+ * Ključ idempotentnosti je `turnout:{izbori}:{prečka}`. Za razliku od staza s
+ * čarobnom poveznicom ovdje nema ponovnog kovanja tokena, pa je ključ stabilan
+ * po svojoj prirodi: isti izbori i ista prečka su ista poruka, koliko god puta
+ * metla ponovno krenula.
+ */
+export async function sendTurnoutEmails(
+  recipients: string[],
+  election: TurnoutElection,
+  figures: TurnoutFigures,
+  locale: Locale = DEFAULT_LOCALE,
+) {
+  if (recipients.length === 0) return;
+
+  // Datum se oblikuje ovdje, uz odabir predloška — isti razlog kao kod
+  // podsjetnika: jezik koji bira tekst isti je onaj koji oblikuje datum.
+  //
+  // Rok, a ne odbrojavanje: "još 2 dana" je netočno čim se poruka otvori sat
+  // vremena kasnije, a datum ostaje istinit. Isto obrazloženje po kojem
+  // podsjetnik navodi rok umjesto preostalog vremena.
+  const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
+
+  // Bez riječi, pa ne treba ni prijevod ni pobjegli blizanac: koliko birača
+  // treba (dijeljena derivacija quorumRequiredVoters) od koliko ih ima. Redak
+  // iznad već pokazuje koliko ih je glasalo, pa je usporedba izravna.
+  // Crtica kad kvorum nije postavljen — predložak nema uvjete, a prazna
+  // vrijednost izgledala bi kao kvar prikaza.
+  const quorum =
+    election.quorumThreshold == null
+      ? "—"
+      : `${quorumRequiredVoters(figures.votersTotal, election.quorumThreshold)}/${figures.votersTotal}`;
+
+  const variables: TurnoutEmailVars = {
+    TITLE: election.title,
+    TITLE_HTML: escapeHtml(election.title),
+    ORG: election.organizationName,
+    ORG_HTML: escapeHtml(election.organizationName),
+    MILESTONE: figures.milestone,
+    TURNOUT_PCT: figures.turnoutPct,
+    VOTES_CAST: figures.votesCast,
+    VOTERS_TOTAL: figures.votersTotal,
+    CLOSES: closes,
+    QUORUM: quorum,
+    // Pregled izbora, nikad stranica rezultata (D6): zapečaćeni izbori je nemaju,
+    // a poveznica koja na nekim izborima vodi u 404 gora je od one koja nikad ne
+    // vodi.
+    URL: electionOverviewUrl(election.id),
+  };
+
+  await sendBatch(
+    recipients.map((to) => ({
+      to,
+      template: { id: templateId("turnout", locale), variables },
+      topicId: turnoutTopicId(),
+    })),
+    {
+      type: "turnout",
+      electionId: election.id,
+      idempotencyKey: `turnout:${election.id}:${figures.milestone}`,
+    },
+  );
 }

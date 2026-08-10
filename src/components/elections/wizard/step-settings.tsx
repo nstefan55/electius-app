@@ -14,6 +14,7 @@ import {
 } from "./wizard-shared";
 import { ProBadge, SoonBadge } from "@/components/ui/plan-badge";
 import {
+  canUseAdminTurnout,
   canUseAutoReminders,
   canUseLiveResults,
   type Entitlement,
@@ -35,14 +36,10 @@ const OPTIONS = [
   // /api/cron/activate-elections). Prekidač je obećavao suprotno, a token je
   // ionako umirao na endsAt — izbori bi ostali "otvoreni" bez ijedne žive
   // poveznice.
-  // Inertan namjerno (pro-features §3): stupac postoji i čarobnjak ga je pisao,
-  // ali NIŠTA nikad nije slalo nijednu poruku, a vrijednost se poslije stvaranja
-  // nigdje ni ne prikazuje. Prekidač koji administrator uključi i koji zatim ne
-  // učini ništa je obećanje prekršeno u trenutku najvećeg povjerenja. Značajka
-  // nije ni projektirana — kadenca, primatelj, sadržaj i odjava su sve otvorena
-  // pitanja (§3.2) — pa ostaje vidljiva kao najava, a ne kao kontrola.
-  // Ukloniti `soon` kad se pošiljatelj doista izgradi; ostatak ožičenja radi.
-  { key: "adminTurnoutReminder", pro: true, soon: true },
+  // Živ od email-delivery faze 3: metla šalje na prijeđenim prečkama 25/50/75,
+  // a vrijednost se sada prikazuje i u kartici konfiguracije. `soon` je maknut
+  // jer je pošiljatelj izgrađen — bio je ondje točno zbog toga što nije bio.
+  { key: "adminTurnoutReminder", pro: true, soon: false },
   { key: "voterReminder24h", pro: true, soon: false },
 ] as const;
 
@@ -121,7 +118,9 @@ export function StepSettings({
       ? "liveResults"
       : key === "voterReminder24h" && !canUseAutoReminders(entitlement)
         ? "voterReminder24h"
-        : null;
+        : key === "adminTurnoutReminder" && !canUseAdminTurnout(entitlement)
+          ? "adminTurnoutReminder"
+          : null;
 
   return (
     <div>

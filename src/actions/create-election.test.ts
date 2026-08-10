@@ -345,3 +345,58 @@ describe("createElection — automatski podsjetnici", () => {
     expect(prisma.election.create).not.toHaveBeenCalled();
   });
 });
+
+// Obavijesti administratoru o izlaznosti (email-delivery §4.5, D8). Isti razlog
+// zbog kojeg je podsjetnik dobio ovu zaštitu: bez nje bi Free administrator
+// uključio prekidač, vidio ga uključenog u kartici konfiguracije, i metla ga ne
+// bi nikad poslala — bez greške i bez traga.
+describe("createElection — obavijesti o izlaznosti", () => {
+  it("Free ne može uključiti obavijesti i ništa se ne upisuje", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({
+      ...basePayload,
+      adminTurnoutReminder: true,
+    });
+
+    expect(res).toEqual({ success: false, error: "adminTurnoutLocked" });
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("Pro ih uključuje i vrijednost se upisuje", async () => {
+    const res = await createElection({
+      ...basePayload,
+      adminTurnoutReminder: true,
+    });
+
+    expect(res.success).toBe(true);
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.adminTurnoutReminder).toBe(true);
+  });
+
+  it("zaštita vrijedi i za skicu", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection(
+      { ...basePayload, adminTurnoutReminder: true },
+      true,
+    );
+
+    expect(res).toEqual({ success: false, error: "adminTurnoutLocked" });
+    expect(prisma.election.create).not.toHaveBeenCalled();
+  });
+
+  it("Free s podsjetnikom biračima i dalje javlja SVOJU grešku", async () => {
+    // Dvije zaštite, dvije poruke: dijeljena bi poslala administratora na krivi
+    // prekidač. Redoslijed provjera je stvaran — podsjetnik se provjerava prvi.
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await createElection({
+      ...basePayload,
+      voterReminder24h: true,
+      adminTurnoutReminder: true,
+    });
+
+    expect(res).toEqual({ success: false, error: "voterReminderLocked" });
+  });
+});

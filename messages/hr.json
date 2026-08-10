@@ -519,7 +519,8 @@
         "createFailed": "Nešto je pošlo po zlu. Pokušajte ponovno.",
         "voterCap": "Popis birača premašuje granicu plana ({cap}).",
         "liveResultsLocked": "Rezultati uživo dio su Pro plana.",
-        "voterReminderLocked": "Automatski podsjetnici biračima dio su Pro plana."
+        "voterReminderLocked": "Automatski podsjetnici biračima dio su Pro plana.",
+        "adminTurnoutLocked": "Automatske obavijesti o izlaznosti dio su Pro plana."
       },
       "step1": {
         "title": "Osnovni podaci",
@@ -843,7 +844,11 @@
           "reminderActive": "Aktivan · 24 h prije roka",
           "reminderScheduled": "Zakazan · 24 h prije roka",
           "reminderOff": "Isključen",
-          "quorumValue": "{pct}% ({voters, plural, one {# birač} few {# birača} other {# birača}})"
+          "quorumValue": "{pct}% ({voters, plural, one {# birač} few {# birača} other {# birača}})",
+          "turnoutUpdates": "Obavijesti o izlaznosti",
+          "turnoutUpdatesActive": "Aktivne · na 25, 50 i 75 %",
+          "turnoutUpdatesScheduled": "Zakazane · na 25, 50 i 75 %",
+          "turnoutUpdatesOff": "Isključene"
         },
         "actions": {
           "title": "Radnje",
@@ -1394,6 +1399,10 @@
         "archiveRetention": {
           "title": "Trajno čuvanje dokaza je dio Pro plana",
           "body": "Na besplatnom planu teret dokaza obrezuje se nakon 12 mjeseci; zapis, korijenski hash i PDF ostaju zauvijek. Pro ne obrezuje ništa."
+        },
+        "adminTurnoutReminder": {
+          "title": "Obavijesti o izlaznosti su dio Pro plana",
+          "body": "Pro vam e-poštom javlja kad izlaznost prijeđe 25, 50 i 75 posto, dok glasovanje još traje. Na besplatnom planu izlaznost pratite sami na nadzornoj ploči."
         }
       },
       "gates": {
