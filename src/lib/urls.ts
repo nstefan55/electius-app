@@ -35,6 +35,12 @@ export const electionVoteUrl = (electionId: string) => `${APEX}/vote/${electionI
 // "Share public results" — apex public results page (resultsVisible-gated).
 export const publicResultsUrl = (id: string) => `${APEX}/results/${id}`;
 
+// Odredište poruke o izlaznosti (email-delivery D6): PREGLED izbora, nikad
+// stranica rezultata. Zapečaćeni izbori rezultate nemaju, pa bi poveznica na njih
+// na nekim izborima završila u 404 — a takva je gora od one koja tamo nikad ne
+// vodi. Neprefiksano, kao i ostale ovdje: ciljni host 307-a na zadani jezik.
+export const electionOverviewUrl = (id: string) => `${APP}/elections/${id}`;
+
 // Odredište poveznice za brisanje računa. NAMJERNO naša stranica, a ne
 // BetterAuthova /api/auth/delete-user/callback ruta: taj je poziv GET koji traži
 // sesiju, pa svaki neuspjeh (otvoreno na mobitelu, istekla sesija, iskorištena

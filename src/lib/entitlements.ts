@@ -72,6 +72,23 @@ export function canUseAutoReminders(e: Entitlement): boolean {
   }
 }
 
+// Obavijesti administratoru o izlaznosti dok glasanje traje (email-delivery §4).
+//
+// VLASTITO pravilo, a ne ponovno korištenje canUseAutoReminders, iako ih cjenik
+// prodaje istom rečenicom: to su dvije odvojeno uključive značajke s dva stupca i
+// dva prekidača, pa bi dijeljena zaštita značila da promjena tiera za podsjetnike
+// biračima tiho pomakne i ovo. Iscrpan switch čini dodavanje varijante pogreškom
+// prevođenja umjesto propusne zadane grane.
+export function canUseAdminTurnout(e: Entitlement): boolean {
+  switch (e.kind) {
+    case "free":
+      return false;
+    case "pro":
+    case "purchased":
+      return true;
+  }
+}
+
 // Postoji li plan iznad ovoga — pitanje o PONUDI, ne o zaključanosti. Pro
 // organizacija na 480 od 500 birača vidi istu najavu granice, ali ponuditi joj
 // nadogradnju znači prodavati ono što već ima. Zato svaka poveznica na /upgrade

@@ -15,6 +15,7 @@ vi.mock("@/lib/services/token.service", () => ({
 vi.mock("@/lib/services/email.service", () => ({
   sendInvitationEmails: vi.fn(),
   sendReminderEmails: vi.fn(),
+  sendTurnoutEmails: vi.fn(),
 }));
 
 const { prisma } = await import("@/lib/prisma");
@@ -24,9 +25,8 @@ const {
   mintTokensForVoters,
   windowOver,
 } = await import("@/lib/services/token.service");
-const { sendInvitationEmails, sendReminderEmails } = await import(
-  "@/lib/services/email.service"
-);
+const { sendInvitationEmails, sendReminderEmails, sendTurnoutEmails } =
+  await import("@/lib/services/email.service");
 const {
   chunk,
   publishElection,
@@ -35,6 +35,7 @@ const {
   getReminderTargets,
   sendReminders,
   autoReminderDue,
+  sendAdminTurnout,
   CHUNK_SIZE,
   REMINDER_LEAD_MS,
 } = await import("@/lib/services/publication.service");
@@ -85,6 +86,7 @@ beforeEach(() => {
   vi.mocked(windowOver).mockReturnValue(false);
   vi.mocked(sendInvitationEmails).mockReset();
   vi.mocked(sendReminderEmails).mockReset();
+  vi.mocked(sendTurnoutEmails).mockReset();
 });
 
 describe("chunk", () => {
@@ -477,5 +479,105 @@ describe("sendReminders", () => {
 
     expect(result).toEqual({ sent: 0, failed: 1 });
     expect(prisma.voter.updateMany).not.toHaveBeenCalled();
+  });
+});
+
+// ───────── Obavijesti o izlaznosti (email-delivery §4.2/§4.3) ─────────
+
+describe("sendAdminTurnout", () => {
+  const turnoutRow = (over: Record<string, unknown> = {}) => ({
+    title: "Studentski izbori",
+    endsAt: new Date("2026-08-20T12:00:00Z"),
+    quorumThreshold: null,
+    _count: { voters: 200, votes: 104 },
+    organization: {
+      name: "VVG",
+      admins: [{ email: "admin@example.com" }],
+    },
+    ...over,
+  });
+
+  it("šalje SVIM administratorima organizacije, ne samo tvorcu izbora", async () => {
+    // Danas identično (1 organizacija ↔ 1 administrator), ali izlaznost je
+    // činjenica o organizaciji, a pravo se već razrješava po organizaciji.
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow({
+        organization: {
+          name: "VVG",
+          admins: [{ email: "a@example.com" }, { email: "b@example.com" }],
+        },
+      }) as never,
+    );
+
+    const result = await sendAdminTurnout("el_1", 50);
+
+    expect(result).toEqual({ sent: 2 });
+    expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
+      "a@example.com",
+      "b@example.com",
+    ]);
+  });
+
+  it("dedupira adrese bez obzira na velika slova", async () => {
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow({
+        organization: {
+          name: "VVG",
+          admins: [{ email: "Admin@Example.com" }, { email: "admin@example.com" }],
+        },
+      }) as never,
+    );
+
+    // Isti sandučić dvaput je kvar, ne dvije obavijesti.
+    expect(await sendAdminTurnout("el_1", 50)).toEqual({ sent: 1 });
+    expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
+      "admin@example.com",
+    ]);
+  });
+
+  it("brojke dolaze iz istog _count izvora kao zaslon (invarijanta #5)", async () => {
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow() as never,
+    );
+
+    await sendAdminTurnout("el_1", 50);
+
+    const [, election, figures] = vi.mocked(sendTurnoutEmails).mock.calls[0];
+    expect(figures).toEqual({
+      milestone: 50,
+      // turnoutPct(104, 200) = 52 — stvarna izlaznost, ne prečka.
+      turnoutPct: 52,
+      votesCast: 104,
+      votersTotal: 200,
+    });
+    expect(election.id).toBe("el_1");
+    expect(election.organizationName).toBe("VVG");
+  });
+
+  it("ne filtrira po emailVerified", async () => {
+    // Nepotvrđen administrator je onaj koji se ne može prijaviti, a ne onaj koji
+    // ne može primiti poštu. Tiho ga izbaciti znači da značajka izgleda pokvareno.
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow() as never,
+    );
+
+    await sendAdminTurnout("el_1", 25);
+
+    const select = vi.mocked(prisma.election.findUnique).mock.calls[0][0]
+      .select as { organization: { select: { admins: { select: unknown } } } };
+    expect(JSON.stringify(select.organization.select.admins)).not.toContain(
+      "emailVerified",
+    );
+  });
+
+  it("nepostojeći izbori i organizacija bez administratora ne šalju ništa", async () => {
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(null as never);
+    expect(await sendAdminTurnout("nope", 50)).toEqual({ sent: 0 });
+
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow({ organization: { name: "VVG", admins: [] } }) as never,
+    );
+    expect(await sendAdminTurnout("el_1", 50)).toEqual({ sent: 0 });
+    expect(sendTurnoutEmails).not.toHaveBeenCalled();
   });
 });

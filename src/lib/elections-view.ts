@@ -133,6 +133,48 @@ export const turnoutPct = (voted: number, voters: number) =>
 export const quorumRequiredVoters = (voters: number, pct: number) =>
   Math.ceil((voters * pct) / 100);
 
+// ───────── Prečke izlaznosti (email-delivery §4.1) ─────────
+
+// Ljestvica obavijesti administratoru. Najviše tri poruke po izborima, ikad.
+//
+// Zašto prečke, a ne raspored: "svaki dan u 9" traži pojam vremenske zone, a ova
+// aplikacija ga nema — svaki datum koji oblikuje je UTC namjerno. Prečke su usto
+// jedina kadenca kojoj je idempotentnost besplatna (jedan Int i `<`), a zanimljiv
+// slučaj — izbori na 4 % trećeg dana — ispravno ne šalje ništa, što je samo po
+// sebi signal.
+export const TURNOUT_MILESTONES = [25, 50, 75] as const;
+
+export type TurnoutMilestone = (typeof TURNOUT_MILESTONES)[number];
+
+/**
+ * Koju prečku SADA treba javiti, ili null ako nijednu (email-delivery §4.5).
+ *
+ * Čisto pravilo, odvojeno od metle: upit u metli je samo predfilter, isto kao kod
+ * zatvaranja i podsjetnika.
+ *
+ * Vraća NAJVIŠU dosegnutu prečku, ne sljedeću po redu — izbori koji skoče s 10 %
+ * na 80 % dobiju jednu poruku o 75 %, a ne tri poruke odjednom. Metla ionako
+ * šalje najviše jednu po prolazu, pa bi "sljedeća po redu" značila tri prolaza za
+ * isto stanje i dvije poruke o brojkama koje su već zastarjele.
+ *
+ * `notifiedPct` je monoton, izlaznost NIJE: addVoters diže nazivnik na otvorenim
+ * izborima, pa turnoutPct može pasti. Usporedba s onim što je već javljeno je
+ * cijeli mehanizam — bez nje bi pad pa uspon poslali istu prečku dvaput.
+ *
+ * @param turnout postotak izlaznosti (turnoutPct — jedina derivacija, invarijanta #5)
+ * @param notifiedPct posljednja javljena prečka (Election.adminTurnoutNotifiedPct)
+ */
+export function turnoutMilestoneDue(
+  turnout: number,
+  notifiedPct: number,
+): TurnoutMilestone | null {
+  for (let i = TURNOUT_MILESTONES.length - 1; i >= 0; i--) {
+    const m = TURNOUT_MILESTONES[i];
+    if (turnout >= m && m > notifiedPct) return m;
+  }
+  return null;
+}
+
 // Jedina derivacija brojki o biračima — dijele je pregled izbora i popis birača,
 // da ista dva zaslona nikad ne prijave različite brojeve.
 // `voted` su prebrojani listići (Vote), ne status birača; `notInvited` je broj

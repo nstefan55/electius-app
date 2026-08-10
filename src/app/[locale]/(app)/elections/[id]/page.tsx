@@ -54,6 +54,7 @@ export default async function ElectionOverviewPage({
       votingType={overview.votingType}
       quorumThreshold={overview.quorumThreshold}
       voterReminder24h={overview.voterReminder24h}
+      adminTurnoutReminder={overview.adminTurnoutReminder}
       candidates={overview.candidates}
       notInvited={overview.notInvited}
       voted24h={overview.voted24h}

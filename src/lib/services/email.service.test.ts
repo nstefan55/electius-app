@@ -21,6 +21,7 @@ const {
   sendOtpEmail,
   sendReminderEmails,
   sendResetPasswordEmail,
+  sendTurnoutEmails,
 } = await import("@/lib/services/email.service");
 
 const election = {
@@ -35,7 +36,7 @@ const reminderElection = { ...election, endsAt: new Date("2026-08-20T12:00:00Z")
 const optionsOf = (call: unknown[]) => call[1] as { idempotencyKey?: string };
 const keyOf = (call: unknown[]) => optionsOf(call)?.idempotencyKey;
 
-type TemplateRef = { id: string; variables: Record<string, string> };
+type TemplateRef = { id: string; variables: Record<string, string | number> };
 const templateOf = (payload: unknown) =>
   (payload as { template: TemplateRef }).template;
 
@@ -357,5 +358,152 @@ describe("sendReminderEmails", () => {
     expect(template.variables.CLOSES).toContain("2026");
     // CLOSES je izlaz našeg formattera, ne administratorov tekst — nema blizanca.
     expect(template.variables.CLOSES_HTML).toBeUndefined();
+  });
+});
+
+// ───────── Obavijesti o izlaznosti (email-delivery §4) ─────────
+
+describe("sendTurnoutEmails", () => {
+  const turnoutElection = {
+    ...election,
+    endsAt: new Date("2026-08-20T12:00:00Z"),
+    quorumThreshold: null as number | null,
+  };
+  const figures = {
+    milestone: 50,
+    turnoutPct: 52,
+    votesCast: 104,
+    votersTotal: 200,
+  };
+
+  beforeEach(() => {
+    vi.stubEnv("RESEND_TURNOUT_TOPIC_ID", "topic_1");
+  });
+
+  it("NIKAD ne nosi zbroj po kandidatima (§3.3)", async () => {
+    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+
+    // Za AFTER_CLOSE izbore zbroj je zapečaćen i od administratora, pa bi brojke
+    // po kandidatu u sandučiću zaobišle pečat koji svaki zaslon poštuje. Tip to
+    // već sprječava; ovo pinira i sadržaj koji doista odlazi.
+    const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
+    const serialized = JSON.stringify(vars).toLowerCase();
+    for (const forbidden of ["candidate", "kandidat", "option", "winner", "votesfor"]) {
+      expect(serialized).not.toContain(forbidden);
+    }
+    expect(Object.keys(vars).sort()).toEqual([
+      "CLOSES",
+      "MILESTONE",
+      "ORG",
+      "ORG_HTML",
+      "QUORUM",
+      "TITLE",
+      "TITLE_HTML",
+      "TURNOUT_PCT",
+      "URL",
+      "VOTERS_TOTAL",
+      "VOTES_CAST",
+    ]);
+  });
+
+  it("nosi topicId — jedina poruka koja ga smije nositi (§3.2)", async () => {
+    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+    expect(batchSend.mock.calls[0][0][0].topicId).toBe("topic_1");
+
+    // Transakcijske poruke ga NE nose: birač koji je jednom kliknuo "odjava"
+    // mora i dalje dobiti svoj listić, inače mu je tiho oduzeto pravo glasa.
+    batchSend.mockClear();
+    await sendInvitationEmails(
+      [{ email: "v@example.com", rawToken: "raw" }],
+      election,
+    );
+    expect(batchSend.mock.calls[0][0][0].topicId).toBeUndefined();
+  });
+
+  it("odbija slanje bez teme umjesto da tiho pregazi odjavu", async () => {
+    vi.stubEnv("RESEND_TURNOUT_TOPIC_ID", undefined);
+
+    await expect(
+      sendTurnoutEmails(["admin@example.com"], turnoutElection, figures),
+    ).rejects.toThrow("RESEND_TURNOUT_TOPIC_ID");
+    expect(batchSend).not.toHaveBeenCalled();
+  });
+
+  it("ključ idempotentnosti je izbori + prečka, stabilan preko ponovnih prolaza", async () => {
+    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+    await sendTurnoutEmails(["admin@example.com"], turnoutElection, figures);
+
+    // Bez kovanja tokena ovdje nema ničega što bi se mijenjalo među prolazima,
+    // pa je isti ključ ISPRAVAN — za razliku od staza s čarobnom poveznicom,
+    // gdje bi stabilan ključ ugušio ponovni pokušaj (invarijanta #7).
+    expect(keyOf(batchSend.mock.calls[0])).toBe("turnout:el_1:50");
+    expect(keyOf(batchSend.mock.calls[1])).toBe("turnout:el_1:50");
+
+    // Druga prečka je druga poruka.
+    await sendTurnoutEmails(["admin@example.com"], turnoutElection, {
+      ...figures,
+      milestone: 75,
+    });
+    expect(keyOf(batchSend.mock.calls[2])).toBe("turnout:el_1:75");
+  });
+
+  it("jedan unos po administratoru, svaki sa svojom poveznicom za odjavu", async () => {
+    await sendTurnoutEmails(
+      ["a@example.com", "b@example.com"],
+      turnoutElection,
+      figures,
+    );
+
+    // Zajednički To: dao bi svima istu odjavu i usput otkrio adrese
+    // administratora jednu drugoj.
+    const batch = batchSend.mock.calls[0][0] as { to: string }[];
+    expect(batch.map((b) => b.to)).toEqual(["a@example.com", "b@example.com"]);
+  });
+
+  it("kvorum je crtica kad nije postavljen, inače potreban/ukupno", async () => {
+    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures);
+    expect(templateOf(batchSend.mock.calls[0][0][0]).variables.QUORUM).toBe("—");
+
+    batchSend.mockClear();
+    await sendTurnoutEmails(
+      ["a@example.com"],
+      { ...turnoutElection, quorumThreshold: 70 },
+      figures,
+    );
+    // quorumRequiredVoters(200, 70) = 140 — dijeljena derivacija, ne ovdje
+    // izračunata (invarijanta #5).
+    expect(templateOf(batchSend.mock.calls[0][0][0]).variables.QUORUM).toBe(
+      "140/200",
+    );
+  });
+
+  it("administratorov naslov ide u paru: sirov i pobjegao", async () => {
+    await sendTurnoutEmails(
+      ["a@example.com"],
+      { ...turnoutElection, title: "O'Brien & <b>Co</b>" },
+      figures,
+    );
+
+    const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
+    expect(vars.TITLE).toBe("O'Brien & <b>Co</b>");
+    expect(vars.TITLE_HTML).toBe("O&#39;Brien &amp; &lt;b&gt;Co&lt;/b&gt;");
+  });
+
+  it("jezik bira predložak", async () => {
+    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures, "en");
+    expect(templateOf(batchSend.mock.calls[0][0][0]).id).toBe(
+      "electius-admin-turnout-en",
+    );
+
+    batchSend.mockClear();
+    await sendTurnoutEmails(["a@example.com"], turnoutElection, figures);
+    expect(templateOf(batchSend.mock.calls[0][0][0]).id).toBe(
+      "electius-admin-turnout-hr",
+    );
+  });
+
+  it("bez primatelja ne šalje ništa", async () => {
+    await sendTurnoutEmails([], turnoutElection, figures);
+    expect(batchSend).not.toHaveBeenCalled();
   });
 });

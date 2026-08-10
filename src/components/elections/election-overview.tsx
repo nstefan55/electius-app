@@ -55,6 +55,7 @@ export interface ElectionOverviewProps {
   votingType: string; // SINGLE_CHOICE | MULTI_CHOICE
   quorumThreshold: number | null;
   voterReminder24h: boolean;
+  adminTurnoutReminder: boolean;
   candidates: number;
   notInvited: number;
   voted24h: number;
@@ -77,6 +78,7 @@ export function ElectionOverview({
   votingType,
   quorumThreshold,
   voterReminder24h,
+  adminTurnoutReminder,
   candidates,
   notInvited,
   voted24h,
@@ -176,6 +178,7 @@ export function ElectionOverview({
             votingType={votingType}
             quorumThreshold={quorumThreshold}
             voterReminder24h={voterReminder24h}
+            adminTurnoutReminder={adminTurnoutReminder}
             candidates={candidates}
           />
           <ActivityCard
@@ -365,6 +368,7 @@ function ConfigCard({
   votingType,
   quorumThreshold,
   voterReminder24h,
+  adminTurnoutReminder,
   candidates,
 }: {
   opens: string;
@@ -376,6 +380,7 @@ function ConfigCard({
   votingType: string;
   quorumThreshold: number | null;
   voterReminder24h: boolean;
+  adminTurnoutReminder: boolean;
   candidates: number;
 }) {
   const t = useTranslations("dashboard.election.overview.config");
@@ -401,6 +406,17 @@ function ConfigCard({
     [t("candidates"), t("candidatesCount", { count: candidates })],
     [t("results"), t(resultsMode === "LIVE" ? "resultsLive" : "resultsSealed")],
     [t("reminder"), reminder],
+    // Uz podsjetnik biraču, jer su to dvije strane iste postavke: tko dobiva
+    // poruku dok glasovanje traje. Prije ovoga se prekidač nakon čarobnjaka
+    // nigdje nije vidio.
+    [
+      t("turnoutUpdates"),
+      adminTurnoutReminder
+        ? status === "ACTIVE"
+          ? t("turnoutUpdatesActive")
+          : t("turnoutUpdatesScheduled")
+        : t("turnoutUpdatesOff"),
+    ],
   ];
   if (quorumThreshold != null) {
     rows.push([

@@ -5,17 +5,20 @@ import {
   autoReminderDue,
   publishElection,
   REMINDER_LEAD_MS,
+  sendAdminTurnout,
   sendReminders,
 } from "@/lib/services/publication.service";
 import { windowOver } from "@/lib/services/token.service";
 import { pruneExpiredArchives } from "@/lib/services/archive.service";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
-import { canUseAutoReminders } from "@/lib/entitlements";
+import { canUseAdminTurnout, canUseAutoReminders } from "@/lib/entitlements";
+import { turnoutMilestoneDue, turnoutPct } from "@/lib/elections-view";
 
 // Election lifecycle sweep (election-publication-spec §5 + expired-token-sends
-// fix + pro-features §2): opens due SCHEDULED elections and publishes their
-// invitations, closes ACTIVE elections whose deadline has passed, sends the
-// automatic 24 h voter reminder, and prunes expired archive proofs. Idempotent
+// fix + pro-features §2 + email-delivery §4): opens due SCHEDULED elections and
+// publishes their invitations, closes ACTIVE elections whose deadline has passed,
+// sends the automatic 24 h voter reminder, notifies admins when turnout crosses a
+// milestone, and prunes expired archive proofs. Idempotent
 // — safe to ping every minute; a quiet sweep matches 0 rows and exits. The
 // trigger is infrastructure config (cron-job.org now, real crontab later),
 // never app code.
@@ -158,6 +161,63 @@ export async function POST(request: Request) {
     });
   }
 
+  // Obavijesti administratoru o izlaznosti (email-delivery §4.5). Peti prolaz,
+  // isti oblik kao podsjetnik i iz istih razloga.
+  //
+  // Upit je samo predfilter: `lt: 75` izbacuje izbore kojima je javljena zadnja
+  // prečka, a koju točno prečku treba javiti odlučuje čisti turnoutMilestoneDue.
+  const dueTurnout = await prisma.election.findMany({
+    where: {
+      status: "ACTIVE",
+      adminTurnoutReminder: true,
+      adminTurnoutNotifiedPct: { lt: 75 },
+    },
+    select: {
+      id: true,
+      organizationId: true,
+      adminTurnoutNotifiedPct: true,
+      _count: { select: { voters: true, votes: true } },
+    },
+  });
+
+  const turnout: { id: string; milestone: number; sent: number }[] = [];
+  for (const e of dueTurnout) {
+    // Ista derivacija koju čitaju nadzorna ploča i pregled izbora — poruka i
+    // zaslon ne smiju prijaviti različitu izlaznost (invarijanta #5).
+    const pct = turnoutPct(e._count.votes, e._count.voters);
+    const milestone = turnoutMilestoneDue(pct, e.adminTurnoutNotifiedPct);
+    if (milestone === null) continue;
+
+    // Pravo PRIJE zauzimanja: Free organizaciji se biljeg ne postavlja, pa izbori
+    // koji sutra postanu Pro još uvijek mogu dobiti svoje prečke. Vlastito
+    // pravilo, ne canUseAutoReminders — dva odvojeno uključiva prekidača ne smiju
+    // dijeliti jednu zaštitu.
+    const entitlement = await resolveEntitlement(e.id, e.organizationId);
+    if (!canUseAdminTurnout(entitlement)) continue;
+
+    // Zauzmi pa pošalji. `lt: milestone` je cijela provjera — dvije istodobne
+    // metle ne mogu obje proći, a broj ažuriranih redaka JE odgovor. Uvjet je
+    // `lt`, a ne "jednako prethodnoj vrijednosti", jer izlaznost može i pasti
+    // (addVoters diže nazivnik): biljeg raste, izlaznost ne mora.
+    const { count } = await prisma.election.updateMany({
+      where: {
+        id: e.id,
+        status: "ACTIVE",
+        adminTurnoutNotifiedPct: { lt: milestone },
+      },
+      data: { adminTurnoutNotifiedPct: milestone },
+    });
+    if (count === 0) continue;
+
+    const result = await sendAdminTurnout(e.id, milestone).catch((error) => {
+      // Biljeg se NE briše: brisanje bi vratilo utrku koju sprječava, a metla se
+      // pinga svake minute. Propuštena obavijest o izlaznosti nije događaj.
+      console.error("[cron] turnout send failed", { id: e.id, error });
+      return null;
+    });
+    turnout.push({ id: e.id, milestone, sent: result?.sent ?? 0 });
+  }
+
   // Obrezivanje isteklog tereta dokaza arhive (entitlement-enforcement-spec §6).
   // Ovdje, a ne na svojoj ruti: treća radnja iza istog CRON_SECRET-a i istog
   // pingera je jeftinija od druge infrastrukture koju aplikacija ne može
@@ -179,8 +239,10 @@ export async function POST(request: Request) {
     activated: elections.length,
     closed,
     reminded: reminded.length,
+    notified: turnout.length,
     elections,
     reminders: reminded,
+    turnout,
     archives: archives ?? { pruned: 0, kept: 0 },
   });
 }

@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   archiveExpiresAt,
   canBrandReports,
+  canUseAdminTurnout,
+  canUseAutoReminders,
   nearCap,
   FREE_VOTER_CAP,
   PRO_VOTER_CAP,
@@ -117,6 +119,24 @@ describe("exhaustiveness", () => {
     // pa bi ispala iz nekog switcha neprimijećeno.
     expect(voterCap(purchased)).toBe(2000);
     expect(canBrandReports(purchased)).toBe(true);
+    expect(canUseAdminTurnout(purchased)).toBe(true);
     expect(archiveExpiresAt(purchased, new Date(2026, 7, 6))).toBeNull();
+  });
+});
+
+describe("canUseAdminTurnout", () => {
+  it("gates admin turnout updates on Free only", () => {
+    expect(canUseAdminTurnout(free)).toBe(false);
+    expect(canUseAdminTurnout(pro)).toBe(true);
+    expect(canUseAdminTurnout(purchased)).toBe(true);
+  });
+
+  it("is a SEPARATE predicate from canUseAutoReminders (D8)", () => {
+    // Ne spajati u jedno pravilo, koliko god im se ishodi danas poklapali:
+    // to su dva stupca i dva odvojeno uključiva prekidača, pa bi dijeljena
+    // zaštita značila da promjena tiera za podsjetnike biračima tiho pomakne i
+    // obavijesti o izlaznosti. Test pada ako netko jedno proglasi aliasom
+    // drugoga.
+    expect(canUseAdminTurnout).not.toBe(canUseAutoReminders);
   });
 });

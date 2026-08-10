@@ -519,7 +519,8 @@
         "createFailed": "Something went wrong. Please try again.",
         "voterCap": "The voter list exceeds your plan limit ({cap}).",
         "liveResultsLocked": "Live results are a Pro feature.",
-        "voterReminderLocked": "Automatic voter reminders are a Pro feature."
+        "voterReminderLocked": "Automatic voter reminders are a Pro feature.",
+        "adminTurnoutLocked": "Automatic turnout updates are a Pro feature."
       },
       "step1": {
         "title": "Basic information",
@@ -843,7 +844,11 @@
           "reminderActive": "Active · 24h before deadline",
           "reminderScheduled": "Scheduled · 24h before deadline",
           "reminderOff": "Off",
-          "quorumValue": "{pct}% ({voters, plural, one {# voter} other {# voters}})"
+          "quorumValue": "{pct}% ({voters, plural, one {# voter} other {# voters}})",
+          "turnoutUpdates": "Turnout updates",
+          "turnoutUpdatesActive": "Active · at 25, 50 and 75%",
+          "turnoutUpdatesScheduled": "Scheduled · at 25, 50 and 75%",
+          "turnoutUpdatesOff": "Off"
         },
         "actions": {
           "title": "Actions",
@@ -1394,6 +1399,10 @@
         "archiveRetention": {
           "title": "Permanent proof retention is a Pro feature",
           "body": "On the Free plan the proof payload is pruned after 12 months; the record, root hash and PDF are kept forever. Pro prunes nothing."
+        },
+        "adminTurnoutReminder": {
+          "title": "Turnout updates are a Pro feature",
+          "body": "Pro emails you when turnout passes 25, 50 and 75 percent, while voting is still open. On the free plan you track turnout yourself on the dashboard."
         }
       },
       "gates": {

@@ -12,8 +12,10 @@ import {
 import {
   sendInvitationEmails,
   sendReminderEmails,
+  sendTurnoutEmails,
   type InvitationElection,
 } from "./email.service";
+import { turnoutPct } from "@/lib/elections-view";
 
 // Publication pipeline (election-publication-spec §2): tokens → chunked Resend
 // batch sends → per-voter INVITED tracking. Runs synchronously in-request
@@ -323,4 +325,74 @@ export async function sendReminders(
     endsAt: election.endsAt,
   };
   return sendInChunks(minted, (batch) => sendReminderEmails(batch, reminder));
+}
+
+// ───────── Obavijesti o izlaznosti (email-delivery §4) ─────────
+
+/**
+ * Javi administratorima organizacije da je izlaznost prešla prečku (§4.2, §4.3).
+ *
+ * Primatelji su SVI administratori organizacije, ne election.createdBy. Danas je
+ * to isto (shema je 1 organizacija ↔ 1 administrator), ali izlaznost je činjenica
+ * o organizaciji, a pravo se već razrješava po organizaciji, ne po sesiji. Čitanje
+ * relacije košta isti upit i ne traži prepravku kad stignu dodatna mjesta.
+ *
+ * Bez filtriranja po emailVerified: nepotvrđen administrator je onaj koji se ne
+ * može prijaviti, a ne onaj koji ne može primiti poštu — tiho ga izbaciti značilo
+ * bi da značajka izgleda pokvareno.
+ *
+ * Sve brojke dolaze iz postojećih derivacija (invarijanta #5): _count je isti
+ * izvor koji čita getElectionTurnout, a postotak računa turnoutPct.
+ *
+ * @param electionId izbori kojima je prečka upravo prijeđena
+ * @param milestone prijeđena prečka (25 | 50 | 75) — već zauzeta u bazi
+ */
+export async function sendAdminTurnout(
+  electionId: string,
+  milestone: number,
+): Promise<{ sent: number }> {
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: {
+      title: true,
+      endsAt: true,
+      quorumThreshold: true,
+      _count: { select: { voters: true, votes: true } },
+      organization: {
+        select: { name: true, admins: { select: { email: true } } },
+      },
+    },
+  });
+  if (!election) return { sent: 0 };
+
+  // Dedup po malim slovima: ista adresa upisana različitim slovima je jedan
+  // sandučić, a dvije poruke o istoj prečki su kvar.
+  const recipients = [
+    ...new Set(election.organization.admins.map((a) => a.email.toLowerCase())),
+  ];
+  if (recipients.length === 0) return { sent: 0 };
+
+  const votersTotal = election._count.voters;
+  const votesCast = election._count.votes;
+
+  await sendTurnoutEmails(
+    recipients,
+    {
+      id: electionId,
+      title: election.title,
+      organizationName: election.organization.name,
+      endsAt: election.endsAt,
+      quorumThreshold: election.quorumThreshold,
+    },
+    {
+      milestone,
+      // Stvarna izlaznost, ne prečka: skok s 10 % na 80 % javlja prijelaz preko
+      // 75 %, ali u tablici stoji 80 % jer je to istina u trenutku slanja.
+      turnoutPct: turnoutPct(votesCast, votersTotal),
+      votesCast,
+      votersTotal,
+    },
+  );
+
+  return { sent: recipients.length };
 }
