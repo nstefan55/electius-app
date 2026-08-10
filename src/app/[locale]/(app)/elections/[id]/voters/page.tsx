@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
-import type { VoterStatus } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/require-session";
 import { getElectionDetail } from "@/lib/db/elections";
-import { getVoterRoster } from "@/lib/db/voters";
+import { getVoterRoster, type RosterFilter } from "@/lib/db/voters";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { VoterRoster } from "@/components/voters/voter-roster";
 
@@ -12,11 +11,13 @@ import { VoterRoster } from "@/components/voters/voter-roster";
 // getElectionDetail je cache()-an i layout ga je već pozvao → bez dodatnog
 // upita. Popis je zaseban stranicani upit, ne prošireni ELECTION_SELECT.
 
-const STATUSES = ["PENDING", "INVITED", "VOTED"] as const;
+// Tri statusa + "FAILED" (adresa ne radi). Jedan padajući izbornik, jedan URL
+// parametar; koja je od te dvije činjenice u pitanju, rastavlja rosterWhere.
+const FILTERS = ["PENDING", "INVITED", "VOTED", "FAILED"] as const;
 
-const asStatus = (v?: string): VoterStatus | undefined =>
-  STATUSES.includes(v as (typeof STATUSES)[number])
-    ? (v as VoterStatus)
+const asFilter = (v?: string): RosterFilter | undefined =>
+  FILTERS.includes(v as (typeof FILTERS)[number])
+    ? (v as RosterFilter)
     : undefined;
 
 export default async function ElectionVotersPage({
@@ -33,7 +34,7 @@ export default async function ElectionVotersPage({
   const election = await getElectionDetail(id, organizationId);
   if (!election) notFound();
 
-  const status = asStatus(sp.status);
+  const status = asFilter(sp.status);
   const q = sp.q?.slice(0, 120) ?? "";
   const page = Math.max(1, Number(sp.page) || 1);
 

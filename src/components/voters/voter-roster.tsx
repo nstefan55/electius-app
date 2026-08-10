@@ -115,7 +115,7 @@ export function VoterRoster({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const { counts, voters, page, pageCount, matched } = roster;
+  const { counts, voters, page, pageCount, matched, deliveryFailed } = roster;
   const filtering = Boolean(query.q || query.status);
   // Ista pravila kao akcije na poslužitelju — gumb koji uvijek pada nije ponuda.
   // `frozen` zamjenjuje raniju provjeru statusa: pokriva i CLOSED/ARCHIVED i
@@ -145,6 +145,9 @@ export function VoterRoster({
       // je granica. Poruka mora imenovati razlog, ne pasti u generičku grešku.
       else if (res.error === "electionEnded")
         toast.error(t("toast.electionEnded"));
+      // Adresa je odbijena, a ne poslužitelj — ponovni klik je ne popravlja.
+      else if (res.error === "deliveryRejected")
+        toast.error(t("toast.deliveryRejected"));
       else
         toast.error(
           t(
@@ -166,6 +169,26 @@ export function VoterRoster({
           className="text-success-700"
         />
         <Summary label={t("summary.pending")} value={num(counts.pending)} />
+
+        {/* Uz 10 redaka po stranici oznaka na retku sama ne znači ništa — na
+            popisu od 285 birača kvar na 19. stranici nitko ne vidi. Ovaj gumb
+            je i brojka i jedini put do tih redaka, pa nema drugog kontrolnog
+            elementa. Nema ga kad nema kvara: zdravi izbori ostaju bez šuma. */}
+        {deliveryFailed > 0 && (
+          <button
+            type="button"
+            onClick={() => setParams({ status: "FAILED" })}
+            // Vidljivi tekst je samo brojka, pa bi pristupačno ime bilo "2" uz
+            // "gumb" — čitač zaslona bi javio da se nešto može pritisnuti, ali
+            // ne i što. Ime nosi i radnju, a vidljivi tekst mu je PREFIKS, pa
+            // glasovno upravljanje ("klikni Neisporučeno") i dalje pogađa gumb.
+            aria-label={t("delivery.summaryAction", { count: deliveryFailed })}
+            className="inline-flex h-7 items-center gap-1.5 rounded-full bg-warning-50 px-3 text-[0.8125rem] font-medium text-warning-700 transition-colors hover:bg-warning-500/15"
+          >
+            <TriangleAlert className="size-3.5" aria-hidden />
+            {t("delivery.summary", { count: deliveryFailed })}
+          </button>
+        )}
 
         {/* Tiha najava granice — tek od 80%, i nikad kao upozorenje. */}
         {nearCap(counts.total, cap) && (
@@ -235,6 +258,9 @@ export function VoterRoster({
                   {t(`status.${s}`)}
                 </option>
               ))}
+              {/* Izvan mape i s vlastitim ključem: nije status nego činjenica o
+                  adresi, pa bi status.FAILED bio laž u imenu ključa. */}
+              <option value="FAILED">{t("delivery.filter")}</option>
             </select>
             <ChevronDown
               className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-neutral-400"
@@ -331,8 +357,20 @@ export function VoterRoster({
                         </span>
                       )}
                     </div>
-                    <div className="min-w-0 truncate font-mono text-[0.8125rem] text-muted-foreground">
-                      {v.email}
+                    {/* Oznaka stoji uz ADRESU, ne uz status: pokvarena je
+                        adresa, a status i dalje govori dokle je birač stigao
+                        (ostaje PENDING/INVITED — red za ponavljanje). Boja nije
+                        nositelj poruke, tekst je uz nju. */}
+                    <div className="min-w-0">
+                      <div className="truncate font-mono text-[0.8125rem] text-muted-foreground">
+                        {v.email}
+                      </div>
+                      {v.deliveryFailed && (
+                        <span className="mt-1 inline-flex h-5 items-center gap-1 rounded-full bg-warning-50 px-2 text-xs font-medium text-warning-700">
+                          <TriangleAlert className="size-3" aria-hidden />
+                          {t("delivery.badge")}
+                        </span>
+                      )}
                     </div>
                     <div>
                       <span

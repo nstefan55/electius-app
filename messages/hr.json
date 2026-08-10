@@ -1079,7 +1079,8 @@
         "notAllowed": "Ova radnja nije moguća u trenutačnom stanju izbora.",
         "windowOver": "Rok za glasanje je prošao — nova poveznica bila bi istekla prije nego što stigne.",
         "failed": "Nešto je pošlo po zlu. Pokušajte ponovno.",
-        "electionEnded": "Izbori su završili — popis birača se više ne mijenja."
+        "electionEnded": "Izbori su završili — popis birača se više ne mijenja.",
+        "deliveryRejected": "Adresa je odbijena pri slanju — provjerite je li ispravna."
       },
       "edit": {
         "title": "Uredi ime birača",
@@ -1135,6 +1136,12 @@
       },
       "cap": {
         "usage": "Iskorišteno {used} od {cap} birača"
+      },
+      "delivery": {
+        "badge": "Nije isporučeno",
+        "filter": "Neisporučeno",
+        "summary": "Neisporučeno: {count}",
+        "summaryAction": "Neisporučeno: {count} — prikaži samo te birače"
       }
     },
     "profile": {

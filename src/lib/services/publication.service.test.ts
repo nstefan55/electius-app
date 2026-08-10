@@ -84,10 +84,18 @@ beforeEach(() => {
   vi.mocked(mintTokensForVoters).mockResolvedValue([]);
   vi.mocked(windowOver).mockReset();
   vi.mocked(windowOver).mockReturnValue(false);
+  // Permissive slanje vraća indekse odbijenih; prazno = cijeli komad prošao.
   vi.mocked(sendInvitationEmails).mockReset();
+  vi.mocked(sendInvitationEmails).mockResolvedValue([]);
   vi.mocked(sendReminderEmails).mockReset();
+  vi.mocked(sendReminderEmails).mockResolvedValue([]);
   vi.mocked(sendTurnoutEmails).mockReset();
+  vi.mocked(sendTurnoutEmails).mockResolvedValue([]);
 });
+
+// `where.id` je unija string | StringFilter — suzi na oblik koji servis šalje.
+const idsIn = (call: { where?: { id?: unknown } }) =>
+  (call.where!.id as { in: string[] }).in;
 
 describe("chunk", () => {
   it("splits preserving order, remainder in the last chunk", () => {
@@ -139,11 +147,12 @@ describe("publishElection", () => {
   it("flips only the successful chunk's voters to INVITED", async () => {
     const minted = Array.from({ length: 250 }, (_, i) => mintedVoter(i));
     vi.mocked(mintTokensForPendingVoters).mockResolvedValue(minted);
-    // Chunk 2 of 3 fails whole (Resend batch calls are atomic).
+    // Chunk 2 of 3 throws — Resend nije ni primio poziv, pa o pojedinim
+    // primateljima nema nikakve informacije i pada cijeli komad.
     vi.mocked(sendInvitationEmails)
-      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce([])
       .mockRejectedValueOnce(new Error("resend: boom"))
-      .mockResolvedValueOnce(undefined);
+      .mockResolvedValueOnce([]);
 
     const result = await publishElection("el_1");
 
@@ -151,17 +160,79 @@ describe("publishElection", () => {
     // INVITED flip ran for chunks 1 and 3 only — chunk 2 voters stay PENDING.
     const updates = vi.mocked(prisma.voter.updateMany).mock.calls;
     expect(updates).toHaveLength(2);
-    // `where.id` je unija string | StringFilter — suzi na oblik koji servis šalje.
-    const flippedIds = (i: number) =>
-      (updates[i]![0].where!.id as { in: string[] }).in;
-    expect(flippedIds(0)).toEqual(minted.slice(0, 100).map((m) => m.voterId));
-    expect(flippedIds(1)).toEqual(minted.slice(200).map((m) => m.voterId));
-    expect(updates[0]![0].data).toEqual({ status: "INVITED" });
+    expect(idsIn(updates[0]![0])).toEqual(
+      minted.slice(0, 100).map((m) => m.voterId),
+    );
+    expect(idsIn(updates[1]![0])).toEqual(
+      minted.slice(200).map((m) => m.voterId),
+    );
+    expect(updates[0]![0].data).toEqual({
+      status: "INVITED",
+      deliveryFailedAt: null,
+    });
+  });
+
+  // §Faza 4 — zrnatost kvara je po primatelju, ne više po komadu. Prije ovoga
+  // je jedna mrtva adresa vraćala svih 100 birača u PENDING.
+  it("keeps only the rejected recipients PENDING when a chunk is partially refused", async () => {
+    const minted = Array.from({ length: 4 }, (_, i) => mintedVoter(i));
+    vi.mocked(mintTokensForPendingVoters).mockResolvedValue(minted);
+    // Resend je poziv PRIMIO i odbio primatelje 1 i 3.
+    vi.mocked(sendInvitationEmails).mockResolvedValue([1, 3]);
+
+    const result = await publishElection("el_1");
+
+    expect(result).toEqual({ sent: 2, failed: 2 });
+
+    const updates = vi.mocked(prisma.voter.updateMany).mock.calls;
+    expect(updates).toHaveLength(2);
+
+    // Prihvaćeni prelaze u INVITED i gube raniju oznaku kvara.
+    expect(idsIn(updates[0]![0])).toEqual(["v0", "v2"]);
+    expect(updates[0]![0].data).toEqual({
+      status: "INVITED",
+      deliveryFailedAt: null,
+    });
+
+    // Odbijeni se žigošu, a status im se NE dira — ostaju u redu za ponavljanje
+    // (invarijanta #7). Stupac red označava, ne vadi ga iz njega.
+    expect(idsIn(updates[1]![0])).toEqual(["v1", "v3"]);
+    expect(updates[1]![0].data).not.toHaveProperty("status");
+    expect(updates[1]![0].data).toMatchObject({
+      deliveryFailedAt: expect.any(Date),
+    });
+  });
+
+  // Žig je bilješka uz red za ponavljanje, ne slanje. Bez vlastitog catch-a
+  // neuspio upis oznake pao bi u zajedničku granu i prijavio kao neposlane i
+  // one primatelje koji su maloprije prešli u INVITED.
+  it("still reports the accepted recipients as sent when the stamp write fails", async () => {
+    const minted = Array.from({ length: 3 }, (_, i) => mintedVoter(i));
+    vi.mocked(mintTokensForPendingVoters).mockResolvedValue(minted);
+    vi.mocked(sendInvitationEmails).mockResolvedValue([2]);
+    vi.mocked(prisma.voter.updateMany)
+      .mockResolvedValueOnce({ count: 2 }) // prijelaz u INVITED prolazi
+      .mockRejectedValueOnce(new Error("db down")); // žig pada
+
+    expect(await publishElection("el_1")).toEqual({ sent: 2, failed: 1 });
+  });
+
+  it("counts a fully refused chunk as failed and stamps every recipient", async () => {
+    const minted = Array.from({ length: 3 }, (_, i) => mintedVoter(i));
+    vi.mocked(mintTokensForPendingVoters).mockResolvedValue(minted);
+    vi.mocked(sendInvitationEmails).mockResolvedValue([0, 1, 2]);
+
+    expect(await publishElection("el_1")).toEqual({ sent: 0, failed: 3 });
+
+    // Nema prijelaza u INVITED — samo žig.
+    const updates = vi.mocked(prisma.voter.updateMany).mock.calls;
+    expect(updates).toHaveLength(1);
+    expect(idsIn(updates[0]![0])).toEqual(["v0", "v1", "v2"]);
+    expect(updates[0]![0].data).not.toHaveProperty("status");
   });
 
   it("passes election title + org name to the invitation sender", async () => {
     vi.mocked(mintTokensForPendingVoters).mockResolvedValue([mintedVoter(1)]);
-    vi.mocked(sendInvitationEmails).mockResolvedValue(undefined);
 
     await publishElection("el_1");
 
@@ -216,7 +287,27 @@ describe("resendVoterLink", () => {
 
     expect(mintTokenForVoter).toHaveBeenCalledWith("v_1");
     expect(sendInvitationEmails).toHaveBeenCalledWith([mintedVoter(1)], sendable);
-    expect(prisma.voter.updateMany).not.toHaveBeenCalled();
+    // Upis postoji, ali NOSI SAMO brisanje ranije oznake kvara — uspješan
+    // ponovni pokušaj mora očistiti žig i INVITED biraču. Status se ne dira.
+    const [call] = vi.mocked(prisma.voter.updateMany).mock.calls;
+    expect(call![0].data).toEqual({ deliveryFailedAt: null });
+  });
+
+  // Odbijanje pri slanju više nije bacanje, pa se mora pročitati: bez toga bi
+  // birač čiju je jedinu poruku Resend odbio svejedno prešao u INVITED.
+  it("does not flip a rejected voter to INVITED, and stamps them instead", async () => {
+    vi.mocked(prisma.voter.findFirst).mockResolvedValue({
+      id: "v_1",
+      status: "PENDING",
+    } as never);
+    vi.mocked(mintTokenForVoter).mockResolvedValue(mintedVoter(1));
+    vi.mocked(sendInvitationEmails).mockResolvedValue([0]);
+
+    await resendVoterLink("el_1", "voter1@example.com");
+
+    const [call] = vi.mocked(prisma.voter.updateMany).mock.calls;
+    expect(call![0].data).not.toHaveProperty("status");
+    expect(call![0].data).toMatchObject({ deliveryFailedAt: expect.any(Date) });
   });
 
   it("sends nothing once the window is over — before the voter is even looked up", async () => {
@@ -242,7 +333,8 @@ describe("resendVoterLink", () => {
 
     expect(prisma.voter.updateMany).toHaveBeenCalledWith({
       where: { id: "v_2" },
-      data: { status: "INVITED" },
+      // Uspješno slanje ujedno briše raniju oznaku neisporučenosti.
+      data: { deliveryFailedAt: null, status: "INVITED" },
     });
   });
 
@@ -464,7 +556,7 @@ describe("sendReminders", () => {
 
     expect(prisma.voter.updateMany).toHaveBeenCalledWith({
       where: { id: { in: ["v3"] } },
-      data: { status: "INVITED" },
+      data: { status: "INVITED", deliveryFailedAt: null },
     });
   });
 
@@ -533,6 +625,27 @@ describe("sendAdminTurnout", () => {
     expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
       "admin@example.com",
     ]);
+  });
+
+  // Prečka je zauzeta prije slanja i namjerno se ne vraća, pa broj koji metla
+  // objavljuje mora biti stvarno poslano — inače tvrdi da su obaviješteni i oni
+  // čiju je adresu Resend odbio.
+  it("ne broji administratore koje je Resend odbio", async () => {
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow({
+        organization: {
+          name: "VVG",
+          admins: [
+            { email: "a@example.com" },
+            { email: "b@example.com" },
+            { email: "c@example.com" },
+          ],
+        },
+      }) as never,
+    );
+    vi.mocked(sendTurnoutEmails).mockResolvedValue([1]);
+
+    expect(await sendAdminTurnout("el_1", 50)).toEqual({ sent: 2 });
   });
 
   it("brojke dolaze iz istog _count izvora kao zaslon (invarijanta #5)", async () => {

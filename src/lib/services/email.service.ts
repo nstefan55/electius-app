@@ -143,16 +143,38 @@ async function send(body: EmailBody, meta: SendMeta): Promise<void> {
   if (error) throw new Error(`resend: ${error.message}`);
 }
 
-async function sendBatch(bodies: EmailBody[], meta: SendMeta): Promise<void> {
+// Indeksi primatelja koje je Resend odbio, u poretku ulaznog polja. Prazno
+// polje znači da je prošao cijeli komad.
+//
+// Zašto indeksi, a ne adrese: pozivatelj je sam predao polje, pa je indeks
+// jednoznačan i onda kad dvoje ljudi dijeli sandučić. Poziv koji padne CIJELI i
+// dalje baca — to su dvije različite činjenice ("Resend nije primio poziv" vs
+// "Resend je primio poziv i odbio sedmog primatelja").
+export type RejectedIndices = number[];
+
+async function sendBatch(
+  bodies: EmailBody[],
+  meta: SendMeta,
+): Promise<RejectedIndices> {
   const from = sender();
   const tags = tagsFor(meta.type, meta.electionId);
 
-  const { error } = await resend.batch.send(
+  // `permissive` umjesto zadanog `strict` (§Faza 4). Uz `strict` jedna neispravna
+  // ili potisnuta adresa ruši svih 100 poruka u komadu: cijeli komad ostaje
+  // PENDING, a ponovni pokušaj ponovno kuje 100 čarobnih poveznica da bi popravio
+  // jednu. Uz `permissive` Resend prihvati ostale i vrati errors[{index, message}].
+  //
+  // Literal je nosiv, ne kozmetika: Batch.send<Options> sužava tip odgovora
+  // uvjetom `Options['batchValidation'] extends 'permissive'`, pa bez `as const`
+  // polje `errors` na tipu ne postoji.
+  const { data, error } = await resend.batch.send(
     bodies.map((body) => ({ ...body, from, tags })),
-    requestOptions(meta),
+    { ...requestOptions(meta), batchValidation: "permissive" as const },
   );
 
   if (error) throw new Error(`resend: ${error.message}`);
+
+  return data?.errors?.map((e) => e.index) ?? [];
 }
 
 // Ključ se mora promijeniti kad se promijene tokeni (§1.4).
@@ -286,7 +308,7 @@ async function sendBallotLinkEmails(
   recipients: InvitationRecipient[],
   locale: Locale,
   extra: Record<string, string> = {},
-) {
+): Promise<RejectedIndices> {
   const id = templateId(kind, locale);
   const shared = {
     TITLE: election.title,
@@ -296,7 +318,7 @@ async function sendBallotLinkEmails(
     ...extra,
   };
 
-  await sendBatch(
+  return sendBatch(
     recipients.map((r) => ({
       to: r.email,
       template: { id, variables: { ...shared, URL: voteUrl(r.rawToken) } },
@@ -313,10 +335,10 @@ export async function sendInvitationEmails(
   recipients: InvitationRecipient[],
   election: InvitationElection,
   locale: Locale = DEFAULT_LOCALE,
-) {
-  if (recipients.length === 0) return;
+): Promise<RejectedIndices> {
+  if (recipients.length === 0) return [];
 
-  await sendBallotLinkEmails("invite", election, recipients, locale);
+  return sendBallotLinkEmails("invite", election, recipients, locale);
 }
 
 // ───────── Podsjetnici (pro-features §2) ─────────
@@ -334,8 +356,8 @@ export async function sendReminderEmails(
   recipients: InvitationRecipient[],
   election: ReminderElection,
   locale: Locale = DEFAULT_LOCALE,
-) {
-  if (recipients.length === 0) return;
+): Promise<RejectedIndices> {
+  if (recipients.length === 0) return [];
 
   // Datum se oblikuje ovdje, uz odabir predloška: jezik koji bira tekst isti je
   // onaj koji oblikuje rok, pa se format i jezik ne mogu razići. Isti UTC
@@ -345,7 +367,7 @@ export async function sendReminderEmails(
   // izlaz našeg formattera (Intl), bez znakova koje bi trebalo bježati.
   const closes = formatVotingDateTime(election.endsAt.toISOString(), locale);
 
-  await sendBallotLinkEmails("reminder", election, recipients, locale, {
+  return sendBallotLinkEmails("reminder", election, recipients, locale, {
     CLOSES: closes,
   });
 }
@@ -406,8 +428,8 @@ export async function sendTurnoutEmails(
   election: TurnoutElection,
   figures: TurnoutFigures,
   locale: Locale = DEFAULT_LOCALE,
-) {
-  if (recipients.length === 0) return;
+): Promise<RejectedIndices> {
+  if (recipients.length === 0) return [];
 
   // Datum se oblikuje ovdje, uz odabir predloška — isti razlog kao kod
   // podsjetnika: jezik koji bira tekst isti je onaj koji oblikuje datum.
@@ -444,7 +466,10 @@ export async function sendTurnoutEmails(
     URL: electionOverviewUrl(election.id),
   };
 
-  await sendBatch(
+  // I ovdje `permissive` (kroz sendBatch): prečka je već zauzeta u bazi prije
+  // slanja, pa bi uz `strict` jedna neispravna administratorska adresa progutala
+  // obavijest SVIMA ostalima — i to nepovratno, jer se stupac namjerno ne vraća.
+  return sendBatch(
     recipients.map((to) => ({
       to,
       template: { id: templateId("turnout", locale), variables },

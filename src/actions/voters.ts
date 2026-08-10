@@ -253,6 +253,13 @@ export async function resendVoterInvite(
     if (result === "windowOver") {
       return { success: false, error: "windowOver" };
     }
+    // Resend je primio poziv i odbio baš ovu adresu (permissive slanje). Nije
+    // greška poslužitelja i ponovni klik je neće popraviti, pa poruka mora
+    // imenovati adresu kao uzrok — generično "nije uspjelo" poziva na uzaludno
+    // ponavljanje. Redak je već žigosan, pa ga popis odmah i označi.
+    if (result === "rejected") {
+      return { success: false, error: "deliveryRejected" };
+    }
     return { success: true };
   } catch {
     return { success: false, error: "failed" };

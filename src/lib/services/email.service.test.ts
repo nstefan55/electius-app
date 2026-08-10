@@ -45,7 +45,8 @@ beforeEach(() => {
   // testovi moraju postaviti eksplicitno.
   vi.stubEnv("RESEND_FROM_EMAIL", "Electius <system@electius.com>");
   batchSend.mockReset();
-  batchSend.mockResolvedValue({ data: [], error: null });
+  // Stvarni oblik permissive odgovora: { data: { data: [id…], errors: [{index}…] } }.
+  batchSend.mockResolvedValue({ data: { data: [], errors: [] }, error: null });
   emailSend.mockReset();
   emailSend.mockResolvedValue({ data: { id: "email" }, error: null });
 });
@@ -262,6 +263,59 @@ describe("idempotency keys (§1.4)", () => {
 
     expect(keyOf(emailSend.mock.calls[0])).toBeUndefined();
     expect(keyOf(emailSend.mock.calls[1])).toBeUndefined();
+  });
+});
+
+describe("permissive batching (§Faza 4)", () => {
+  const one = [{ email: "a@example.com", rawToken: "raw" }];
+
+  // Zadano je `strict`, gdje jedna neispravna adresa ruši svih 100 poruka u
+  // komadu. Uz to je i tip odgovora uvjetovan literalom — bez njega polje
+  // `errors` ne postoji ni na tipu, pa se odbijeni ne mogu ni pročitati.
+  it("traži permissive provjeru na svakom skupnom slanju", async () => {
+    await sendInvitationEmails(one, election);
+    await sendReminderEmails(one, reminderElection);
+
+    expect(optionsOf(batchSend.mock.calls[0])).toMatchObject({
+      batchValidation: "permissive",
+    });
+    expect(optionsOf(batchSend.mock.calls[1])).toMatchObject({
+      batchValidation: "permissive",
+    });
+  });
+
+  it("vraća indekse odbijenih primatelja", async () => {
+    batchSend.mockResolvedValue({
+      data: {
+        data: [{ id: "e1" }, { id: "e3" }],
+        errors: [
+          { index: 1, message: "Invalid `to` field." },
+          { index: 3, message: "Suppressed." },
+        ],
+      },
+      error: null,
+    });
+
+    const recipients = Array.from({ length: 4 }, (_, i) => ({
+      email: `v${i}@example.com`,
+      rawToken: `raw${i}`,
+    }));
+
+    expect(await sendInvitationEmails(recipients, election)).toEqual([1, 3]);
+  });
+
+  it("prazno polje kad je prošao cijeli komad", async () => {
+    expect(await sendInvitationEmails(one, election)).toEqual([]);
+  });
+
+  // Dvije različite činjenice: "Resend nije primio poziv" i dalje baca, pa
+  // pozivatelj cijeli komad ostavlja u redu za ponavljanje.
+  it("i dalje baca kad padne CIJELI poziv", async () => {
+    batchSend.mockResolvedValue({ data: null, error: { message: "boom" } });
+
+    await expect(sendInvitationEmails(one, election)).rejects.toThrow(
+      "resend: boom",
+    );
   });
 });
 

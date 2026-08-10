@@ -14,6 +14,7 @@ import {
   sendReminderEmails,
   sendTurnoutEmails,
   type InvitationElection,
+  type RejectedIndices,
 } from "./email.service";
 import { turnoutPct } from "@/lib/elections-view";
 
@@ -49,27 +50,76 @@ export type SendableElection = InvitationElection & {
   endsAt: Date;
 };
 
-// Sequential, not parallel — respects Resend's 2 req/s rate limit. Failure
-// granularity is per chunk (a batch call succeeds/fails whole); a failed chunk
-// leaves its voters PENDING → retryable via resendInvitations.
+// Slanje odbijeno u trenutku poziva — Resend je poziv primio i OVOG primatelja
+// odbio (§Faza 4). Druga polovica istog stupca koji webhook žigoše kad dostava
+// padne poslije prihvaćanja: administratora zanima "tko ovo nije dobio", a ne
+// kojim je od dva puta ta činjenica stigla.
+//
+// Status se NE dira. Birač ostaje PENDING, dakle u redu za ponavljanje
+// (invarijanta #7) — stupac red samo označava, ne vadi ga iz njega.
+//
+// Vrijeme je `new Date()`, za razliku od webhooka koji uzima vrijeme DOGAĐAJA:
+// odbijanje pri slanju vidimo dok se događa, a webhook kasni i ponavlja se.
+async function stampDeliveryFailure(voterIds: string[]) {
+  await prisma.voter.updateMany({
+    where: { id: { in: voterIds } },
+    data: { deliveryFailedAt: new Date() },
+  });
+}
+
+// Sequential, not parallel — respects Resend's 2 req/s rate limit.
+//
+// Zrnatost kvara je PO PRIMATELJU (§Faza 4), ne više po komadu: batchValidation
+// "permissive" vraća indekse odbijenih, pa prihvaćeni prelaze u INVITED, a
+// odbijeni ostaju PENDING → i dalje ih hvata resendInvitations. Prije ovoga je
+// jedna mrtva adresa vraćala svih 100 birača u PENDING, a ponovni pokušaj kovao
+// 100 novih poveznica da bi popravio jednu.
+//
+// Poziv koji padne CIJELI i dalje pada cijeli — bacanje znači da Resend poziv
+// nije ni primio, pa se o pojedinim primateljima ne zna ništa.
 //
 // Pošiljatelj je parametar, a ne grana: pozivnica i podsjetnik dijele komadanje,
-// prijelaz u INVITED i brojanje neuspjelih komada, a razlikuju se samo tekstom.
+// prijelaz u INVITED i brojanje neuspjelih, a razlikuju se samo tekstom.
 async function sendInChunks(
   minted: MintedToken[],
-  send: (batch: MintedToken[]) => Promise<void>,
+  send: (batch: MintedToken[]) => Promise<RejectedIndices>,
 ): Promise<PublishResult> {
   let sent = 0;
   let failed = 0;
 
   for (const batch of chunk(minted)) {
     try {
-      await send(batch);
-      await prisma.voter.updateMany({
-        where: { id: { in: batch.map((m) => m.voterId) } },
-        data: { status: "INVITED" },
-      });
-      sent += batch.length;
+      const rejected = new Set(await send(batch));
+      // Podjela po indeksu, pa je zbroj po konstrukciji točan i onda kad bi
+      // Resend vratio indeks izvan polja — takav se ni s jednom stranom ne
+      // poklopi, a obje strane i dalje čine cijeli komad.
+      const accepted = batch.filter((_, i) => !rejected.has(i));
+      const refused = batch.filter((_, i) => rejected.has(i));
+
+      if (accepted.length > 0) {
+        await prisma.voter.updateMany({
+          where: { id: { in: accepted.map((m) => m.voterId) } },
+          // Briše raniju oznaku kvara: prihvaćanje NIJE dostava, ali ako ova
+          // poruka opet odbije, webhook je ponovno žigoše za nekoliko sekundi.
+          // Oznaka time odgovara na pitanje "je li adresa sada pokvarena", a ne
+          // "je li ikad bila" — drugo ostaje istinito zauvijek i beskorisno.
+          data: { status: "INVITED", deliveryFailedAt: null },
+        });
+      }
+      // Vlastiti catch: žig je BILJEŠKA uz red za ponavljanje, a ne slanje.
+      // Unutar zajedničkog try-a neuspio upis oznake pao bi u granu ispod i
+      // prijavio cijeli komad kao neposlan — uključujući primatelje koji su
+      // maloprije prešli u INVITED. Isti stav kao brisanje R2 objekata u
+      // sealElection/deleteElection: propali čišćenje ne obara posao koji je
+      // već obavljen.
+      if (refused.length > 0) {
+        await stampDeliveryFailure(refused.map((m) => m.voterId)).catch(
+          (error) => console.error("[publication] stamp failed", error),
+        );
+      }
+
+      sent += accepted.length;
+      failed += refused.length;
     } catch {
       failed += batch.length;
     }
@@ -113,8 +163,8 @@ export async function publishElection(
 
 // Jedan birač, jedna poveznica — dijele je resend iz glasačkog toka i redak u
 // popisu birača. Re-mint poništava prethodno poslanu poveznicu.
-// Baca ako slanje padne; pozivatelj odlučuje što s tim.
-export type InviteResult = "sent" | "notFound" | "windowOver";
+// Baca ako slanje padne CIJELO; pozivatelj odlučuje što s tim.
+export type InviteResult = "sent" | "notFound" | "windowOver" | "rejected";
 
 export async function inviteVoter(
   voterId: string,
@@ -126,16 +176,26 @@ export async function inviteVoter(
   const minted = await mintTokenForVoter(voterId);
   if (!minted) return "notFound";
 
-  await sendInvitationEmails([minted], election);
+  const rejected = await sendInvitationEmails([minted], election);
+
+  // Odbijanje pri slanju više NIJE bacanje (permissive), pa se mora pročitati.
+  // Bez ove grane bi jedini primatelj bio odbijen, a birač svejedno prešao u
+  // INVITED — status bi tvrdio da je pozivnica poslana, a nije.
+  if (rejected.length > 0) {
+    await stampDeliveryFailure([voterId]);
+    return "rejected";
+  }
 
   // PENDING birač je sad stvarno dobio e-poštu — ista semantika kao skupni
-  // prijelaz po komadu. INVITED ostaje INVITED.
-  if (currentStatus === "PENDING") {
-    await prisma.voter.updateMany({
-      where: { id: voterId },
-      data: { status: "INVITED" },
-    });
-  }
+  // prijelaz po komadu. INVITED ostaje INVITED, ali oznaka kvara pada i njemu:
+  // uspješan ponovni pokušaj mora očistiti raniju.
+  await prisma.voter.updateMany({
+    where: { id: voterId },
+    data: {
+      deliveryFailedAt: null,
+      ...(currentStatus === "PENDING" ? { status: "INVITED" as const } : {}),
+    },
+  });
   return "sent";
 }
 
@@ -375,7 +435,7 @@ export async function sendAdminTurnout(
   const votersTotal = election._count.voters;
   const votesCast = election._count.votes;
 
-  await sendTurnoutEmails(
+  const rejected = await sendTurnoutEmails(
     recipients,
     {
       id: electionId,
@@ -394,5 +454,9 @@ export async function sendAdminTurnout(
     },
   );
 
-  return { sent: recipients.length };
+  // Broj koji metla objavljuje mora biti stvarno poslano, ne namjeravano:
+  // administrator s neispravnom adresom se pod permissive slanjem odbija
+  // pojedinačno, dok ostali dobiju poruku. Ovdje se ništa ne žigoše — nema
+  // retka birača, administrator nije birač.
+  return { sent: recipients.length - rejected.length };
 }
