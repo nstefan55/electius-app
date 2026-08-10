@@ -51,15 +51,20 @@ const election = {
   startsAt: OPENS,
   endsAt: FUTURE,
   organization: { name: "VVG" },
+  // Birač nema svoj jezik — poštu biračima oblikuje jezik onoga tko je izbore
+  // stvorio (vidi ponytail uz publishElection).
+  createdBy: { locale: "hr" },
 };
 
-// Ono što inviteVoter proslijedi dalje: tekst e-pošte + rok za provjeru prozora.
+// Ono što inviteVoter proslijedi dalje: tekst e-pošte + rok za provjeru prozora
+// + jezik.
 const sendable = {
   id: "el_1",
   title: "Studentski izbori",
   organizationName: "VVG",
   startsAt: OPENS,
   endsAt: FUTURE,
+  locale: "hr",
 };
 
 const mintedVoter = (i: number) => ({
@@ -231,7 +236,7 @@ describe("publishElection", () => {
     expect(updates[0]![0].data).not.toHaveProperty("status");
   });
 
-  it("passes election title + org name to the invitation sender", async () => {
+  it("passes election title + org name + the creator's locale to the sender", async () => {
     vi.mocked(mintTokensForPendingVoters).mockResolvedValue([mintedVoter(1)]);
 
     await publishElection("el_1");
@@ -239,7 +244,35 @@ describe("publishElection", () => {
     expect(sendInvitationEmails).toHaveBeenCalledWith(
       [mintedVoter(1)],
       { id: "el_1", title: "Studentski izbori", organizationName: "VVG" },
+      "hr",
     );
+  });
+
+  it("šalje na jeziku stvaratelja izbora, ne na zadanom", async () => {
+    // Ovo je JEDINI test koji razlikuje "jezik je provučen" od "jezik je pao na
+    // hr": s hr fixtureom obje implementacije daju isti rezultat, pa bi
+    // pošiljatelj koji ignorira stupac prolazio neopaženo.
+    vi.mocked(prisma.election.findUnique).mockResolvedValue({
+      ...election,
+      createdBy: { locale: "en" },
+    } as never);
+    vi.mocked(mintTokensForPendingVoters).mockResolvedValue([mintedVoter(1)]);
+
+    await publishElection("el_1");
+
+    expect(vi.mocked(sendInvitationEmails).mock.calls[0]![2]).toBe("en");
+  });
+
+  it("nepoznat jezik stvaratelja pada na hr", async () => {
+    vi.mocked(prisma.election.findUnique).mockResolvedValue({
+      ...election,
+      createdBy: { locale: "klingon" },
+    } as never);
+    vi.mocked(mintTokensForPendingVoters).mockResolvedValue([mintedVoter(1)]);
+
+    await publishElection("el_1");
+
+    expect(vi.mocked(sendInvitationEmails).mock.calls[0]![2]).toBe("hr");
   });
 });
 
@@ -286,7 +319,11 @@ describe("resendVoterLink", () => {
     await resendVoterLink("el_1", "Voter1@Example.com");
 
     expect(mintTokenForVoter).toHaveBeenCalledWith("v_1");
-    expect(sendInvitationEmails).toHaveBeenCalledWith([mintedVoter(1)], sendable);
+    expect(sendInvitationEmails).toHaveBeenCalledWith(
+      [mintedVoter(1)],
+      sendable,
+      "hr",
+    );
     // Upis postoji, ali NOSI SAMO brisanje ranije oznake kvara — uspješan
     // ponovni pokušaj mora očistiti žig i INVITED biraču. Status se ne dira.
     const [call] = vi.mocked(prisma.voter.updateMany).mock.calls;
@@ -529,9 +566,27 @@ describe("sendReminders", () => {
         organizationName: "VVG",
         endsAt: FUTURE,
       },
+      "hr",
     );
     expect(sendInvitationEmails).not.toHaveBeenCalled();
     expect(result).toEqual({ sent: 2, failed: 0 });
+  });
+
+  it("podsjetnik ide na jeziku stvaratelja izbora, ne na zadanom", async () => {
+    // Test iznad koristi hr fixture, pa bi ga prošao i pošiljatelj koji stupac
+    // uopće ne čita — hr je i tako ishod. Razlikuje ih tek jezik koji NIJE zadani.
+    vi.mocked(prisma.election.findUnique).mockResolvedValue({
+      ...election,
+      createdBy: { locale: "en" },
+    } as never);
+    vi.mocked(prisma.voter.findMany).mockResolvedValue([
+      { id: "a", status: "INVITED", token: { expiresAt: FUTURE } },
+    ] as never);
+    vi.mocked(mintTokensForVoters).mockResolvedValue([mintedVoter(1)]);
+
+    await sendReminders("el_1");
+
+    expect(vi.mocked(sendReminderEmails).mock.calls[0]![2]).toBe("en");
   });
 
   it("sends nothing when everyone has voted", async () => {
@@ -584,7 +639,7 @@ describe("sendAdminTurnout", () => {
     _count: { voters: 200, votes: 104 },
     organization: {
       name: "VVG",
-      admins: [{ email: "admin@example.com" }],
+      admins: [{ email: "admin@example.com", locale: "hr" }],
     },
     ...over,
   });
@@ -596,7 +651,10 @@ describe("sendAdminTurnout", () => {
       turnoutRow({
         organization: {
           name: "VVG",
-          admins: [{ email: "a@example.com" }, { email: "b@example.com" }],
+          admins: [
+            { email: "a@example.com", locale: "hr" },
+            { email: "b@example.com", locale: "en" },
+          ],
         },
       }) as never,
     );
@@ -604,9 +662,33 @@ describe("sendAdminTurnout", () => {
     const result = await sendAdminTurnout("el_1", 50);
 
     expect(result).toEqual({ sent: 2 });
+    // Svaki administrator nosi SVOJ jezik: za razliku od pošte biračima, ovdje
+    // svaki primatelj ima vlastiti User.locale, pa dvoje ljudi u istoj
+    // organizaciji dobiva istu obavijest na različitim jezicima.
     expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
-      "a@example.com",
-      "b@example.com",
+      { email: "a@example.com", locale: "hr" },
+      { email: "b@example.com", locale: "en" },
+    ]);
+  });
+
+  it("nepoznat jezik u stupcu pada na hr umjesto da sruši slanje", async () => {
+    // Stupac je TEXT, a piše ga i BetterAuthov /sign-up/email koji se može
+    // gađati izravno. Bez normalizacije bi templateId složio alias
+    // `electius-admin-turnout-xx`, Resend ga ne bi poznavao i obavijest bi
+    // pukla — nakon što je prečka već zauzeta, dakle nepovratno.
+    vi.mocked(prisma.election.findUnique).mockResolvedValue(
+      turnoutRow({
+        organization: {
+          name: "VVG",
+          admins: [{ email: "a@example.com", locale: "xx" }],
+        },
+      }) as never,
+    );
+
+    await sendAdminTurnout("el_1", 50);
+
+    expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
+      { email: "a@example.com", locale: "hr" },
     ]);
   });
 
@@ -615,7 +697,10 @@ describe("sendAdminTurnout", () => {
       turnoutRow({
         organization: {
           name: "VVG",
-          admins: [{ email: "Admin@Example.com" }, { email: "admin@example.com" }],
+          admins: [
+            { email: "Admin@Example.com", locale: "hr" },
+            { email: "admin@example.com", locale: "hr" },
+          ],
         },
       }) as never,
     );
@@ -623,7 +708,7 @@ describe("sendAdminTurnout", () => {
     // Isti sandučić dvaput je kvar, ne dvije obavijesti.
     expect(await sendAdminTurnout("el_1", 50)).toEqual({ sent: 1 });
     expect(vi.mocked(sendTurnoutEmails).mock.calls[0][0]).toEqual([
-      "admin@example.com",
+      { email: "admin@example.com", locale: "hr" },
     ]);
   });
 

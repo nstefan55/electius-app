@@ -1239,7 +1239,8 @@
         "defaultOption": "Default language",
         "soonOption": "Ships post-launch",
         "soon": "Soon",
-        "enToast": "English ships post-launch — the interface is already i18n-ready."
+        "enToast": "English ships post-launch — the interface is already i18n-ready.",
+        "error": "Could not save your language. Please try again."
       }
     },
     "settings": {

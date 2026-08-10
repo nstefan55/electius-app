@@ -13,7 +13,7 @@ vi.mock("@/lib/auth/require-session", () => ({
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
-const { updateProfile, updateOrganization, setAccessibilityPref } =
+const { updateProfile, updateOrganization, setAccessibilityPref, setLocale } =
   await import("@/actions/settings");
 
 const session = {
@@ -136,5 +136,47 @@ describe("setAccessibilityPref", () => {
       value: true,
     });
     expect(result).toEqual({ success: false, error: "failed" });
+  });
+});
+
+// Jezik (fix/locale-not-persisted). Kartica je do sada samo navigirala, pa je
+// izbor umirao na sljedećem dolasku na /hr — a metla i BetterAuthove kuke, koje
+// nemaju ni URL ni sesiju, jezik nisu mogle saznati uopće.
+describe("setLocale", () => {
+  it("rejects a locale outside LOCALES without touching the session or DB", async () => {
+    // beforeEach samo prespaja mock, ne briše brojač poziva iz ranijih testova.
+    vi.mocked(requireSession).mockClear();
+
+    // Stupac je TEXT, pa bi bilo što ovdje i sjelo u bazu; z.enum je ono što to
+    // sprječava na strani pisanja. Neuspjeh MORA biti prije requireSession —
+    // inače je nepoznat jezik samo neuspio upis, a ne odbijen zahtjev.
+    const result = await setLocale({ locale: "klingon" });
+
+    expect(result).toEqual({ success: false, error: "invalid" });
+    expect(requireSession).not.toHaveBeenCalled();
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("persists the chosen locale, scoped to the session's own row", async () => {
+    vi.mocked(prisma.user.update).mockResolvedValue({} as never);
+
+    const result = await setLocale({ locale: "en" });
+
+    expect(result).toEqual({ success: true });
+    // Ovo je cijeli smisao ispravka: PIŠE. Bez ovog upisa kartica i dalje samo
+    // navigira, a šest pošiljatelja nema odakle pročitati jezik.
+    expect(vi.mocked(prisma.user.update).mock.calls[0]![0]).toEqual({
+      where: { email: "admin@example.com" },
+      data: { locale: "en" },
+    });
+  });
+
+  it("reports failure instead of throwing when the write fails", async () => {
+    vi.mocked(prisma.user.update).mockRejectedValue(new Error("db down"));
+
+    expect(await setLocale({ locale: "hr" })).toEqual({
+      success: false,
+      error: "failed",
+    });
   });
 });

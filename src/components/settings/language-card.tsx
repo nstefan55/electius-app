@@ -1,11 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Check } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n/config";
+import { setLocale } from "@/actions/settings";
 import { SettingsCard } from "@/components/settings/settings-card";
 
 // "Language" card on /profile — replaces the old LanguageSwitcher select and
@@ -20,13 +21,30 @@ export function LanguageCard() {
   const router = useRouter();
   const pathname = usePathname();
   const [pending, startTransition] = useTransition();
+  const [saving, setSaving] = useState(false);
 
-  function choose(code: Locale) {
+  async function choose(code: Locale) {
     if (code === active) return; // the selected card is inert
     if (!ENABLED[code]) {
       toast(t("enToast"));
       return;
     }
+
+    // Upis PRIJE navigacije. Sama navigacija mijenja samo trenutni URL, pa je
+    // izbor umirao na sljedećem dolasku na /hr — a metla i BetterAuthove kuke
+    // ga nikad ni nisu vidjele. Pad mreže odbacuje poziv akcije umjesto da vrati
+    // { success: false }, pa bez catcha kartica navigira na promjenu koja nije
+    // spremljena i sljedeće učitavanje je tiho vraća.
+    setSaving(true);
+    const result = await setLocale({ locale: code }).catch(
+      () => ({ success: false }) as const,
+    );
+    setSaving(false);
+    if (!result.success) {
+      toast.error(t("error"));
+      return;
+    }
+
     // Same path, switched locale — next-intl handles the prefix.
     startTransition(() => router.replace(pathname, { locale: code }));
   }
@@ -58,8 +76,8 @@ export function LanguageCard() {
               // NOT aria-disabled: a gated locale must stay operable, or the
               // toast explaining why it is gated never reaches a screen reader.
               // The "Soon" chip + helper are already in the accessible name.
-              disabled={pending}
-              onClick={() => choose(code)}
+              disabled={pending || saving}
+              onClick={() => void choose(code)}
               className={`flex min-h-16 items-center gap-3 rounded-md border p-3 text-left transition-colors ${
                 selected
                   ? "cursor-default border-[1.5px] border-brand-700 bg-brand-50"

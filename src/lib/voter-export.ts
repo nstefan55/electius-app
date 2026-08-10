@@ -1,4 +1,5 @@
 import { csvDate, toCsv, type ExportLocale } from "@/lib/csv";
+import { resolveLocale } from "@/i18n/config";
 import hr from "../../messages/hr.json";
 import en from "../../messages/en.json";
 
@@ -60,6 +61,8 @@ export function voterExportLabels(locale: ExportLocale): VoterExportLabels {
 }
 
 // Jedno mjesto normalizacije — oznake i razdjelnik se ne mogu razići.
+// Delegira na resolveLocale: isto pravilo sada čita i izvoz i pošta, pa se ne
+// mogu razići (invarijanta #5). Ime ostaje jer opisuje ulaz (?locale iz URL-a).
 export function resolveExportLocale(raw: string | null): ExportLocale {
-  return raw === "en" ? "en" : "hr";
+  return resolveLocale(raw);
 }

@@ -1239,7 +1239,8 @@
         "defaultOption": "Zadani jezik",
         "soonOption": "Stiže nakon lansiranja",
         "soon": "Uskoro",
-        "enToast": "Engleski stiže nakon lansiranja — sučelje je već pripremljeno za višejezičnost."
+        "enToast": "Engleski stiže nakon lansiranja — sučelje je već pripremljeno za višejezičnost.",
+        "error": "Spremanje jezika nije uspjelo. Pokušajte ponovno."
       }
     },
     "settings": {

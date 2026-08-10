@@ -112,6 +112,12 @@ model User {
   largerText    Boolean @default(false)
   focusOutlines Boolean @default(true) // uključeno po dizajnu
 
+  // Jezik sučelja i ODLAZNE pošte. Do sada se jezik izvodio samo iz URL-a, pa
+  // ga nijedna staza bez zahtjeva — metla, BetterAuthove kuke — nije mogla znati.
+  // String, ne enum: LOCALES u i18n/config.ts već je jedini izvor istine, a enum
+  // bi tražio migraciju za svaki novi jezik. Isti oblik kao Election.reportLocale.
+  locale String @default("hr")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
