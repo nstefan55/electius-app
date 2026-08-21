@@ -12,7 +12,8 @@ import { SettingsCard } from "@/components/settings/settings-card";
 import { Spinner } from "@/components/ui/spinner";
 // Besplatno stanje živi izdvojeno jer ga dijeli /upgrade. Odavde stižu i PRICE i
 // fail — smjer uvoza je jednosmjeran (kartica → ponuda), pa nema ciklusa.
-import { fail, PRICE, ProUpsell } from "@/components/billing/pro-upsell";
+import { PRICE, ProUpsell } from "@/components/billing/pro-upsell";
+import { fail } from "@/components/billing/use-upgrade-checkout";
 
 // "Plan i naplata" na /settings (profile-settings-phase-7-spec).
 //

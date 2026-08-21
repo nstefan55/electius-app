@@ -1,19 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { useFormatter, useLocale, useTranslations } from "next-intl";
-import toast from "react-hot-toast";
+import { useFormatter, useTranslations } from "next-intl";
 import { Archive, BarChart3, BellOff, Check, Users } from "lucide-react";
-import { authClient } from "@/lib/auth/client";
-import { PRO_PLAN_NAME } from "@/lib/billing";
+import { useUpgradeCheckout } from "@/components/billing/use-upgrade-checkout";
 
-// Ponuda Pro plana — jedna, dijele je /settings (besplatno stanje kartice) i
-// /upgrade (odredište zaključane značajke).
+// Ponuda Pro plana na /settings — besplatno stanje kartice naplate: granice,
+// cijena, prekidač razdoblja, popis značajki i Checkout provjeren kroz test mode.
 //
-// Izdvojeno iz billing-card.tsx, a ne napisano drugi put: /settings je već bio
-// potpuna ponuda — granice, cijena, prekidač razdoblja, popis značajki i STVARNI
-// Stripe Checkout provjeren kroz test mode. Druga kopija razišla bi se prvom
-// izmjenom cijene, i to na stranici koja postoji da bi nešto prodala.
+// /upgrade je OVO PRESTAO koristiti: ondje stoje kartice plana s odredišne
+// stranice (UpgradePlans), jer stranica koja postoji da bi prodala treba isti
+// cjenik koji je posjetitelj već vidio. Zajednički je ostao samo poziv na
+// Checkout — useUpgradeCheckout — pa novčana staza i dalje postoji jednom.
 //
 // Ne sele se `prelaunch` i `pro` stanja: njihovi CTA-ovi provjereni su točno
 // ondje gdje jesu.
@@ -25,18 +23,6 @@ type Cycle = "monthly" | "yearly";
 // Iznosi su u kodu, ne u katalogu: formatira ih next-intl, pa tvrdo kodiran
 // znak € nikad ne uđe u prijevod. Autoritet: project-paywall-spec.md.
 export const PRICE = { monthly: 9, yearly: 86, yearlyPerMonth: 7.2 } as const;
-
-// Korisniku ide prevedena poruka, nikad Stripeova. Njegovi tekstovi su engleski
-// i interni ("the subscription update feature in the portal configuration is
-// disabled") — administratoru ne govore ništa, a hrvatsko sučelje ne smije
-// procuriti engleski. Original ide u konzolu, gdje i pripada.
-export function fail(
-  error: { message?: string } | null | undefined,
-  localized: string,
-) {
-  if (error?.message) console.error("[billing]", error.message);
-  toast.error(localized);
-}
 
 export function ProUpsell({
   organizationId,
@@ -50,37 +36,9 @@ export function ProUpsell({
 }) {
   const t = useTranslations(NS);
   const format = useFormatter();
-  const locale = useLocale();
   const [cycle, setCycle] = useState<Cycle>("monthly");
-  const [pending, setPending] = useState(false);
   const monthly = cycle === "monthly";
-
-  // Uspjeh UVIJEK vodi na /settings: ondje živi provjerena traka "obrada u
-  // tijeku", a svježeg pretplatnika vratiti na stranicu koja mu nudi kupnju je
-  // krivi zaslon — i čim webhook stigne, /upgrade bi ga ionako odbio.
-  const successUrl = `/${locale}/settings?checkout=success`;
-  const cancelUrl = `/${locale}${cancelPath}`;
-
-  // Prva kupnja: plugin otvara Checkout i sam preusmjerava. Šalje se razdoblje
-  // iz stanja iznad, nikad cijena. locale ide dalje da Stripeove stranice budu
-  // na hrvatskom, a ne na jeziku preglednika.
-  async function upgrade() {
-    setPending(true);
-    const { error } = await authClient.subscription.upgrade({
-      plan: PRO_PLAN_NAME,
-      annual: cycle === "yearly",
-      referenceId: organizationId,
-      successUrl,
-      cancelUrl,
-      locale,
-    });
-    // Uspjeh znači preusmjeravanje, pa se pending namjerno ne gasi — gumb ostaje
-    // zaključan dok stranica ne ode.
-    if (error) {
-      fail(error, t("errors.checkout"));
-      setPending(false);
-    }
-  }
+  const { upgrade, pending } = useUpgradeCheckout({ organizationId, cancelPath });
 
   const price = (value: number, digits: number) =>
     format.number(value, {
@@ -180,7 +138,7 @@ export function ProUpsell({
         <p className="mt-5 text-[0.8125rem] text-white/65">{t("upsell.trial")}</p>
         <button
           type="button"
-          onClick={upgrade}
+          onClick={() => upgrade(cycle === "yearly")}
           disabled={pending}
           className="mt-3 h-11 cursor-pointer rounded-md bg-white px-5.5 text-[0.9375rem] font-semibold text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
         >

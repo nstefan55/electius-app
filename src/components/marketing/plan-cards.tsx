@@ -81,11 +81,25 @@ export function BillingToggle({
 export function PlanCards({
   yearly,
   showCta = true,
+  proBadge = true,
+  freeCta,
+  proCta,
 }: {
   yearly: boolean;
   // Modal na /settings ih skriva: administrator je već prijavljen, a naplata
   // još nije moguća — mrtav gumb za kupnju gori je od nikakvog.
   showCta?: boolean;
+  // Utori radnje, kad poveznica na registraciju nije točan potez: /upgrade ih
+  // šalje jer je administrator već prijavljen — Pro nosi Checkout, Free oznaku
+  // trenutačnog plana. Namjerno su bez rasporeda (utor ne postavlja razmak),
+  // ali OBA se popunjavaju zajedno: prazan Free utor podigao bi njegove
+  // natuknice za visinu Pro gumba i kartice bi se razišle.
+  freeCta?: React.ReactNode;
+  proCta?: React.ReactNode;
+  // Oznaka „Uskoro". Istinita na odredišnoj stranici, gdje naplata još nije
+  // moguća — ali /upgrade se prikazuje TEK kad naplata radi, pa bi ondje stajala
+  // iznad gumba koji otvara Checkout i proturječila mu.
+  proBadge?: boolean;
 }) {
   const t = useTranslations("marketing.pricing");
   const freeFeatures = t.raw("free.features") as Feature[];
@@ -108,14 +122,15 @@ export function PlanCards({
           <span className="text-[0.9375rem] text-neutral-600">{t("free.period")}</span>
         </div>
         <div className="mb-6 text-[0.8125rem] text-neutral-600">{t("free.note")}</div>
-        {showCta && (
-          <a
-            href={signUpUrl()}
-            className="mb-7 inline-flex min-h-12 items-center justify-center rounded-md border-[1.5px] border-brand-700 bg-white font-heading text-[0.9375rem] font-semibold text-brand-700 hover:bg-brand-50"
-          >
-            {t("free.cta")}
-          </a>
-        )}
+        {freeCta ??
+          (showCta && (
+            <a
+              href={signUpUrl()}
+              className="mb-7 inline-flex min-h-12 items-center justify-center rounded-md border-[1.5px] border-brand-700 bg-white font-heading text-[0.9375rem] font-semibold text-brand-700 hover:bg-brand-50"
+            >
+              {t("free.cta")}
+            </a>
+          ))}
         <Bullets items={freeFeatures} />
       </div>
 
@@ -125,9 +140,11 @@ export function PlanCards({
           <span className="font-heading text-sm font-semibold tracking-[0.04em] text-brand-100 uppercase">
             {t("pro.name")}
           </span>
-          <span className="inline-flex h-5 items-center rounded-full bg-white/15 px-2 text-xs font-semibold text-brand-100">
-            {t("pro.badge")}
-          </span>
+          {proBadge && (
+            <span className="inline-flex h-5 items-center rounded-full bg-white/15 px-2 text-xs font-semibold text-brand-100">
+              {t("pro.badge")}
+            </span>
+          )}
         </div>
         <p className="mt-2 mb-5 text-[0.90625rem] leading-normal text-brand-100">
           {t("pro.desc")}
@@ -143,15 +160,17 @@ export function PlanCards({
             {yearly ? t("pro.noteYearly") : t("pro.noteMonthly")}
           </div>
         </div>
-        {showCta && (
-          <a
-            href={signUpUrl()}
-            className="mb-7 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-700 font-heading text-[0.9375rem] font-semibold text-white hover:bg-brand-600"
-          >
-            {t("pro.cta")}
-          </a>
-        )}
-        {/* `pro.trial` se ne prikazuje — uvjet je prodaje. Ključ ostaje u katalozima. */}
+        {proCta ??
+          (showCta && (
+            <a
+              href={signUpUrl()}
+              className="mb-7 inline-flex min-h-12 items-center justify-center rounded-md bg-brand-700 font-heading text-[0.9375rem] font-semibold text-white hover:bg-brand-600"
+            >
+              {t("pro.cta")}
+            </a>
+          ))}
+        {/* `pro.trial` se ovdje ne prikazuje — uvjet je prodaje, a odredišna
+            stranica ne prodaje. /upgrade ga nosi unutar svog proCta utora. */}
         <Bullets items={proFeatures} dark />
       </div>
     </div>

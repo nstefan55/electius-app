@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import type { Entitlement } from "@/lib/entitlements";
+import { canUpgrade, type Entitlement } from "@/lib/entitlements";
 
 // Razrješavanje prava (entitlement-enforcement-spec §3). Čista polovica —
 // što koje pravo smije — živi u @/lib/entitlements i klijent je smije čitati.
@@ -76,4 +76,23 @@ export async function resolveEntitlement(
 export async function showProBadge(organizationId: string): Promise<boolean> {
   if (!BILLING_ENABLED) return false;
   return (await resolveEntitlement(null, organizationId)).kind !== "free";
+}
+
+/**
+ * Smije li ljuska nositi gumb „Nadogradi".
+ *
+ * Isti IZRAZ kojim se /upgrade čuva, i to je cijela poanta: vidljivost gumba i
+ * dostupnost stranice moraju biti jedno pravilo, inače nastane gumb koji vodi u
+ * preusmjeravanje. `canUpgrade` je pitanje o PONUDI — postoji li plan iznad
+ * ovoga — a ne o zaključanosti pojedine značajke.
+ *
+ * Namjerno se NE čita `user.showPro` s ljuske: showProBadge vraća false svima
+ * dok je naplata isključena, pa bi `!showPro` ponudio nadogradnju baš svakom
+ * računu, uključujući one koje /upgrade istog trena odbije.
+ *
+ * BILLING_ENABLED se ovdje ne čita — razrješivač ga već kratko spaja i tada
+ * svima vraća pro, pa gumba nema dok naplata ne postane stvarna.
+ */
+export async function showUpgradeCta(organizationId: string): Promise<boolean> {
+  return canUpgrade(await resolveEntitlement(null, organizationId));
 }

@@ -1,6 +1,6 @@
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { requireSession } from "@/lib/auth/require-session";
-import { showProBadge } from "@/lib/services/entitlement.service";
+import { showProBadge, showUpgradeCta } from "@/lib/services/entitlement.service";
 
 // (app) group layout — the sidebar+topbar shell around every dashboard-host route.
 // requireSession() is the single auth choke point (domain-architecture-spec.md §5, decision B).
@@ -23,6 +23,9 @@ export default async function AppLayout({
     image: user.image,
     organization: user.organization,
     showPro: await showProBadge(organizationId),
+    // Također presuda razrješivača, i to ISTA koju /upgrade koristi kao zaštitu
+    // — zato gumb nikad ne može voditi na stranicu koja ga odbija.
+    canUpgrade: await showUpgradeCta(organizationId),
   };
   // Beta oznaka: izričita zastavica, ne NEXT_PUBLIC_ — te se ugrađuju u build,
   // pa bi promjena tražila novi deploy i server i klijent bi se mogli razići.
