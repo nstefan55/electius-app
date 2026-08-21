@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/auth/require-session";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { FREE_VOTER_CAP, PRO_VOTER_CAP } from "@/lib/entitlements";
 import { upgradeContextKey } from "@/lib/upgrade-context";
-import { ProUpsell } from "@/components/billing/pro-upsell";
+import { UpgradePlans } from "@/components/billing/upgrade-plans";
 
 // /upgrade — odredište zaključane Pro značajke (pro-features-gating §3).
 //
@@ -42,8 +42,8 @@ export default async function UpgradePage({
   const cancelPath = key === "generic" ? "/upgrade" : `/upgrade?feature=${key}`;
 
   return (
-    <div className="mx-auto flex w-full max-w-[860px] flex-col gap-6">
-      <div>
+    <div className="mx-auto flex w-full max-w-220 flex-col gap-8">
+      <div className="text-center">
         <h1 className="font-heading text-3xl font-bold tracking-tight text-neutral-800">
           {t(`context.${key}.title`)}
         </h1>
@@ -52,7 +52,7 @@ export default async function UpgradePage({
             Granice dolaze iz konstanti, ne iz prijevoda: broj upisan u katalog
             razišao bi se sa zaštitom koja ga provodi. Poruke bez tih mjesta
             dodatne vrijednosti jednostavno ignoriraju. */}
-        <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-neutral-600">
+        <p className="mx-auto mt-2 max-w-160 text-[0.9375rem] leading-relaxed text-neutral-600">
           {t(`context.${key}.body`, {
             free: FREE_VOTER_CAP,
             pro: PRO_VOTER_CAP,
@@ -60,8 +60,8 @@ export default async function UpgradePage({
         </p>
       </div>
 
-      <section className="flex flex-col gap-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
-        <ProUpsell organizationId={organizationId} cancelPath={cancelPath} />
+      <section>
+        <UpgradePlans organizationId={organizationId} cancelPath={cancelPath} />
       </section>
     </div>
   );

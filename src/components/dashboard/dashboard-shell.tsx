@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Bell, Menu, PanelLeft } from "lucide-react";
+import { Bell, Menu, PanelLeft, Sparkles } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -51,6 +51,10 @@ export interface ShellUser {
   organization: string;
   /** Presuda razrješivača prava, ne stupac isPro — vidi showProBadge(). */
   showPro: boolean;
+  /** Ista presuda kojom se čuva /upgrade — vidi showUpgradeCta(). Nije `!showPro`:
+   *  dok je naplata isključena showPro je false SVIMA, pa bi negacija nudila
+   *  nadogradnju i računima koje /upgrade odbija. */
+  canUpgrade: boolean;
 }
 
 export function DashboardShell({
@@ -105,7 +109,9 @@ export function DashboardShell({
       {/* Right column: fixed top bar + scrollable content */}
       <div className="flex flex-1 flex-col overflow-hidden print:overflow-visible">
         <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 md:px-8 print:hidden">
-          <div className="flex items-center gap-3">
+          {/* min-w-0: gumb „Nadogradi" je shrink-0, pa se pod pritiskom skraćuje
+              mrvica, a ne poziv na nadogradnju. */}
+          <div className="flex min-w-0 items-center gap-3">
             {/* Mobile: open drawer */}
             <button
               type="button"
@@ -154,11 +160,24 @@ export function DashboardShell({
             </Breadcrumb>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-4">
             <div className="hidden items-center gap-2 text-sm text-muted-foreground sm:flex">
               <span className="size-1.75 animate-pulse rounded-full bg-status-active" />
               {t("topbar.updatedJustNow")}
             </div>
+            {/* Jedini stalno vidljiv put do nadogradnje. Vodi na /upgrade, nikad
+                izravno u Checkout: administrator prvo mora vidjeti ŠTO kupuje.
+                Prikazuje se samo kad postoji plan iznad ovoga — dok je naplata
+                isključena razrješivač svima vraća pro, pa gumba nema. */}
+            {user.canUpgrade && (
+              <Link
+                href="/upgrade"
+                className="flex h-11 shrink-0 items-center gap-2 rounded-md bg-brand-700 px-4 font-heading text-[0.9375rem] font-semibold whitespace-nowrap text-white transition-colors hover:bg-brand-600"
+              >
+                <Sparkles aria-hidden="true" className="size-4.25" />
+                {t("topbar.upgrade")}
+              </Link>
+            )}
             <button
               type="button"
               aria-label={t("topbar.notifications")}

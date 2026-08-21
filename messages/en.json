@@ -363,7 +363,8 @@
     "topbar": {
       "home": "Home",
       "updatedJustNow": "Updated just now",
-      "notifications": "Notifications"
+      "notifications": "Notifications",
+      "upgrade": "Upgrade"
     },
     "page": {
       "title": "Home",
@@ -1416,7 +1417,8 @@
       "gates": {
         "brandedReports": "On the Free plan the report carries the Electius mark. Pro signs it with your organization's logo.",
         "archiveRetention": "The Free plan keeps the record, root hash and PDF forever, and prunes the proof payload after 12 months."
-      }
+      },
+      "currentPlan": "Your current plan"
     }
   },
   "marketing": {

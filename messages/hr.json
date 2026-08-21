@@ -363,7 +363,8 @@
     "topbar": {
       "home": "Početna",
       "updatedJustNow": "Ažurirano upravo sada",
-      "notifications": "Obavijesti"
+      "notifications": "Obavijesti",
+      "upgrade": "Nadogradi"
     },
     "page": {
       "title": "Početna",
@@ -1416,7 +1417,8 @@
       "gates": {
         "brandedReports": "Na besplatnom planu izvještaj nosi Electius oznaku. Pro ga potpisuje logotipom vaše organizacije.",
         "archiveRetention": "Besplatni plan čuva zapis, korijenski hash i PDF zauvijek, a teret dokaza obrezuje nakon 12 mjeseci."
-      }
+      },
+      "currentPlan": "Vaš trenutačni plan"
     }
   },
   "marketing": {
