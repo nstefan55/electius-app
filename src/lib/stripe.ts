@@ -23,8 +23,23 @@ export function stripeClient(): Stripe {
   // Bidirekcijska zaštita. Test ključ u produkciji zaustavlja deploy koji ne
   // naplaćuje ništa; live ključ izvan produkcije zaustavlja lokalni test koji
   // naplaćuje stvarni novac — gori kvar, i onaj koji jednosmjerna provjera propusti.
-  const isProd = process.env.NODE_ENV === "production";
-  if (isProd && key.startsWith("sk_test_")) throw new Error("Test ključ u produkciji");
+  //
+  // Pitanje je "jesam li stvarno live", a NODE_ENV na njega ne odgovara: next build
+  // ga postavlja na "production" na SVAKOM Vercel deployu, Preview uključen. VERCEL_ENV
+  // razlikuje to dvoje, pa odlučuje kad postoji; NODE_ENV ostaje zamjena za lokalno i CI.
+  // ponytail: lokalni next start s NODE_ENV=production i live ključem i dalje prolazi —
+  // tražiti VERCEL_ENV === "production" za live ključ ako se ikad deploya izvan Vercela.
+  const vercelEnv = process.env.VERCEL_ENV;
+  const isProd = vercelEnv ? vercelEnv === "production" : process.env.NODE_ENV === "production";
+
+  // Test ključ smeta samo kad korisnici stvarno mogu kupovati. Dok je naplata
+  // ugašena nikoga ne zavarava, a produkcija je jedini deploy s pravim domenama.
+  // Zastava se pali na lansiranju i tad se provjera sama vraća.
+  // ⚠ Zamijeni ključeve PRIJE nego upališ zastavu — obrnutim redom throw pada pri
+  // učitavanju modula i ruši svaku prijavljenu stranicu, ne samo naplatu.
+  const billingLive = process.env.BILLING_ENABLED === "true";
+
+  if (isProd && billingLive && key.startsWith("sk_test_")) throw new Error("Test ključ u produkciji");
   if (!isProd && key.startsWith("sk_live_")) throw new Error("Live ključ izvan produkcije");
 
   // ponytail: bez pina API verzije — SDK prati verziju s računa, što je ono što
