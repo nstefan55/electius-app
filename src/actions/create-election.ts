@@ -11,6 +11,7 @@ import {
   voterCap,
 } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
+import { clearSweepGate } from "@/lib/services/sweep-gate";
 
 // Election creation wizard (all-elections phase 2). One action, two modes:
 // full create (step 5 confirm) and draft save (top-bar link). Both are
@@ -186,6 +187,13 @@ export async function createElection(
       },
       select: { id: true },
     });
+
+    // Novi zakazani startsAt može prethoditi spremljenom roku metle — jedini
+    // prolaz kojem kašnjenje mora ostati na razini pinga (sweep-gate D4).
+    // Nacrti i rezervirani datumi ne pridonose ništa, pa se za njih ne briše.
+    // Nikad ne baca (guta greške) — stvoreni izbori se ne prijavljuju kao pad.
+    if (status === "SCHEDULED") await clearSweepGate();
+
     return { success: true, data: { id: election.id } };
   } catch {
     return { success: false, error: "failed" };

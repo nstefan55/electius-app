@@ -9,6 +9,11 @@ import {
   sendReminders,
 } from "@/lib/services/publication.service";
 import { windowOver } from "@/lib/services/token.service";
+import {
+  computeSweepNextDue,
+  storeSweepNextDue,
+  sweepDue,
+} from "@/lib/services/sweep-gate";
 import { pruneExpiredArchives } from "@/lib/services/archive.service";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { canUseAdminTurnout, canUseAutoReminders } from "@/lib/entitlements";
@@ -40,9 +45,47 @@ function authorized(header: string | null): boolean {
   return given.length === expected.length && timingSafeEqual(given, expected);
 }
 
+// Tri jeftina čitanja NAKON prolaza, pa vrijednosti odražavaju stanje poslije
+// metle (sweep-gate spec D7 — što je upravo obrađeno ne smije prikovati rok u
+// prošlost). ponytail: neograničen findMany po ACTIVE — šačica redaka na MVP
+// skali, četiri skalarna stupca.
+async function gatherSchedule(now: Date) {
+  const [scheduled, active, archive] = await Promise.all([
+    prisma.election.aggregate({
+      where: { status: "SCHEDULED" },
+      _min: { startsAt: true },
+    }),
+    prisma.election.findMany({
+      where: { status: "ACTIVE" },
+      select: {
+        startsAt: true,
+        endsAt: true,
+        voterReminder24h: true,
+        autoReminderSentAt: true,
+      },
+    }),
+    prisma.archive.aggregate({
+      where: { prunedAt: null, expiresAt: { gt: now } },
+      _min: { expiresAt: true },
+    }),
+  ]);
+  return {
+    nextScheduledStart: scheduled._min.startsAt,
+    active,
+    nextArchiveExpiry: archive._min.expiresAt,
+  };
+}
+
 export async function POST(request: Request) {
   if (!authorized(request.headers.get("authorization"))) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Vrata metle: većina pingova završava ovdje, iz samog Redisa — Neon se ne
+  // budi jer se adapter spaja lijeno, a ovo je prije prvog Prisma poziva.
+  // 200 i za preskok, da cron-job.org bilježi uspjeh.
+  if (!(await sweepDue())) {
+    return NextResponse.json({ skipped: true });
   }
 
   const due = await prisma.election.findMany({
@@ -235,6 +278,18 @@ export async function POST(request: Request) {
     return null;
   });
 
+  // Ponovni izračun i spremanje roka. Pad ovdje ne smije prijaviti neuspjeh
+  // za već obavljene prolaze — bez spremanja ključa vrata ostaju otvorena i
+  // sljedeći ping opet mete (fail-open, D3 smjer).
+  const gateNow = new Date();
+  let nextDue: number | null = null;
+  try {
+    nextDue = computeSweepNextDue(await gatherSchedule(gateNow), gateNow);
+    await storeSweepNextDue(nextDue);
+  } catch (error) {
+    console.error("[cron] sweep gate store failed", { error });
+  }
+
   return NextResponse.json({
     activated: elections.length,
     closed,
@@ -244,5 +299,6 @@ export async function POST(request: Request) {
     reminders: reminded,
     turnout,
     archives: archives ?? { pruned: 0, kept: 0 },
+    nextDue,
   });
 }

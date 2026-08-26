@@ -17,6 +17,11 @@ vi.mock("@/lib/services/publication.service", () => ({
   getReminderTargets: vi.fn(),
   sendReminders: vi.fn(),
 }));
+// Vrata metle su vlastiti šav — Redis polovica ima svoje kolocirane testove;
+// ovdje samo ožičenje (uspjeh briše rok, odbijanje ne dira Redis).
+vi.mock("@/lib/services/sweep-gate", () => ({
+  clearSweepGate: vi.fn(),
+}));
 // archive.service is its own seam — the seal itself is covered by its colocated
 // tests; here only the wiring and the error mapping.
 vi.mock("@/lib/services/archive.service", async (importOriginal) => {
@@ -33,6 +38,7 @@ const { publishElection, getReminderTargets, sendReminders } = await import(
 const { sealElection, ArchiveError } = await import(
   "@/lib/services/archive.service"
 );
+const { clearSweepGate } = await import("@/lib/services/sweep-gate");
 const {
   startElection,
   renameElection,
@@ -71,6 +77,7 @@ beforeEach(() => {
   });
   vi.mocked(sendReminders).mockReset();
   vi.mocked(sendReminders).mockResolvedValue({ sent: 0, failed: 0 });
+  vi.mocked(clearSweepGate).mockReset().mockResolvedValue(undefined);
 });
 
 describe("startElection", () => {
@@ -110,6 +117,22 @@ describe("startElection", () => {
     const startsAt = (arg.data as { startsAt: Date }).startsAt.getTime();
     expect(startsAt).toBeGreaterThanOrEqual(before);
     expect(startsAt).toBeLessThanOrEqual(after);
+  });
+
+  it("uspješno pokretanje briše rok metle (sweep-gate D4)", async () => {
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
+
+    await startElection("el_1");
+
+    expect(clearSweepGate).toHaveBeenCalledTimes(1);
+  });
+
+  it("odbijanje (nema DRAFT retka) ne dira Redis", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(null);
+
+    await startElection("el_active");
+
+    expect(clearSweepGate).not.toHaveBeenCalled();
   });
 
   it("publishes invitations after the flip and reports the real numbers", async () => {

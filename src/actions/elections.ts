@@ -9,6 +9,7 @@ import {
   sendReminders,
 } from "@/lib/services/publication.service";
 import { deadlinePassed, mutationsFrozen } from "@/lib/services/token.service";
+import { clearSweepGate } from "@/lib/services/sweep-gate";
 import { deleteObject } from "@/lib/services/storage.service";
 
 // Election row-management mutations behind the dashboard three-dot menu.
@@ -189,6 +190,10 @@ export async function startElection(id: string): Promise<PublishActionResult> {
       data: { status: "ACTIVE", startsAt: new Date() },
     });
     if (count === 0) return { success: false, error: "invalidStatus" };
+
+    // Novi ACTIVE izbori nose nova buduća vremena (zatvaranje, podsjetnik) —
+    // obriši rok metle (sweep-gate D4). Nikad ne baca; guta greške.
+    await clearSweepGate();
   } catch {
     return { success: false, error: "failed" };
   }

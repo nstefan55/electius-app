@@ -13,12 +13,18 @@ vi.mock("@/lib/auth/require-session", () => ({
 vi.mock("@/lib/services/entitlement.service", () => ({
   resolveEntitlement: vi.fn(),
 }));
+// Vrata metle su vlastiti šav — Redis polovica ima svoje kolocirane testove;
+// ovdje samo ožičenje (zakazani unos briše rok, odbijanje ne dira Redis).
+vi.mock("@/lib/services/sweep-gate", () => ({
+  clearSweepGate: vi.fn(),
+}));
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
 const { resolveEntitlement } = await import(
   "@/lib/services/entitlement.service"
 );
+const { clearSweepGate } = await import("@/lib/services/sweep-gate");
 const { createElection } = await import("@/actions/create-election");
 
 const session = {
@@ -70,6 +76,7 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ id: "elc_1" } as never);
   vi.mocked(resolveEntitlement).mockReset().mockResolvedValue({ kind: "pro" });
+  vi.mocked(clearSweepGate).mockReset().mockResolvedValue(undefined);
 });
 
 describe("createElection", () => {
@@ -148,6 +155,42 @@ describe("createElection", () => {
       success: false,
       error: "failed",
     });
+  });
+});
+
+// Vrata metle (sweep-gate D4): novi zakazani startsAt može prethoditi
+// spremljenom roku — aktivacija je jedini prolaz s preciznošću na razini pinga.
+describe("createElection — vrata metle", () => {
+  const scheduled = {
+    ...basePayload,
+    startMode: "scheduled",
+    startAt: "2999-06-01T09:00",
+    closeAt: "2999-06-03T18:00",
+  };
+
+  it("uspješan zakazani unos briše rok metle", async () => {
+    const res = await createElection(scheduled);
+    expect(res.success).toBe(true);
+    expect(clearSweepGate).toHaveBeenCalledTimes(1);
+  });
+
+  it("ručni unos (DRAFT) ne dira Redis — nacrt ne pridonosi roku", async () => {
+    const res = await createElection(basePayload);
+    expect(res.success).toBe(true);
+    expect(clearSweepGate).not.toHaveBeenCalled();
+  });
+
+  it("odbijanje preko granice birača ne dira Redis", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+    const res = await createElection({
+      ...scheduled,
+      voters: Array.from({ length: 51 }, (_, i) => ({
+        name: `V ${i}`,
+        email: `v${i}@unizg.hr`,
+      })),
+    });
+    expect(res).toEqual({ success: false, error: "voterCap", cap: 50 });
+    expect(clearSweepGate).not.toHaveBeenCalled();
   });
 });
 
