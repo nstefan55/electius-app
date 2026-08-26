@@ -9,6 +9,7 @@ import {
   EyeOff,
   FileSearch,
   FileX2,
+  Mail,
   MessageSquareWarning,
   PanelsTopLeft,
   Play,
@@ -413,7 +414,7 @@ export default async function Home({
       ───────── kraj zakomentiranog odsjeka ───────── */}
 
       {/* ───────── 5 · Značajke ───────── */}
-      <section id="features" className={`bg-white py-24 ${ANCHOR}`}>
+      <section id="features" className={`bg-white py-20 ${ANCHOR}`}>
         <div className={CONTAINER}>
           <SectionHeader
             kicker={t("features.kicker")}
@@ -441,7 +442,7 @@ export default async function Home({
       </section>
 
       {/* ───────── 6 · Cijene ───────── */}
-      <section id="pricing" className={`bg-neutral-50 py-24 ${ANCHOR}`}>
+      {/* <section id="pricing" className={`bg-neutral-50 py-24 ${ANCHOR}`}>
         <div className={CONTAINER}>
           <SectionHeader
             kicker={t("pricing.kicker")}
@@ -453,10 +454,10 @@ export default async function Home({
           </p>
           <PricingPlans />
         </div>
-      </section>
+      </section> */}
 
       {/* ───────── 7 · Česta pitanja ───────── */}
-      <section id="faq" className={`bg-white py-24 ${ANCHOR}`}>
+      <section id="faq" className={`bg-white py-20 ${ANCHOR}`}>
         <div className="mx-auto max-w-220 px-6">
           <SectionHeader
             kicker={t("faq.kicker")}
@@ -467,7 +468,40 @@ export default async function Home({
         </div>
       </section>
 
-      {/* ───────── 8 · Završni CTA ───────── */}
+      {/* ───────── 8 · Kontakt ───────── */}
+      {/* ponytail: mailto CTA umjesto obrasca — ne postoji backend koji bi primao
+          poruke; pravi obrazac (server action + Resend) kad zatreba. Sidro #contact
+          živi ovdje, ne više na podnožju — navigacijski "Kontakt" vodi na odsjek. */}
+      <section id="contact" className={`bg-neutral-50 py-20 ${ANCHOR}`}>
+        <div className={CONTAINER}>
+          <SectionHeader
+            kicker={t("contact.kicker")}
+            title={t("contact.title")}
+            subtitle={t("contact.subtitle")}
+            className="mb-10"
+          />
+          <div className="mx-auto flex max-w-130 flex-col items-center rounded-lg border border-neutral-200 bg-white p-8 shadow-sm sm:p-10">
+            <span className="mb-5 inline-flex size-12 items-center justify-center rounded-lg bg-brand-50">
+              <Mail
+                className="size-6 text-brand-700"
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
+            </span>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="inline-flex h-12 items-center rounded-md bg-brand-700 px-7 font-heading text-base font-semibold text-white shadow-md hover:bg-brand-600"
+            >
+              {t("contact.cta")}
+            </a>
+            <span className="mt-4 text-sm text-neutral-600">
+              {CONTACT_EMAIL}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── 9 · Završni CTA ───────── */}
       <section
         id="cta"
         className={`relative overflow-hidden bg-brand-900 py-25 ${ANCHOR}`}
@@ -506,7 +540,7 @@ export default async function Home({
       </section>
 
       {/* ───────── 9 · Podnožje ───────── */}
-      <footer id="contact" className={`bg-[#142844] pt-16 pb-10 ${ANCHOR}`}>
+      <footer className="bg-[#142844] pt-16 pb-10">
         <div className={CONTAINER}>
           <div className="grid grid-cols-1 gap-10 border-b border-white/12 pb-11 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
             <div>

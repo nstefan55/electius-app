@@ -7,12 +7,9 @@ import { Menu, X } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { signInUrl, signUpUrl } from "@/lib/urls";
 
-// Bez prebacivača jezika: /profile English drži pod „Uskoro”, a sve odlazne poruke
-// još su samo na hrvatskom. Engleski ostaje dostupan na /en, ali ga ne oglašavamo
-// dok obje strane ne budu spremne (homepage-spec D2).
 const LINKS = [
   { href: "#how", key: "how" },
-  { href: "#pricing", key: "pricing" },
+  // { href: "#pricing", key: "pricing" },
   { href: "#contact", key: "contact" },
 ] as const;
 
@@ -20,7 +17,6 @@ export function LandingNav() {
   const t = useTranslations("marketing.nav");
   const [open, setOpen] = useState(false);
 
-  // Escape zatvara izbornik — <dialog> to dobiva besplatno, običan panel ne.
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
