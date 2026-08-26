@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 
 export function DashboardHeader({ organization }: { organization: string }) {
   const t = useTranslations("dashboard.page");
@@ -14,14 +15,16 @@ export function DashboardHeader({ organization }: { organization: string }) {
           {organization}
         </p>
       </div>
-      {/* ponytail: no-op until the creation wizard (/elections/new) lands. */}
-      <button
-        type="button"
-        className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5.5 text-base font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600 focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
-      >
-        <Plus className="size-5" />
-        {t("newElection")}
-      </button>
+
+      <Link href="/elections/new" className="ml-auto">
+        <button
+          type="button"
+          className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5.5 text-base font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600 focus-visible:ring-3 focus-visible:ring-ring/30 focus-visible:outline-none"
+        >
+          <Plus className="size-5" />
+          {t("newElection")}
+        </button>
+      </Link>
     </div>
   );
 }
