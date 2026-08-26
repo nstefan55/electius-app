@@ -1772,6 +1772,12 @@
         }
       ]
     },
+    "contact": {
+      "kicker": "Kontakt",
+      "title": "Imate pitanje? Javite nam se.",
+      "subtitle": "Odgovaramo na sva pitanja o postavljanju izbora, cijenama i sigurnosti.",
+      "cta": "Pošaljite nam e-poruku"
+    },
     "cta": {
       "title": "Neka glasovi vaše organizacije zaslužuju povjerenje.",
       "subtitle": "Postavite svoje prve izbore u nekoliko minuta. Bez konzultanta, bez ugovora za početak.",

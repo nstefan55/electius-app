@@ -1772,6 +1772,12 @@
         }
       ]
     },
+    "contact": {
+      "kicker": "Contact",
+      "title": "Have a question? Get in touch.",
+      "subtitle": "We answer every question about setting up an election, pricing and security.",
+      "cta": "Send us an email"
+    },
     "cta": {
       "title": "Keep your organization’s votes worthy of trust.",
       "subtitle": "Set up your first election in minutes. No consultant, no contract to start.",
