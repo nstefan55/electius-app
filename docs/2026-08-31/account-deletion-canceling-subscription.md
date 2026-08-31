@@ -1,6 +1,6 @@
 # Account Deletion with a Canceling Subscription — let them out
 
-**Branch:** `feature/account-deletion-canceling-subscription` · **Version:** 0.9.36 (patch, 0.9.x lock)
+**Branch:** `feature/account-deletion-canceling-subscription` · **Version:** 0.9.37 (patch, 0.9.x lock)
 **Spec:** `context/features/account-deletion-canceling-subscription-spec.md` (authority)
 **Date:** 2026-08-31 · **No migration, no schema change, no new dependency, no new route.**
 
