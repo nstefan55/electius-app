@@ -1,0 +1,111 @@
+name: CI
+
+# Launch subset of the pipeline design — docs/2026-08-30/ci-cd-pipeline.md (committed) and
+# context/ci-cd-pipeline/electius-ci-cd-pipeline-spec.md §4 (working spec, not in the repo).
+# Four gates on every push and PR, no stored secrets. Deploys are NOT here — Vercel's
+# Git integration deploys main (pull model); this workflow only decides whether
+# a commit is green. `npm run build` is deliberately absent: it needs
+# NEXT_PUBLIC_* and Vercel already builds every push.
+#
+# workflow_dispatch and the weekly schedule exist for secret-scan: on a manual or
+# scheduled run gitleaks scans the FULL history; on push it scans only the pushed range
+# with --first-parent, so a locally merged --no-ff branch is never scanned unless the
+# branch itself was pushed first. Rule: push the feature branch before `git merge --no-ff`;
+# the schedule is the structural backstop for the day the rule is forgotten.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"   # Mondays 03:17 UTC — full-history secret scan. Runs from the default branch only; may be delayed under load
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.ref }}   # event-aware: a push to main must never cancel the scheduled scan, or vice versa
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json   # reads engines.node — the ONE Node pin
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate            # lint + tsc need src/generated/prisma; exits 0 with no DB env
+      - run: npm run lint
+      - run: npm run typecheck              # tsc --noEmit — the class of error Vitest cannot see
+      - run: npm run test
+
+  migration-presence:
+    # Enforces "never db push" at source: a schema change must carry a migration.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: schema.prisma changed without a migration?
+        run: |
+          BASE="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ -z "$BASE" ] || echo "$BASE" | grep -Eq '^0+$'; then
+            echo "No base commit to diff against — skipping."; exit 0
+          fi
+          if ! git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            echo "Base $BASE is not in history (force-push?) — skipping."; exit 0
+          fi
+          CHANGED="$(git diff --name-only "$BASE" HEAD)"
+          if echo "$CHANGED" | grep -q '^prisma/schema.prisma$' \
+             && ! echo "$CHANGED" | grep -q '^prisma/migrations/'; then
+            echo "::error::prisma/schema.prisma changed but no migration was committed. Run 'prisma migrate dev' — never 'db push'."
+            exit 1
+          fi
+
+  secret-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read                   # private repo: v3 lists PR commits on pull_request events
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0                      # so commits[0]^ resolves; full history only on workflow_dispatch and schedule
+          persist-credentials: false
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_VERSION: "8.30.1"          # v3 defaults to 8.24.3, which silently ignores [[allowlists]]; this is the binary .gitleaks.toml was verified against
+          GITLEAKS_ENABLE_COMMENTS: "false"   # PR comments would need pull-requests: write; the exit code is the gate
+          # GITLEAKS_LICENSE: organisation accounts only — this is a personal account
+          # Known false positives are allowlisted in .gitleaks.toml at the repo root
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: package.json
+          cache: npm
+      - run: npm ci
+      # ponytail: continue-on-error until chore/dependency-updates lands — on 2026-08-30 this
+      # exits 1 with 12 high advisories (next 16.2.9 → 16.3.3 fixes 9 of them incl. a
+      # proxy/middleware bypass; postcss, sharp, undici, prisma→deepmerge-ts). The gate found
+      # them on day one; the fix is a framework bump that deserves its own branch and a full
+      # test/build/browser pass. Step-level, so the job stays green and the next step raises
+      # a warning annotation instead of training everyone to ignore a red X. Remove both
+      # steps' scaffolding the day the audit is green.
+      - id: audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+      - if: steps.audit.outcome == 'failure'
+        run: echo "::warning::npm audit reports high advisories — see the audit step; tracked for chore/dependency-updates"

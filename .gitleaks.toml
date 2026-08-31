@@ -1,0 +1,11 @@
+# Gitleaks allowlist — known false positives only. Extends the default ruleset.
+# Read by gitleaks/gitleaks-action in .github/workflows/ci.yml (auto-detected at the repo root).
+# [[allowlists]] needs gitleaks >= 8.25; the workflow pins GITLEAKS_VERSION accordingly.
+minVersion = "8.25.0"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Wizard option keys in step-settings.tsx — camelCase identifiers, not credentials (generic-api-key entropy false positive; fired on 0ec4aa0c, ae349285, a214b0f9)"
+regexes = ['''^(?:voterReminder24h|adminTurnoutReminder|liveResults|publicResults|quorum)$''']
