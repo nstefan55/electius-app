@@ -1,10 +1,36 @@
 import type { Metadata } from "next";
 import { Lock } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PublicResults } from "@/components/voter/public-results";
 import { StateHero } from "@/components/voter/voter-ui";
 import { getPublicResultsElection } from "@/lib/db/elections";
 import { resultsDetailAccess } from "@/lib/elections-view";
+
+// Zbroj zatvorenih izbora je nepromjenjiv: castVote traži ACTIVE, ništa ne vraća
+// izbore u ACTIVE, i resultsVisible piše samo createElection.
+//
+// Keširamo izlaz po PUTANJI, ne po ishodu — skriveni zaslon i objavljeni zbroj
+// keširaju se jednako. Kad bi se keširali samo objavljeni, HIT/MISS (ili Age, ili
+// samo vrijeme odgovora) postao bi potvrda o postojanju izbora, a §4 bi pao iako
+// je tijelo odgovora i dalje bajt po bajt isto. Zato mehanizam koji NE ZNA koja
+// je grana renderirala stranicu, a ne pravilo kojeg se netko mora sjetiti.
+//
+// TTL je proračun zakašnjenja, ne brzine: objavljeni izbori pri zatvaranju
+// prelaze sa skrivenog zaslona na zbroj, i ovo je najgori slučaj koliko to
+// kašnjenje traje. 1 h = SWEEP_GATE_TTL_SECONDS, isto pravilo: kasno ≤ TTL, nikad zauvijek.
+//
+// ponytail: pogođeni id-evi svaki stvore ~1 KB zapis skrivenog zaslona. Trošak
+// pohrane, ne curenje — platforma sama izbacuje; pravu granicu postavlja
+// ograničavanje zahtjeva na ovoj ruti (zasebna grana).
+export const revalidate = 3600;
+
+// Prazan popis, ali NUŽAN: bez generateStaticParams Next 16 rutu s dinamičkim
+// segmentom uopće ne uvodi u ISR i `revalidate` ostaje mrtvo slovo (dokazano
+// mjerenjem). Prazan znači "nijedan izbor se ne gradi unaprijed" — svaki se
+// kešira na prvi zahtjev.
+export function generateStaticParams(): { id: string }[] {
+  return [];
+}
 
 // Bez naslova i bez indeksiranja, na OBJE varijante zaslona.
 //
@@ -23,9 +49,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function PublicResultsPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
+  setRequestLocale(locale);
   const election = await getPublicResultsElection(id);
 
   // JEDAN odgovor na sva četiri odbijanja — nepostojeći id, resultsVisible=false,

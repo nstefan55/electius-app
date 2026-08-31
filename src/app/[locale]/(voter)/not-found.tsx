@@ -1,19 +1,21 @@
-import { getLocale, getTranslations } from "next-intl/server";
+"use client";
+import { useLocale, useTranslations } from "next-intl";
 import { NotFoundCard } from "@/components/ui/not-found-card";
 import { notFoundCopy } from "@/lib/not-found-copy";
 
-// Catches notFound() thrown inside (voter) — the resultsVisible gate on
-// /results/[id], a bad /vote/[token] — with the mobile voter chrome preserved
-// (404-page-redesign-spec). Homes to the apex marketing landing, same host as
-// every voter route, so a locale-prefixed root-relative href is enough. Shows
-// the voter note — every voter-surface 404 plausibly came from a magic link
-// or QR code. reason stays "generic" until the Voter Flow spec wires real
-// token verification (see 404-page-redesign-spec's "link-expired" section).
-export default async function VoterNotFound() {
-  const [t, locale] = await Promise.all([
-    getTranslations("notFound"),
-    getLocale(),
-  ]);
+// Hvata notFound() bačen unutar (voter) — loš /vote/[token] — uz očuvanu
+// mobilnu biračku odoru. Vodi na apex naslovnicu, isti host kao svaka biračka
+// ruta. Prikazuje biračku napomenu: svaki 404 na ovim zaslonima vjerojatno je
+// stigao s magične poveznice ili QR koda. reason ostaje "generic" dok Voter Flow
+// spec ne poveže stvarnu provjeru tokena.
+//
+// KLIJENTSKA komponenta iz istog razloga kao [locale]/not-found.tsx: granica
+// rute renderira se u stablu svake stranice ispod sebe, pa su
+// getLocale()/getTranslations() bez setRequestLocale ovdje čitali headers() i
+// činili cijelu (voter) grupu dinamičnom. Vidi komentar ondje.
+export default function VoterNotFound() {
+  const t = useTranslations("notFound");
+  const locale = useLocale();
   return (
     <div className="flex min-h-[40vh] items-center justify-center">
       <NotFoundCard
