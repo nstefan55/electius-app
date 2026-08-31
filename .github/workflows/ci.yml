@@ -97,15 +97,4 @@ jobs:
           node-version-file: package.json
           cache: npm
       - run: npm ci
-      # ponytail: continue-on-error until chore/dependency-updates lands — on 2026-08-30 this
-      # exits 1 with 12 high advisories (next 16.2.9 → 16.3.3 fixes 9 of them incl. a
-      # proxy/middleware bypass; postcss, sharp, undici, prisma→deepmerge-ts). The gate found
-      # them on day one; the fix is a framework bump that deserves its own branch and a full
-      # test/build/browser pass. Step-level, so the job stays green and the next step raises
-      # a warning annotation instead of training everyone to ignore a red X. Remove both
-      # steps' scaffolding the day the audit is green.
-      - id: audit
-        run: npm audit --audit-level=high
-        continue-on-error: true
-      - if: steps.audit.outcome == 'failure'
-        run: echo "::warning::npm audit reports high advisories — see the audit step; tracked for chore/dependency-updates"
+      - run: npm audit --audit-level=high
