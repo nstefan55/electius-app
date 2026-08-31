@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.33",
+  "version": "0.9.34",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,7 +14,8 @@
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:seed": "npx tsx prisma/seed.ts",
-    "db:cleanup-dev": "npx tsx scripts/cleanup-users.ts"
+    "db:cleanup-dev": "npx tsx scripts/cleanup-users.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -60,5 +61,8 @@
     "tsx": "^4.22.4",
     "typescript": "^5",
     "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
