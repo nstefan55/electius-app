@@ -1,5 +1,6 @@
 import "server-only";
 
+import { isCanceling } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
 import { deleteObject, keyFromUrl } from "@/lib/services/storage.service";
 
@@ -20,12 +21,97 @@ export class DeleteAccountError extends Error {
   }
 }
 
-/** Aktivna pretplata blokira brisanje — Stripe bi nastavio naplaćivati nepostojeći račun. */
-export function subscriptionBlocks(user: {
+/**
+ * Blokira li pretplata brisanje. Pitanje NIJE "postoji li pretplata" nego
+ * "hoće li se opet naplatiti" — pretplata koju je Stripe već dobio nalog da
+ * završi ne može naplatiti nepostojeći račun, pa nema što braniti.
+ */
+export function subscriptionBlocks(
+  user: { isPro: boolean; stripeSubscriptionId: string | null },
+  subscription: { cancelAtPeriodEnd: boolean | null; cancelAt: Date | null } | null,
+): boolean {
+  if (!user.isPro || !user.stripeSubscriptionId) return false;
+  // Redak koji nedostaje BLOKIRA: webhook još nije stigao ili je redak izgubljen.
+  // Ne znamo hoće li naplaćivati, pa pretpostavljamo da hoće — konzervativna
+  // strana je jedina ispravna u prozoru između povratka s Checkouta i webhooka.
+  if (!subscription) return true;
+  return !isCanceling(subscription);
+}
+
+export type DeletionGate =
+  | { kind: "open" }
+  | { kind: "blocked" }
+  | { kind: "ending"; endsAt: Date | null };
+
+/** Kartica dodaje peto stanje koje ne ovisi o pretplati (§5). */
+export type DeletionState = DeletionGate | { kind: "pending" };
+
+/**
+ * Jedini upit za stanje pretplate pri brisanju. Čitaju ga i kartica na
+ * /settings i ponovna provjera u purgeOrganizationData — jedna izvedenica,
+ * dva čitatelja, pa gumb i poslužitelj ne mogu tvrditi različito.
+ */
+export async function deletionGate(user: {
   isPro: boolean;
   stripeSubscriptionId: string | null;
-}): boolean {
-  return user.isPro && Boolean(user.stripeSubscriptionId);
+}): Promise<DeletionGate> {
+  if (!user.isPro || !user.stripeSubscriptionId) return { kind: "open" };
+
+  // Traži se po users.stripeSubscriptionId, NIKAD po referenceId uz
+  // periodEnd DESC. Ta dva upita znaju vratiti RAZLIČITE retke: otkazana
+  // godišnja (cancelAt za 11 mjeseci) uz novu mjesečnu (periodEnd za mjesec
+  // dana) daje po periodEnd DESC onu otkazanu, pa bi kartica nudila gumb koji
+  // poslužitelj odbija i poveznica iz e-pošte bi izgorjela na subscriptionActive.
+  // stripeSubscriptionId je pokazivač koji projectEntitlement piše iz najnovijeg
+  // događaja — on je istina.
+  const subscription = await prisma.subscription.findFirst({
+    where: { stripeSubscriptionId: user.stripeSubscriptionId },
+    select: { cancelAtPeriodEnd: true, cancelAt: true, periodEnd: true },
+  });
+
+  if (subscriptionBlocks(user, subscription)) return { kind: "blocked" };
+  // Kad je otkazano, mjerodavan je stvarni kraj, ne sljedeća obnova. Nullable:
+  // cancelAtPeriodEnd na retku bez periodEnd je teorijski, ali null mora
+  // ispisati rečenicu bez datuma, nikad pasti ni izmisliti datum.
+  return { kind: "ending", endsAt: subscription?.cancelAt ?? subscription?.periodEnd ?? null };
+}
+
+// BetterAuthov interni oblik, ne javni izvoz: node_modules/better-auth/dist/
+// api/routes/update-user.mjs:321 (upis) i :390 (potrošnja), provjereno na
+// better-auth 1.7.2.
+// ⚠ Preimenovanje u novoj verziji tiho gasi OBOJE: kartica nikad ne bi
+// pokazala "pending", a "Odustani od brisanja" bi javio uspjeh dok poveznica
+// iz e-pošte i dalje radi. Ponovi korak 6 žive provjere (§10) pri svakom
+// podizanju better-autha.
+export const DELETE_TOKEN_PREFIX = "delete-account-";
+
+/** Postoji li neistekli zahtjev za brisanje ovog korisnika. */
+export async function hasPendingDeletionRequest(userId: string): Promise<boolean> {
+  // value = userId je BetterAuthov upis (update-user.mjs:320); tuđi zahtjev
+  // ovdje nije neizreciv slučajno nego po konstrukciji — tablica nema strani
+  // ključ, pa je uvjet u WHERE jedino vlasništvo koje postoji.
+  const row = await prisma.verificationToken.findFirst({
+    where: {
+      value: userId,
+      identifier: { startsWith: DELETE_TOKEN_PREFIX },
+      expiresAt: { gt: new Date() },
+    },
+    select: { id: true },
+  });
+  return Boolean(row);
+}
+
+/** Povlači zahtjev: emitirana poveznica prestaje vrijediti. Vraća broj redaka. */
+export async function revokeDeletionRequests(userId: string): Promise<number> {
+  // Prefiks je ono što čuva reset-password:* retke (i oni imaju value = userId).
+  // Povlačenje zahtjeva za brisanje ne smije ubiti reset lozinke u tijeku.
+  // Istekli se NE filtriraju: pomesti mrtav token ne košta ništa.
+  // ponytail: value nije indeksiran, identifier jest. Tablica drži samo
+  // kratkotrajne OTP/reset/delete retke — sekvencijalni filtar je ovdje u redu.
+  const { count } = await prisma.verificationToken.deleteMany({
+    where: { value: userId, identifier: { startsWith: DELETE_TOKEN_PREFIX } },
+  });
+  return count;
 }
 
 // R2 ne sudjeluje u Postgresovoj transakciji, pa objekti idu nakon commita i
@@ -70,8 +156,10 @@ export async function purgeOrganizationData(userId: string): Promise<void> {
   if (!user) return;
 
   // Provjera se ponavlja i ovdje, ne samo u sučelju: između klika na "Obriši" i
-  // klika na poveznicu iz e-pošte prođe vrijeme u kojem se pretplata može aktivirati.
-  if (subscriptionBlocks(user)) {
+  // klika na poveznicu iz e-pošte prođe vrijeme u kojem se pretplata može
+  // aktivirati — ili otkazana pretplata ponovno pokrenuti u portalu. Kartica je
+  // objašnjenje, ova provjera je granica.
+  if ((await deletionGate(user)).kind === "blocked") {
     throw new DeleteAccountError("subscriptionActive");
   }
 

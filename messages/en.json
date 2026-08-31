@@ -67,7 +67,7 @@
       },
       "subscriptionActive": {
         "title": "Your subscription is still active",
-        "body": "Cancel your Pro subscription first — otherwise billing would continue for an account that no longer exists. Your account was not deleted."
+        "body": "Cancel your Pro subscription in the billing portal first. Once it is set to cancel, deletion is available immediately. Your account was not deleted."
       },
       "sharedOrganization": {
         "title": "Someone else still uses this organization",
@@ -1367,8 +1367,15 @@
         "subtitle": "Actions here affect your whole account.",
         "deleteLabel": "Delete account",
         "deleteDescription": "Permanently delete your account and all associated data",
-        "subscriptionBlocked": "Cancel your Pro subscription first — otherwise billing would continue for an account that no longer exists.",
+        "subscriptionBlocked": "Cancel your Pro subscription in the billing portal first. Once it is set to cancel, deletion is available immediately.",
+        "endingNote": "Your subscription ends on {date} — deleting your account forfeits the remaining time, with no refund.",
+        "endingNoteNoDate": "Your subscription is cancelled — deleting your account forfeits the remaining time, with no refund.",
         "manageBilling": "Manage billing",
+        "pendingTitle": "Deletion requested",
+        "pendingBody": "A confirmation link has been sent to your email and is valid for 24 hours from sending. Nothing is deleted until you click it.",
+        "cancelRequest": "Cancel deletion request",
+        "cancelRequested": "The deletion request has been withdrawn. The link from the email no longer works.",
+        "cancelRequestFailed": "We couldn't withdraw the request. Please try again.",
         "modalTitle": "Delete your account?",
         "modalBody": "This permanently erases your account, <b>{org}</b>, and every election, voter list, result and archive. Running elections are stopped. This cannot be undone.",
         "modalExport": "Consider a <a>data export</a> first.",

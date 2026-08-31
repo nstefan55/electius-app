@@ -5,7 +5,13 @@ import { Prisma } from "@/generated/prisma/client";
 // real modules (DB connection, next/headers, BetterAuth) never load. This is
 // the pattern for every action test: mock the two seams, assert on inputs.
 vi.mock("@/lib/prisma", () => ({
-  prisma: { user: { update: vi.fn() }, organization: { update: vi.fn() } },
+  prisma: {
+    user: { update: vi.fn(), findUnique: vi.fn() },
+    organization: { update: vi.fn() },
+    // cancelDeletionRequest namjerno NE mockira servis: prava
+    // revokeDeletionRequests trči nad ovim mockom, pa se WHERE može tvrditi.
+    verificationToken: { deleteMany: vi.fn() },
+  },
 }));
 vi.mock("@/lib/auth/require-session", () => ({
   requireSession: vi.fn(),
@@ -13,8 +19,16 @@ vi.mock("@/lib/auth/require-session", () => ({
 
 const { prisma } = await import("@/lib/prisma");
 const { requireSession } = await import("@/lib/auth/require-session");
-const { updateProfile, updateOrganization, setAccessibilityPref, setLocale } =
-  await import("@/actions/settings");
+const {
+  updateProfile,
+  updateOrganization,
+  setAccessibilityPref,
+  setLocale,
+  cancelDeletionRequest,
+} = await import("@/actions/settings");
+const { DELETE_TOKEN_PREFIX } = await import(
+  "@/lib/services/account-deletion.service"
+);
 
 const session = {
   user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
@@ -31,6 +45,8 @@ beforeEach(() => {
   vi.mocked(requireSession).mockResolvedValue(session);
   vi.mocked(prisma.user.update).mockReset();
   vi.mocked(prisma.organization.update).mockReset();
+  vi.mocked(prisma.user.findUnique).mockReset();
+  vi.mocked(prisma.verificationToken.deleteMany).mockReset();
 });
 
 describe("updateProfile", () => {
@@ -175,6 +191,60 @@ describe("setLocale", () => {
     vi.mocked(prisma.user.update).mockRejectedValue(new Error("db down"));
 
     expect(await setLocale({ locale: "hr" })).toEqual({
+      success: false,
+      error: "failed",
+    });
+  });
+});
+
+describe("cancelDeletionRequest", () => {
+  it("needs a session before it deletes anything", async () => {
+    // requireSession preusmjerava kad sesije nema — akcija ne smije stići do
+    // brisanja bez nje.
+    vi.mocked(requireSession).mockRejectedValue(new Error("NEXT_REDIRECT"));
+
+    await expect(cancelDeletionRequest()).rejects.toThrow("NEXT_REDIRECT");
+    expect(prisma.verificationToken.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("resolves the id from the session email, never from an argument", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "u_1" } as never);
+    vi.mocked(prisma.verificationToken.deleteMany).mockResolvedValue({
+      count: 1,
+    } as never);
+
+    // Akcija ne prima ulaz; id se izvodi iz sesije, pa tuđi zahtjev nije
+    // neizreciv zbog provjere nego zbog oblika.
+    const result = await cancelDeletionRequest();
+
+    expect(result).toEqual({ success: true });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({
+      where: { email: "admin@example.com" },
+      select: { id: true },
+    });
+  });
+
+  it("scopes the delete to that id and to delete-account rows only", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "u_1" } as never);
+    vi.mocked(prisma.verificationToken.deleteMany).mockResolvedValue({
+      count: 1,
+    } as never);
+
+    await cancelDeletionRequest();
+
+    const [args] = vi.mocked(prisma.verificationToken.deleteMany).mock.calls[0]!;
+    expect(args?.where?.value).toBe("u_1");
+    // Bez prefiksa bi povlačenje zahtjeva pobrisalo i reset lozinke u tijeku.
+    expect(args?.where?.identifier).toEqual({ startsWith: DELETE_TOKEN_PREFIX });
+  });
+
+  it("reports failure instead of throwing when the delete fails", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "u_1" } as never);
+    vi.mocked(prisma.verificationToken.deleteMany).mockRejectedValue(
+      new Error("db down"),
+    );
+
+    expect(await cancelDeletionRequest()).toEqual({
       success: false,
       error: "failed",
     });

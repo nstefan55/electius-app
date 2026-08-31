@@ -1,7 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { requireSession } from "@/lib/auth/require-session";
+import { isCanceling } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
-import { subscriptionBlocks } from "@/lib/services/account-deletion.service";
+import {
+  deletionGate,
+  hasPendingDeletionRequest,
+  type DeletionState,
+} from "@/lib/services/account-deletion.service";
 import { BILLING_ENABLED } from "@/lib/services/entitlement.service";
 import { DashboardFooter } from "@/components/dashboard/dashboard-footer";
 import { AccessibilityCard } from "@/components/settings/accessibility-card";
@@ -20,7 +25,7 @@ export default async function SettingsPage() {
   // jedan uzak upit umjesto širenja requireSession za jednu karticu.
   const billing = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { isPro: true, stripeSubscriptionId: true },
+    select: { id: true, isPro: true, stripeSubscriptionId: true },
   });
 
   // Pretplata je stupac koji održava webhook, ne poziv Stripeu po učitavanju
@@ -50,17 +55,14 @@ export default async function SettingsPage() {
           // stupac je predmemorija, a krivi datum obnove je gori od nikakvog.
           subscription: subscription?.periodEnd
             ? {
-                // Otkazivanje se čita iz OBA polja. Stripe za pretplatu u
-                // probnom razdoblju ne diže cancelAtPeriodEnd, nego postavlja
-                // cancelAt na kraj razdoblja — provjera samo booleana ostavlja
-                // otkazanu pretplatu da piše "prva naplata …", dakle poručuje
-                // naplatu koje neće biti. Uhvaćeno tek pravim prolazom kroz Stripe.
-                status:
-                  subscription.cancelAtPeriodEnd || subscription.cancelAt
-                    ? "canceling"
-                    : subscription.status === "trialing"
-                      ? "trialing"
-                      : "active",
+                // Ista izvedenica koju čitaju i vrata za brisanje: jantarni čip
+                // i gumb "Obriši račun" ne smiju tvrditi različito o tome
+                // završava li pretplata (invarijanta #5).
+                status: isCanceling(subscription)
+                  ? "canceling"
+                  : subscription.status === "trialing"
+                    ? "trialing"
+                    : "active",
                 // Kad je otkazano, mjerodavan je stvarni kraj, ne sljedeća obnova.
                 renewsAt: subscription.cancelAt ?? subscription.periodEnd,
                 cycle:
@@ -70,6 +72,22 @@ export default async function SettingsPage() {
             : null,
         }
       : { kind: "free" };
+
+  // "pending" nadjačava "blocked" namjerno: /delete-user (sam zahtjev) ne
+  // prolazi kroz vrata — to radi tek callback — pa zahtjev poslan dok je
+  // pretplata bila na otkazivanju preživi ponovno pokretanje u portalu.
+  // Kartica tada pokazuje što visi i nudi povlačenje; klik na poveznicu bi
+  // ionako izgorio na subscriptionActive.
+  // Paralelno, jer u uobičajenom slučaju (ništa ne visi) trebaju oba odgovora;
+  // deletionGate za korisnika bez pretplate ne radi nijedan upit.
+  const [pendingDeletion, gate] = billing
+    ? await Promise.all([
+        hasPendingDeletionRequest(billing.id),
+        deletionGate(billing),
+      ])
+    : [false, { kind: "open" } as const];
+
+  const deletion: DeletionState = pendingDeletion ? { kind: "pending" } : gate;
 
   return (
     <div className="mx-auto flex w-full max-w-[860px] flex-col gap-6">
@@ -93,9 +111,7 @@ export default async function SettingsPage() {
       <AccountManagementCard
         organizationName={session.user.organization}
         organizationId={session.organizationId}
-        subscriptionActive={
-          billing ? subscriptionBlocks(billing) : false
-        }
+        deletion={deletion}
       />
 
       <DashboardFooter />

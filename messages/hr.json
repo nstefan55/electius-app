@@ -67,7 +67,7 @@
       },
       "subscriptionActive": {
         "title": "Pretplata je još aktivna",
-        "body": "Prvo otkažite Pro pretplatu — inače bi naplata tekla za račun kojeg više nema. Račun nije obrisan."
+        "body": "Prvo otkažite Pro pretplatu u portalu za naplatu. Čim je postavljena na otkazivanje, brisanje je odmah moguće. Račun nije obrisan."
       },
       "sharedOrganization": {
         "title": "Organizaciju koristi još netko",
@@ -1367,8 +1367,15 @@
         "subtitle": "Radnje ovdje utječu na cijeli vaš račun.",
         "deleteLabel": "Obriši račun",
         "deleteDescription": "Trajno obrišite svoj račun i sve povezane podatke",
-        "subscriptionBlocked": "Prvo otkažite Pro pretplatu — inače bi naplata tekla za račun kojeg više nema.",
+        "subscriptionBlocked": "Prvo otkažite Pro pretplatu u portalu za naplatu. Čim je postavljena na otkazivanje, brisanje je odmah moguće.",
+        "endingNote": "Pretplata završava {date} — brisanjem računa gubite preostalo vrijeme, bez povrata.",
+        "endingNoteNoDate": "Pretplata je otkazana — brisanjem računa gubite preostalo vrijeme, bez povrata.",
         "manageBilling": "Upravljanje naplatom",
+        "pendingTitle": "Brisanje zatraženo",
+        "pendingBody": "Poveznica za potvrdu poslana je na vašu e-poštu i vrijedi 24 sata od slanja. Dok je ne kliknete, ništa se ne briše.",
+        "cancelRequest": "Odustani od brisanja",
+        "cancelRequested": "Zahtjev za brisanje je povučen. Poveznica iz e-pošte više ne vrijedi.",
+        "cancelRequestFailed": "Povlačenje zahtjeva nije uspjelo. Pokušajte ponovno.",
         "modalTitle": "Obrisati vaš račun?",
         "modalBody": "Ovime se trajno brišu vaš račun, <b>{org}</b> te svi izbori, popisi birača, rezultati i arhive. Izbori koji su u tijeku se zaustavljaju. Ovo se ne može poništiti.",
         "modalExport": "Razmislite o <a>izvozu podataka</a> prije brisanja.",
