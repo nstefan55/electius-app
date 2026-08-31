@@ -17,6 +17,13 @@ model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
+  // BetterAuth 1.7.2 traži ovo polje i pri PISANJU i pri ČITANJU računa:
+  // prijava traži account s providerId + accountId + issuer === "local:credential"
+  // (sign-in.mjs:320). Bez stupca je vrijednost undefined na svakom retku, pa
+  // usporedba nikad ne prolazi — prijava vraća 401 "User not found" bez ijedne
+  // greške u logu, a registracija puca na Prismin "Unknown argument `issuer`".
+  // Lokalni davatelji: "local:<providerId>"; OAuth: "local:oauth:<providerId>".
+  issuer                String
   userId                String
   accessToken           String?   @db.Text
   refreshToken          String?   @db.Text
