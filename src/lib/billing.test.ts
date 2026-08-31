@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { isProStatus, PRO_PLAN_NAME, proPlan, requiredPriceId } from "@/lib/billing";
+import {
+  isCanceling,
+  isProStatus,
+  PRO_PLAN_NAME,
+  proPlan,
+  requiredPriceId,
+} from "@/lib/billing";
 
 // billing.ts čita process.env u trenutku poziva, ne pri importu, pa je vi.stubEnv
 // dovoljan — vi.resetModules() + dinamički import (obrazac iz urls.test.ts) ovdje
@@ -92,5 +98,31 @@ describe("isProStatus", () => {
     expect(isProStatus("something_new")).toBe(false);
     expect(isProStatus("")).toBe(false);
     expect(isProStatus("ACTIVE")).toBe(false);
+  });
+});
+
+describe("isCanceling", () => {
+  const ENDS = new Date("2026-09-04T10:00:00Z");
+
+  it("says no while the subscription will bill again", () => {
+    expect(isCanceling({ cancelAtPeriodEnd: false, cancelAt: null })).toBe(false);
+    // Redak koji webhook još nije popunio — null nije "otkazano".
+    expect(isCanceling({ cancelAtPeriodEnd: null, cancelAt: null })).toBe(false);
+  });
+
+  it("says yes on cancelAtPeriodEnd alone", () => {
+    expect(isCanceling({ cancelAtPeriodEnd: true, cancelAt: null })).toBe(true);
+  });
+
+  it("cancelAt only → true", () => {
+    // Oblik probnog razdoblja: Stripe NE diže cancelAtPeriodEnd nego postavlja
+    // cancelAt. Provjera samo booleana proglašava otkazano probno razdoblje
+    // aktivnim i zaključava brisanje računa do kraja probnog razdoblja.
+    expect(isCanceling({ cancelAtPeriodEnd: false, cancelAt: ENDS })).toBe(true);
+    expect(isCanceling({ cancelAtPeriodEnd: null, cancelAt: ENDS })).toBe(true);
+  });
+
+  it("says yes when both are set (plaćeni plan, 2026-08-21)", () => {
+    expect(isCanceling({ cancelAtPeriodEnd: true, cancelAt: ENDS })).toBe(true);
   });
 });

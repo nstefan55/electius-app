@@ -5,6 +5,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { ACCESSIBILITY_KEYS } from "@/lib/accessibility";
+import { revokeDeletionRequests } from "@/lib/services/account-deletion.service";
 import { LOCALES } from "@/i18n/config";
 
 // Settings mutations (profile-settings phase 1). requireSession() first, then
@@ -78,6 +79,28 @@ export async function setLocale(input: unknown): Promise<ActionResult> {
       where: { email: session.user.email },
       data: { locale: parsed.data.locale },
     });
+    return { success: true };
+  } catch {
+    return { success: false, error: "failed" };
+  }
+}
+
+// Povlačenje zahtjeva za brisanje. Do sada se predomisliti značilo ne kliknuti
+// poveznicu i čekati 24 sata — ništa na /settings nije ni pokazivalo da nešto
+// visi. Bez ulaza, dakle bez zoda; bez ograničenja brzine, jer je iza sesije i
+// ne uništava ništa osim korisnikove vlastite poveznice.
+export async function cancelDeletionRequest(): Promise<ActionResult> {
+  const session = await requireSession();
+  try {
+    // Sesija nosi e-poštu, ne id, a BetterAuthov token je vezan uz id — isti
+    // upit u jednom koraku kao ruta za avatar.
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+    if (!user) return { success: false, error: "failed" };
+
+    await revokeDeletionRequests(user.id);
     return { success: true };
   } catch {
     return { success: false, error: "failed" };

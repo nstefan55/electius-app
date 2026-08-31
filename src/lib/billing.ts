@@ -47,3 +47,15 @@ const PRO_STATUSES = new Set(["active", "trialing", "past_due"]);
 export function isProStatus(status: string): boolean {
   return PRO_STATUSES.has(status);
 }
+
+// Pretplata koju je Stripe već dobio nalog da završi. OBA polja, jer Stripe za
+// pretplatu u probnom razdoblju ne diže cancelAtPeriodEnd nego postavlja
+// cancelAt na kraj razdoblja (utvrđeno pravim prolazom 2026-08-06) — provjera
+// samo booleana proglašava otkazano probno razdoblje aktivnim.
+// Druga interpretacija Stripeova stanja u ovoj datoteci, uz isProStatus.
+export function isCanceling(sub: {
+  cancelAtPeriodEnd: boolean | null;
+  cancelAt: Date | null;
+}): boolean {
+  return Boolean(sub.cancelAtPeriodEnd || sub.cancelAt);
+}

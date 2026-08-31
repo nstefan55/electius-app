@@ -1,11 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useState, useTransition } from "react";
+import { useRouter } from "@/i18n/navigation";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import toast from "react-hot-toast";
 import { Dialog } from "@base-ui/react/dialog";
 import { CreditCard, Trash2 } from "lucide-react";
+import { cancelDeletionRequest } from "@/actions/settings";
 import { authClient } from "@/lib/auth/client";
+// import type: briše se pri prevođenju, pa server-only iz servisa nikad ne opali.
+import type { DeletionState } from "@/lib/services/account-deletion.service";
 import { SettingsCard } from "@/components/settings/settings-card";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -23,17 +27,53 @@ const CONFIRM_WORD = "DELETE";
 export function AccountManagementCard({
   organizationName,
   organizationId,
-  subscriptionActive,
+  deletion,
 }: {
   organizationName: string;
   organizationId: string;
-  subscriptionActive: boolean;
+  deletion: DeletionState;
 }) {
   const t = useTranslations("dashboard.settings.account");
   const tBilling = useTranslations("dashboard.settings.billing");
+  const format = useFormatter();
   const locale = useLocale();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [portalPending, setPortalPending] = useState(false);
+  const [cancelling, startCancelling] = useTransition();
+
+  const pending = deletion.kind === "pending";
+
+  // Rečenica o posljedici stoji i na kartici i u modalu — posljedica se navodi
+  // ondje gdje se odluka donosi, ne samo ondje gdje se nudi.
+  // UTC: datum mora biti isti na poslužitelju i u pregledniku (hidracija).
+  const endingNote =
+    deletion.kind === "ending"
+      ? deletion.endsAt
+        ? t("endingNote", {
+            date: format.dateTime(deletion.endsAt, {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              timeZone: "UTC",
+            }),
+          })
+        : t("endingNoteNoDate")
+      : null;
+
+  function cancelRequest() {
+    startCancelling(async () => {
+      const res = await cancelDeletionRequest().catch(() => ({ success: false }));
+      if (!res.success) {
+        toast.error(t("cancelRequestFailed"));
+        return;
+      }
+      toast.success(t("cancelRequested"), { duration: 8000 });
+      // Stanje "pending" izvodi poslužitelj, pa se kartica mijenja tek nakon
+      // ponovnog dohvata — bez ovoga bi gumb ostao stajati nad povučenim zahtjevom.
+      router.refresh();
+    });
+  }
 
   // Otkazivanje se dovršava u Stripe portalu — jedino što odblokira brisanje.
   async function manageBilling() {
@@ -58,13 +98,26 @@ export function AccountManagementCard({
       bodyClassName="flex items-center justify-between gap-4 px-6 py-5"
     >
       <div className="min-w-0">
-        <div className="text-sm font-medium text-neutral-800">{t("deleteLabel")}</div>
+        <div className="text-sm font-medium text-neutral-800">
+          {pending ? t("pendingTitle") : t("deleteLabel")}
+        </div>
         <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
-          {t("deleteDescription")}
+          {pending ? t("pendingBody") : t("deleteDescription")}
         </div>
       </div>
 
-      {subscriptionActive ? (
+      {pending ? (
+        // Jedan zahtjev odjednom: za novi treba prvo povući ovaj ili pričekati
+        // istek. Povlačenje je sigurna radnja, pa sekundarni gumb.
+        <button
+          type="button"
+          onClick={cancelRequest}
+          disabled={cancelling}
+          className="inline-flex h-10 shrink-0 cursor-pointer items-center justify-center rounded-md border-[1.5px] border-brand-700 bg-white px-4 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {t("cancelRequest")}
+        </button>
+      ) : deletion.kind === "blocked" ? (
         // Blokada se provjerava i na poslužitelju (beforeDelete) — ovo je samo
         // objašnjenje, ne zaštita.
         <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -82,19 +135,27 @@ export function AccountManagementCard({
           </button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="h-10 shrink-0 cursor-pointer rounded-md bg-error-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-error-500"
-        >
-          {t("deleteLabel")}
-        </button>
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          {endingNote && (
+            <p className="max-w-64 text-right text-[0.8125rem] text-neutral-600">
+              {endingNote}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="h-10 cursor-pointer rounded-md bg-error-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-error-500"
+          >
+            {t("deleteLabel")}
+          </button>
+        </div>
       )}
 
       <DeleteAccountDialog
         open={open}
         onOpenChange={setOpen}
         organizationName={organizationName}
+        endingNote={endingNote}
       />
     </SettingsCard>
   );
@@ -104,10 +165,12 @@ function DeleteAccountDialog({
   open,
   onOpenChange,
   organizationName,
+  endingNote,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   organizationName: string;
+  endingNote: string | null;
 }) {
   const t = useTranslations("dashboard.settings.account");
   const locale = useLocale();
@@ -159,6 +222,13 @@ function DeleteAccountDialog({
                   ),
                 })}
               </Dialog.Description>
+              {endingNote && (
+                // Ista rečenica kao na kartici: gubitak preostalog razdoblja
+                // treba stajati ondje gdje se pritišće "Obriši trajno".
+                <p className="mt-2 text-sm leading-relaxed text-warning-700">
+                  {endingNote}
+                </p>
+              )}
               <p className="mt-2 text-[0.8125rem] leading-relaxed text-neutral-600">
                 {/* Ista ruta koju nudi kartica izvoza — brisanje je zadnji
                     trenutak da administrator uzme svoje podatke. */}
