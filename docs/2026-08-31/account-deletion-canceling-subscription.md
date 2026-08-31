@@ -154,6 +154,11 @@ The constant carries a comment naming the file, lines and version it was verifie
 > The spec cited **1.6.26**. The installed version is **1.7.2** — re-read and re-verified during this
 > feature; the prefix is unchanged, and step 6 passed on 1.7.2. The comment says 1.7.2.
 
+⚠ **`better-auth-schema.test.ts` does not cover this.** That contract test (added by the issuer fix,
+§7) compares *model fields* against `@better-auth/core/db`. `DELETE_TOKEN_PREFIX` is a **string
+literal inside a function body** — no schema declares it, so no schema test can catch a rename. The
+manual step-6 re-run stays the only check.
+
 ---
 
 ## 5. Live verification — 12 steps, all pass
@@ -202,22 +207,33 @@ Recorded in `future-updates-spec.md` (Profile & Settings → Account deletion), 
 
 ---
 
-## 7. ⚠ Unrelated blocker found during verification — L3
+## 7. Unrelated blocker found during verification — L3, **since fixed**
 
-**Email/password sign-in is broken on `main`.** Google OAuth is unaffected. It is **not** caused by
+> **Resolved before this branch merged.** `fix/better-auth-issuer-column` shipped the column,
+> migration `20260831124324_add_account_issuer` and the backfill, and landed on `main` as `3bc0bd1`
+> (merge `6579de5`). It also added `src/lib/auth/better-auth-schema.test.ts` — a contract test
+> between `schema.prisma` and `@better-auth/core/db`, so the next silently-added required field
+> fails a named test instead of a login. The account below is kept as the diagnosis, because the
+> *failure mode* is the reusable part.
+
+**Email/password sign-in was broken on `main`.** Google OAuth was unaffected. It was **not** caused by
 this feature, which touches no auth code.
 
 `fb43c1a` (the npm-audit fix) bumped **better-auth 1.6.26 → 1.7.2**. 1.7.2's sign-in handler selects
 the credential account on three conditions including **`account.issuer === "local:credential"`** —
-and the `Account` model has **no `issuer` column** (confirmed in `schema.prisma` and the live
-`information_schema`). The field is `undefined` on every row, the match never succeeds, and a correct
-password against a valid scrypt hash returns 401 `"User not found"`.
+and the `Account` model had **no `issuer` column** (confirmed in `schema.prisma` and the live
+`information_schema`). The field was `undefined` on every row, the match never succeeded, and a
+correct password against a valid scrypt hash returned 401 `"User not found"`.
 
-It fails as a **JS-side filter**, not a Prisma error, so there is no 500 and nothing in the logs but
-an ordinary 401 — which is why it reads as "the seeded password drifted".
+It failed as a **JS-side filter**, not a Prisma error, so there was no 500 and nothing in the logs but
+an ordinary 401 — which is why it read as "the seeded password drifted". Lint, types, tests and
+`next build` were all green throughout. **That is the lesson worth keeping: a dependency bump can add
+a required field and break a runtime path with no signal in any gate we run.**
 
-Full trace and fix sketch: `future-updates-spec.md` → **Auth → L3**. Fix belongs on
-`fix/better-auth-issuer-column` (column + migration + backfill).
+Consequence for this feature's live run: the session in §5 could not sign in normally, so the
+throwaway admin's session was minted directly (a real `sessions` row plus a correctly signed cookie).
+Only *sign-in* was bypassed — `requireSession()` validated normally at every step, so the gate
+evidence stands.
 
 ---
 
