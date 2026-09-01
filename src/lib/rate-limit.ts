@@ -70,6 +70,15 @@ const limiters = (() => {
     // zaključati drugog administratora. WEBHOOK NIJE OVDJE I NE SMIJE BITI:
     // 429 prema Stripeu je izgubljen upis prava.
     subscription: make(redis, "subscription", 10, "15 m"),
+    // Izvozi i učitavanja slika (production-readiness Gate 9). Sesijom zaštićeni,
+    // ali neograničeni: jedan zahtjev za popisom birača izbaci sve adrese
+    // organizacije, a svako prihvaćeno učitavanje je R2 PUT (novac + rast objekata
+    // bez granice; validacija kapira 2 MB po zahtjevu, ne po minuti). Ključ je
+    // korisnik (e-pošta), ne IP — dijeljeni IP fakulteta ne smije zaključati
+    // drugog administratora. Logo i avatar dijele jedan prozor (isti pisac).
+    rosterExport: make(redis, "roster-export", 10, "15 m"),
+    resultsExport: make(redis, "results-export", 10, "15 m"),
+    imageUpload: make(redis, "image-upload", 20, "15 m"),
   };
 })();
 
