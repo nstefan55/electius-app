@@ -38,6 +38,7 @@ export type EmailType =
   | "otp"
   | "reset"
   | "delete-account"
+  | "password-changed"
   | "invite"
   | "reminder"
   | "turnout";
@@ -54,6 +55,7 @@ const TEMPLATE: Record<EmailType, string> = {
   otp: "otp",
   reset: "reset",
   "delete-account": "delete-account",
+  "password-changed": "password-changed",
   invite: "voter-invite",
   reminder: "voter-reminder",
   turnout: "admin-turnout",
@@ -278,6 +280,19 @@ export async function sendDeleteAccountEmail(
   locale: Locale,
 ) {
   await sendActionLinkEmail(to, url, "delete-account", locale);
+}
+
+// Obavijest da je lozinka promijenjena — reset ILI promjena iz postavki
+// (production-readiness Layer 4). Sigurnosna obavijest, ne radnja: bez
+// poveznice i bez varijabli (predložak je statičan, "niste vi?" upućuje na
+// contact@electius.com). Bez ključa idempotentnosti — svaka promjena je zaseban
+// događaj. Pozivatelj hvata i guta pogrešku: obavijest je najbolji-napor, a
+// lozinka je već promijenjena, pa neuspjelo slanje ne smije srušiti operaciju.
+export async function sendPasswordChangedEmail(to: string, locale: Locale) {
+  await send(
+    { to, template: { id: templateId("password-changed", locale), variables: {} } },
+    { type: "password-changed" },
+  );
 }
 
 // ───────── Voter invitations (election-publication-spec §3) ─────────

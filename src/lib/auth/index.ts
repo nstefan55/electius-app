@@ -27,6 +27,7 @@ import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import {
   sendDeleteAccountEmail,
   sendOtpEmail,
+  sendPasswordChangedEmail,
   sendResetPasswordEmail,
 } from "@/lib/services/email.service";
 import {
@@ -165,6 +166,19 @@ export const auth = betterAuth({
     sendResetPassword: async ({ user, url }) => {
       await sendResetPasswordEmail(user.email, url, await localeForEmail(user.email));
     },
+    // Sigurnosna obavijest nakon uspješnog resetiranja (production-readiness
+    // Layer 4). Puca NAKON promjene, s punim `user`, pa je adresa čista (za
+    // razliku od kuka koje na reset-stazi nemaju sesiju). Najbolji-napor: reset
+    // je već uspio, pa neuspjelo slanje obavijesti ne smije srušiti reset.
+    // Promjenu iz postavki (/change-password) hvata hooks.after niže — ondje
+    // adresa dolazi iz sesije, jer onPasswordReset ne pokriva tu stazu.
+    onPasswordReset: async ({ user }) => {
+      try {
+        await sendPasswordChangedEmail(user.email, await localeForEmail(user.email));
+      } catch (e) {
+        console.error("[auth] password-changed notice (reset) failed", e);
+      }
+    },
     // New passwords use BetterAuth's scrypt default (memory-hard vs bcrypt,
     // per-password random salt embedded in its `salt:key` format) by leaving
     // `hash` unset. Verify falls back to bcrypt for legacy seeded accounts
@@ -271,6 +285,27 @@ export const auth = betterAuth({
           },
           { "Retry-After": String(seconds) },
         );
+      }
+    }),
+    // Sigurnosna obavijest nakon promjene lozinke iz postavki (Layer 4). Reset
+    // pokriva onPasswordReset; ovo je druga staza — /change-password nema svoj
+    // callback. Adresa dolazi iz sesije (ruta traži prijavu).
+    //
+    // Kuka se pokreće i kad je operacija PALA (ctx.context.returned je tada
+    // APIError, dispatch je pokreće bez obzira na ishod): kriva trenutna lozinka
+    // baca INVALID_PASSWORD prije promjene, pa se `instanceof Error` preskače i
+    // obavijest ne odlazi na neuspjeli pokušaj. Najbolji-napor: promjena je već
+    // upisana, pa neuspjelo slanje ne smije srušiti odgovor.
+    after: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/change-password") return;
+      if (ctx.context.returned instanceof Error) return;
+      try {
+        const session = await getSessionFromCtx(ctx).catch(() => null);
+        const email = session?.user?.email;
+        if (!email) return;
+        await sendPasswordChangedEmail(email, await localeForEmail(email));
+      } catch (e) {
+        console.error("[auth] password-changed notice (change) failed", e);
       }
     }),
   },
