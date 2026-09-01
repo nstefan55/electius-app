@@ -37,6 +37,13 @@
     },
     "footerTagline": "Electius — secure elections for organizations"
   },
+  "error": {
+    "badge": "Error",
+    "title": "Something went wrong",
+    "description": "An unexpected error occurred. Try again — if it keeps happening, refresh the page or come back later. Your elections and votes are unaffected.",
+    "tryAgain": "Try again",
+    "home": "Go to homepage"
+  },
   "auth": {
     "footer": {
       "privacy": "Privacy policy",

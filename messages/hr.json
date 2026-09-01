@@ -37,6 +37,13 @@
     },
     "footerTagline": "Electius — sigurni izbori za organizacije"
   },
+  "error": {
+    "badge": "Greška",
+    "title": "Nešto je pošlo po zlu",
+    "description": "Došlo je do neočekivane pogreške. Pokušajte ponovno — ako se problem nastavi, osvježite stranicu ili se vratite kasnije. Vaši izbori i glasovi nisu pogođeni.",
+    "tryAgain": "Pokušaj ponovno",
+    "home": "Idi na početnu"
+  },
   "auth": {
     "footer": {
       "privacy": "Pravila privatnosti",
