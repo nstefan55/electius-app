@@ -1,5 +1,6 @@
 import { requireSession } from "@/lib/auth/require-session";
 import { getElectionDetail, getElectionResults } from "@/lib/db/elections";
+import { checkRateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 import { resultsDetailAccess } from "@/lib/elections-view";
 import { csvFilename, csvResponse, delimiterFor } from "@/lib/csv";
 import { resolveExportLocale } from "@/lib/voter-export";
@@ -14,6 +15,19 @@ export async function GET(
 ) {
   // Ista zaštita kao svaka admin površina.
   const { user, organizationId } = await requireSession();
+
+  // Ključ je račun, ne IP (Gate 9).
+  const limit = await checkRateLimit("resultsExport", user.email);
+  if (!limit.success) {
+    return Response.json(
+      { code: "RATE_LIMITED" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSeconds(limit.reset)) },
+      },
+    );
+  }
+
   const { id } = await params;
 
   // Isti cache()-omotani upiti koje čita i stranica rezultata.

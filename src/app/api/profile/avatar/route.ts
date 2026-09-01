@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { clearImage, storeImage } from "@/lib/services/image-upload.service";
+import { checkRateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
 // Avatar administratorova računa — piše User.image, stupac koji je dosad držao
 // samo Googleov URL iz OAuth-a i nije imao svog pisca.
@@ -27,6 +28,19 @@ async function currentUser(email: string) {
 
 export async function POST(request: Request) {
   const { user } = await requireSession();
+
+  // Ključ je račun, ne IP (Gate 9): prihvaćeno učitavanje je R2 PUT. Dijeli
+  // prozor imageUpload s logotipom organizacije.
+  const limit = await checkRateLimit("imageUpload", user.email);
+  if (!limit.success) {
+    return Response.json(
+      { code: "RATE_LIMITED" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSeconds(limit.reset)) },
+      },
+    );
+  }
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");

@@ -1,6 +1,7 @@
 import { requireSession } from "@/lib/auth/require-session";
 import { prisma } from "@/lib/prisma";
 import { clearImage, storeImage } from "@/lib/services/image-upload.service";
+import { checkRateLimit, retryAfterSeconds } from "@/lib/rate-limit";
 
 // Logotip organizacije. Route handler jer multipart tijelo i statusni kodovi
 // ne idu kroz server akciju.
@@ -11,7 +12,20 @@ import { clearImage, storeImage } from "@/lib/services/image-upload.service";
 // takav parametar bi vratio korisnikov unos u odluku o tome što se piše.
 
 export async function POST(request: Request) {
-  const { organizationId } = await requireSession();
+  const { user, organizationId } = await requireSession();
+
+  // Ključ je račun, ne IP (Gate 9): prihvaćeno učitavanje je R2 PUT. Logo i
+  // avatar dijele isti prozor (imageUpload) — isti korisnik, isti pisac slika.
+  const limit = await checkRateLimit("imageUpload", user.email);
+  if (!limit.success) {
+    return Response.json(
+      { code: "RATE_LIMITED" },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSeconds(limit.reset)) },
+      },
+    );
+  }
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
