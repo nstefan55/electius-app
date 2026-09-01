@@ -19,6 +19,7 @@ const {
   sendDeleteAccountEmail,
   sendInvitationEmails,
   sendOtpEmail,
+  sendPasswordChangedEmail,
   sendReminderEmails,
   sendResetPasswordEmail,
   sendTurnoutEmails,
@@ -388,6 +389,33 @@ describe("sendOtpEmail", () => {
     await expect(sendOtpEmail("a@example.com", "111111", "hr")).rejects.toThrow(
       "resend: boom",
     );
+  });
+});
+
+describe("sendPasswordChangedEmail", () => {
+  it("selects the locale template and carries no link (a notice, not an action)", async () => {
+    await sendPasswordChangedEmail("a@example.com", "hr");
+    expect(templateOf(emailSend.mock.calls[0][0]).id).toBe(
+      "electius-password-changed-hr",
+    );
+
+    await sendPasswordChangedEmail("b@example.com", "en");
+    expect(templateOf(emailSend.mock.calls[1][0]).id).toBe(
+      "electius-password-changed-en",
+    );
+
+    // Sigurnosna obavijest: bez varijabli, pa ni poveznica ni token nisu izrazivi.
+    const payload = emailSend.mock.calls[0][0];
+    expect(templateOf(payload).variables).toEqual({});
+    expect(payload.to).toBe("a@example.com");
+    // Bez ključa idempotentnosti — svaka promjena je zaseban događaj.
+    expect(keyOf(emailSend.mock.calls[0])).toBeUndefined();
+  });
+
+  it("tags the send as password-changed with no election id", async () => {
+    await sendPasswordChangedEmail("a@example.com", "hr");
+    const tags = (emailSend.mock.calls[0][0] as { tags: { name: string; value: string }[] }).tags;
+    expect(tags).toEqual([{ name: "type", value: "password-changed" }]);
   });
 });
 
