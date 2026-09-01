@@ -6,11 +6,12 @@ import type { RateLimitAction } from "@/lib/rate-limit";
 // `withEmail` folds the target email into the key — tighter per-account
 // limits, and one shared IP (campus NAT) can't exhaust everyone's attempts.
 //
-// /sign-up/email is listed even though registration normally goes through our
-// own /api/auth/register route (which rate-limits itself — its server-side
-// signUpEmail call carries no client IP for this hook to read): the native
-// path is directly POST-able under the catch-all, so without its own rule a
-// scripted client bypasses the 3/h register limit entirely (2026-07-21 audit,
+// /sign-up/email is THE limiter for registration. Our /api/auth/register route
+// forwards request headers into its server-side signUpEmail call, so this hook
+// reads the real IP for both entry paths — the route no longer limits itself
+// (a second limiter on the same IP-key would double-count and halve the quota).
+// The native path is also directly POST-able under the catch-all, so this rule
+// is what stops a scripted client bypassing the 3/h limit (2026-07-21 audit,
 // HIGH). /change-password shares the resetPassword window — session-gated,
 // but throttles wrong-current-password guessing on a hijacked session (audit,
 // LOW).

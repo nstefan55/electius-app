@@ -2,7 +2,6 @@ import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
 import * as z from "zod";
 import { auth, emailVerificationEnabled } from "@/lib/auth";
-import { checkRateLimit, clientIp, retryAfterSeconds } from "@/lib/rate-limit";
 import { routing } from "@/i18n/routing";
 
 // Length caps only — email format and password policy (8–128) are BetterAuth's
@@ -25,23 +24,10 @@ const registerSchema = z.object({
 // lands the verified (and auto-signed-in) user on /{locale}/setup. The only
 // check BetterAuth doesn't do is the confirmPassword match, added here.
 export async function POST(request: NextRequest) {
-  // Rate limit BEFORE parsing — registration is email-sending, keyed by IP
-  // only (rate-limiting-spec: 3/h). The BetterAuth paths get the same
-  // treatment via the hook in lib/auth; this route limits itself because its
-  // server-side signUpEmail call carries no client IP for that hook to read.
-  const limit = await checkRateLimit("register", clientIp(request.headers));
-  if (!limit.success) {
-    const seconds = retryAfterSeconds(limit.reset);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "rate_limited",
-        message: `Too many attempts. Please try again in ${Math.ceil(seconds / 60)} minutes.`,
-      },
-      { status: 429, headers: { "Retry-After": String(seconds) } },
-    );
-  }
-
+  // Ograničenje stope se NE radi ovdje. signUpEmail dolje prima `headers`, pa
+  // hook u lib/auth vidi pravi IP i primjenjuje pravilo `/sign-up/email` (akcija
+  // "register", 3/h) — isto pravilo koje pokriva i izravni POST na /sign-up/email.
+  // Vlastiti limiter ovdje bi dvaput trošio isti IP-ključ i prepolovio kvotu.
   let body: unknown;
   try {
     body = await request.json();
@@ -71,6 +57,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const { headers, response } = await auth.api.signUpEmail({
+      // Prosljeđivanje zahtjevnih zaglavlja je NUŽNO: bez njih hook za
+      // ograničenje stope čita clientIp(undefined) → "unknown", pa svi računi
+      // dijele jedan globalni prozor i registracija se zaključa nakon 3 prijave
+      // na cijeloj platformi (DoS). S njima hook vidi x-forwarded-for.
+      headers: request.headers,
       body: {
         name,
         email,

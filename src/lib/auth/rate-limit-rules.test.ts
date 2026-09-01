@@ -23,6 +23,15 @@ describe("RATE_LIMIT_RULES", () => {
     });
   });
 
+  it("keeps the sign-up/email rule (the sole registration limiter)", () => {
+    // /api/auth/register forwards request headers into signUpEmail, so this hook
+    // reads the real IP and is the ONLY registration limiter (the route no longer
+    // self-limits). Removing this rule reopens both the direct-POST bypass and the
+    // "unknown"-keyed global-bucket DoS the 2026-09-01 audit found. Keyed on IP
+    // alone (no withEmail/withUser) so it matches the route's own former key.
+    expect(RATE_LIMIT_RULES["/sign-up/email"]).toEqual({ action: "register" });
+  });
+
   it("throttles the delete-account send but not the emailed callback", () => {
     // withUser, NOT the IP: the mail only ever reaches the account's own verified
     // address, so per-user is safe — while IP keying would let one exhausted
