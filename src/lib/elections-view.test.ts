@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ELECTION_TIME_ZONE,
   durationParts,
   elapsedParts,
   foldForSearch,
@@ -10,6 +11,7 @@ import {
   quorumRequiredVoters,
   timeLeftParts,
   turnoutPct,
+  zonedWallClockToInstant,
   turnoutMilestoneDue,
   matchesTurnout,
   matchesWindow,
@@ -139,10 +141,12 @@ describe("formatVotingDate", () => {
     expect(formatVotingDate(iso, "hr")).toBe("18. lip");
   });
 
-  it("is timezone-stable at day boundaries (UTC)", () => {
-    // 23:30 UTC must not roll into the next day on a CET/CEST server.
-    expect(formatVotingDate("2026-05-04T23:30:00.000Z", "en")).toBe("May 4");
-    expect(formatVotingDate("2026-05-04T23:30:00.000Z", "hr")).toBe("4. svi");
+  it("stabilan je na granici dana, u zoni izbora", () => {
+    // 23:30Z je 01:30 u Zagrebu, dakle SLJEDEĆI dan — i to je točan odgovor:
+    // datum na kartici mora biti dan koji je administrator vidio kad je birao.
+    // Determinizam je isti kao prije (zona je fiksna), promijenila se zona.
+    expect(formatVotingDate("2026-05-04T23:30:00.000Z", "en")).toBe("May 5");
+    expect(formatVotingDate("2026-05-04T23:30:00.000Z", "hr")).toBe("5. svi");
   });
 });
 
@@ -166,23 +170,31 @@ describe("formatCount", () => {
 describe("formatVotingDateTime", () => {
   // NAPOMENA: hidracijsku razliku koja je iznudila `hour: "2-digit"` ovaj test
   // NE može uhvatiti — nastaje između Node-a (`9:41`) i preglednika (`09:41`),
-  // a Vitest vidi samo Node. Ovdje se pinaju format i UTC; sama razlika
+  // a Vitest vidi samo Node. Ovdje se pinaju format i zona; sama razlika
   // provjerena je usporedbom oba motora (docs).
   it("pads the hour so both engines print the same string", () => {
-    expect(formatVotingDateTime("2026-07-28T09:41:00.000Z", "hr")).toBe(
+    // Trenutak je pomaknut 09:41Z → 07:41Z jer se zona promijenila: u Zagrebu
+    // je 09:41Z sada 11:41, a dvoznamenkasti sat NE provjerava dopunu nulom.
+    // Test mora i dalje pasti na jednoznamenkasti sat, inače je zelen i prazan.
+    expect(formatVotingDateTime("2026-07-28T07:41:00.000Z", "hr")).toBe(
       "28. srp 2026. · 09:41",
     );
   });
 
   it("pads midnight too — the case that surfaced the mismatch", () => {
-    expect(formatVotingDateTime("2026-07-20T00:00:00.000Z", "hr")).toBe(
+    // Isto: 00:00Z je u Zagrebu 02:00, pa ponoć sada dolazi iz 22:00Z dan
+    // ranije. Zadržati ponoć, ne samo zeleni ispis.
+    expect(formatVotingDateTime("2026-07-19T22:00:00.000Z", "hr")).toBe(
       "20. srp 2026. · 00:00",
     );
   });
 
-  it("is timezone-stable (UTC), not the server's local zone", () => {
+  it("veže se na zonu izbora, ne na zonu poslužitelja", () => {
+    // Ovo je tvrdnja koju je fix/election-timezone promijenio: ispis je i dalje
+    // neovisan o hostu (zona je fiksna), ali je zona sada ona u kojoj su
+    // datumi uneseni, pa 23:30Z ispravno čita kao 01:30 sljedećeg dana.
     expect(formatVotingDateTime("2026-05-04T23:30:00.000Z", "hr")).toBe(
-      "4. svi 2026. · 23:30",
+      "5. svi 2026. · 01:30",
     );
   });
 });
@@ -502,5 +514,104 @@ describe("turnoutMilestoneDue", () => {
     expect(turnoutMilestoneDue(30, 50)).toBeNull(); // pao ispod javljenog
     expect(turnoutMilestoneDue(55, 50)).toBeNull(); // vratio se, ali ispod 75
     expect(turnoutMilestoneDue(76, 50)).toBe(75); // prešao sljedeću — jednom
+  });
+});
+
+// Zidni sat → trenutak (fix/election-timezone). Svaka tvrdnja je DOSLOVAN
+// Z-trenutak, a ne izraz izveden iz ulaza: stara provjera u create-election
+// stavljala je `new Date(isti_niz)` s obje strane, pa se pomicala zajedno s
+// greškom i prolazila u svakoj zoni. Funkcija imenuje zonu, pa ovi testovi
+// prolaze i na hostu u Zagrebu i na hostu u UTC-u.
+describe("zonedWallClockToInstant", () => {
+  it("ljetno vrijeme: zidnih 18:00 je 16:00Z (CEST, +2)", () => {
+    expect(zonedWallClockToInstant("2026-09-10T18:00")?.toISOString()).toBe(
+      "2026-09-10T16:00:00.000Z",
+    );
+  });
+
+  it("zimsko vrijeme: zidnih 18:00 je 17:00Z (CET, +1)", () => {
+    expect(zonedWallClockToInstant("2026-01-10T18:00")?.toISOString()).toBe(
+      "2026-01-10T17:00:00.000Z",
+    );
+  });
+
+  it("reprodukcija s produkcije 2026-09-02: 22:45 je 20:45Z, ne 22:45Z", () => {
+    // Jedini redak izbora na produkciji. Stari `new Date(v)` na Vercelu (UTC)
+    // spremio je 22:45Z, pa je odbrojavanje pokazalo 2h 2m umjesto 2m.
+    expect(zonedWallClockToInstant("2026-09-02T22:45")?.toISOString()).toBe(
+      "2026-09-02T20:45:00.000Z",
+    );
+  });
+
+  it("ponoć pripada svom danu u zoni izbora, ne prethodnom u UTC-u", () => {
+    // 1. lipnja 00:00 u Zagrebu je 31. svibnja 22:00Z — zbog ovoga filtar
+    // godina ide kroz electionYear, a ne kroz getUTCFullYear.
+    expect(zonedWallClockToInstant("2026-06-01T00:00")?.toISOString()).toBe(
+      "2026-05-31T22:00:00.000Z",
+    );
+  });
+
+  it("nepostojeći sat na proljetnom skoku razrješava se prema naprijed", () => {
+    // 29. 3. 2026. u 02:30 ne postoji (02:00 → 03:00). Odluka, ne slučajnost.
+    expect(zonedWallClockToInstant("2026-03-29T02:30")?.toISOString()).toBe(
+      "2026-03-29T01:30:00.000Z",
+    );
+  });
+
+  it("dvoznačni sat na jesenskom pomaku uzima drugo pojavljivanje", () => {
+    // 25. 10. 2026. u 02:30 postoji dvaput; biramo CET (kasnije) pojavljivanje.
+    expect(zonedWallClockToInstant("2026-10-25T02:30")?.toISOString()).toBe(
+      "2026-10-25T01:30:00.000Z",
+    );
+  });
+
+  it("odbija neispravan ulaz umjesto da ga prelije u valjan datum", () => {
+    // Granica povjerenja: ovo je poslužiteljska akcija, a Date.UTC bi 31.
+    // veljače tiho pretvorio u 3. ožujka.
+    for (const bad of [
+      "",
+      "nonsense",
+      "2026-02-31T10:00",
+      "2026-13-01T10:00",
+      "2026-01-01T25:00",
+      "2026-01-01T10:99",
+    ]) {
+      expect(zonedWallClockToInstant(bad)).toBeNull();
+    }
+  });
+
+  it("prikaz vraća upravo utipkane znamenke (kružno putovanje)", () => {
+    // Ono što administrator vidi na kartici mora biti ono što je unio —
+    // dokaz da parser i formatter gledaju istu zonu.
+    const iso = zonedWallClockToInstant("2026-09-10T18:00")!.toISOString();
+    expect(formatVotingDateTime(iso, "hr")).toBe("10. ruj 2026. · 18:00");
+  });
+
+  it("ELECTION_TIME_ZONE je imenovana zona, ne pomak", () => {
+    // Pomak (+02:00) bio bi pogrešan pola godine; ime nosi i DST pravila.
+    expect(ELECTION_TIME_ZONE).toBe("Europe/Zagreb");
+  });
+});
+
+// Granica godine u zoni izbora (fix/election-timezone). Filtar i prikaz moraju
+// gledati istu zonu: 31. 12. 2025. u 23:30Z je u Zagrebu vec 1. 1. 2026. Sa
+// starim getUTCFullYear kartica bi pisala 2026., a filtar bi te izbore svrstao
+// u 2025. — neuskladenost koju je stari UTC prikaz skrivao, a prelazak na zonu
+// izbora otkriva.
+describe("godina zatvaranja prati zonu izbora", () => {
+  const closes = "2025-12-31T23:30:00.000Z";
+
+  it("matchesWindow svrstava izbore iza ponoci u novu godinu", () => {
+    expect(matchesWindow({ status: "CLOSED", closes }, "2026")).toBe(true);
+    expect(matchesWindow({ status: "CLOSED", closes }, "2025")).toBe(false);
+  });
+
+  it("windowYears nudi upravo godinu koju kartica ispisuje", () => {
+    // Padajuci izbornik i datum na kartici moraju se slagati, inace filtar
+    // sakriva izbore koje korisnik na popisu doslovno vidi.
+    expect(windowYears([election({ status: "CLOSED", closes })])).toEqual([
+      "2026",
+    ]);
+    expect(formatVotingDate(closes, "hr")).toBe("1. sij");
   });
 });
