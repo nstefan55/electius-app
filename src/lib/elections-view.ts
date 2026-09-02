@@ -84,7 +84,7 @@ export const matchesWindow = (
   if (f === "all") return true;
   if (f === "unscheduled") return e.status === "DRAFT";
   if (e.status === "DRAFT") return false;
-  return String(new Date(e.closes).getUTCFullYear()) === f;
+  return String(electionYear(e.closes)) === f;
 };
 
 // Distinct close-date years for the window select, newest first.
@@ -93,7 +93,7 @@ export const windowYears = (els: DashboardElection[]) =>
     ...new Set(
       els
         .filter((e) => e.status !== "DRAFT")
-        .map((e) => new Date(e.closes).getUTCFullYear()),
+        .map((e) => electionYear(e.closes)),
     ),
   ]
     .sort((a, b) => b - a)
@@ -269,16 +269,85 @@ export const timeLeftParts = (targetIso: string, nowMs: number) =>
 export const elapsedParts = (startIso: string, nowMs: number) =>
   durationParts(nowMs - new Date(startIso).getTime());
 
+// Jedina vremenska zona proizvoda: zidni sat koji administrator utipka u
+// čarobnjaku znači vrijeme U OVOJ zoni, ne u zoni poslužitelja.
+// ponytail: konstanta umjesto stupca — nadogradnja je Election.timeZone kad se
+// pojavi organizacija izvan Hrvatske; formatteri tada primaju zonu kao argument.
+export const ELECTION_TIME_ZONE = "Europe/Zagreb";
+
+// Pomak zone u danom trenutku (ms). Intl je jedini native put: Temporal na
+// Node 24 nije dostupan bez zastavice.
+function zoneOffsetMs(instant: Date): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: ELECTION_TIME_ZONE,
+    hour12: false,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(instant);
+  const at = (type: string) =>
+    Number(parts.find((p) => p.type === type)?.value ?? 0);
+  // hour zna doći kao 24 za ponoć, ovisno o motoru.
+  return (
+    Date.UTC(
+      at("year"),
+      at("month") - 1,
+      at("day"),
+      at("hour") % 24,
+      at("minute"),
+      at("second"),
+    ) - instant.getTime()
+  );
+}
+
+const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
+
+// "2026-09-10T18:00" (zidni sat u ELECTION_TIME_ZONE) → stvarni trenutak.
+// Zamjenjuje `new Date(v)`, koji je zidni sat vezao uz zonu POSLUŽITELJA — na
+// Vercelu UTC, pa je 18:00 iz Zagreba završilo kao 20:00 po lokalnom satu.
+// Zona je ovdje imenovana, pa je rezultat isti na svakom hostu: zbog toga test
+// smije tvrditi doslovni Z-trenutak, što stara tautologija nije mogla.
+// Dva prolaza: prvi pogodi pomak, drugi ga ispravi na DST rubu. Nepostojeći
+// lokalni sat (proljetni skok) razrješava se prema naprijed, dvoznačni
+// (jesenski) na drugo pojavljivanje — oboje pripeto testom.
+export function zonedWallClockToInstant(wallClock: string): Date | null {
+  const m = wallClock.match(WALL_CLOCK);
+  if (!m) return null;
+  const n = (i: number) => Number(m[i] ?? 0);
+  const [Y, MO, D, H, MI, S] = [n(1), n(2), n(3), n(4), n(5), n(6)];
+  if (MO < 1 || MO > 12 || D < 1 || H > 23 || MI > 59 || S > 59) return null;
+  const naive = Date.UTC(Y, MO - 1, D, H, MI, S);
+  const probe = new Date(naive);
+  // 31. veljače se u Date.UTC prelijeva u ožujak — odbij, ne prešuti.
+  if (probe.getUTCMonth() !== MO - 1 || probe.getUTCDate() !== D) return null;
+  const first = naive - zoneOffsetMs(probe);
+  return new Date(naive - zoneOffsetMs(new Date(first)));
+}
+
+// Godina zatvaranja u zoni izbora. Filtar i prikaz moraju gledati istu zonu,
+// inače izbori zatvoreni netom iza ponoći padnu u prošlu godinu.
+const electionYear = (iso: string) =>
+  Number(
+    new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
+      timeZone: ELECTION_TIME_ZONE,
+    }).format(new Date(iso)),
+  );
+
 // Voting-window date, locale-aware: en "Jun 18" · hr "18. lip". Takes the ISO
-// string from DashboardElection.opens/closes. timeZone UTC keeps output
-// deterministic across server/browser timezones (prod serverless runs UTC).
+// string from DashboardElection.opens/closes. Zona je fiksna, pa je ispis i
+// dalje determinističan između poslužitelja i preglednika — isto jamstvo koje
+// je prije davao UTC, samo u zoni u kojoj su datumi i uneseni.
 const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
 
 export const formatVotingDate = (iso: string, locale: string) =>
   new Intl.DateTimeFormat(DATE_LOCALE[locale] ?? locale, {
     day: "numeric",
     month: "short",
-    timeZone: "UTC",
+    timeZone: ELECTION_TIME_ZONE,
   }).format(new Date(iso));
 
 // Razdjelnik tisućica po lokalizaciji: hr "3.244" · en "3,244".
@@ -297,7 +366,7 @@ export const formatVotingDateTime = (iso: string, locale: string) => {
     day: "numeric",
     month: "short",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: ELECTION_TIME_ZONE,
   }).format(d);
   const time = new Intl.DateTimeFormat(l, {
     // 2-digit, ne numeric: za hr-HR preglednik dopunjava nulom (`09:41`), a
@@ -308,7 +377,7 @@ export const formatVotingDateTime = (iso: string, locale: string) => {
     // ali jedno pravilo za oba jezika nadjačava idiomatski ispis).
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: ELECTION_TIME_ZONE,
   }).format(d);
   return `${date} · ${time}`;
 };

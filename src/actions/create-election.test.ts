@@ -145,8 +145,11 @@ describe("createElection", () => {
     });
     const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
     expect(arg.data.status).toBe("SCHEDULED");
-    expect(arg.data.startsAt).toEqual(new Date("2999-06-01T09:00"));
-    expect(arg.data.endsAt).toEqual(new Date("2999-06-03T18:00"));
+    // DOSLOVNI Z-trenuci, ne `new Date(isti_niz)`: raniji oblik stavljao je
+    // dvosmislen izraz s obje strane, pa se pomicao zajedno s greškom i
+    // prolazio u svakoj zoni. Zidnih 09:00 u Zagrebu je 07:00Z (CEST).
+    expect(arg.data.startsAt).toEqual(new Date("2999-06-01T07:00:00.000Z"));
+    expect(arg.data.endsAt).toEqual(new Date("2999-06-03T16:00:00.000Z"));
   });
 
   it("reports failure without leaking the DB error", async () => {

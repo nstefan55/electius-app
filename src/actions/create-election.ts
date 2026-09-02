@@ -12,6 +12,7 @@ import {
 } from "@/lib/entitlements";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { clearSweepGate } from "@/lib/services/sweep-gate";
+import { zonedWallClockToInstant } from "@/lib/elections-view";
 
 // Election creation wizard (all-elections phase 2). One action, two modes:
 // full create (step 5 confirm) and draft save (top-bar link). Both are
@@ -42,12 +43,6 @@ const wizardSchema = z.object({
 });
 export type WizardPayload = z.infer<typeof wizardSchema>;
 
-function parseLocalDate(v: string): Date | null {
-  if (!v) return null;
-  const d = new Date(v);
-  return isNaN(d.getTime()) ? null : d;
-}
-
 export async function createElection(
   input: unknown,
   draft = false,
@@ -65,8 +60,11 @@ export async function createElection(
     return { success: false, error: "coupling" };
   }
 
-  const startAt = parseLocalDate(w.startAt);
-  const closeAt = parseLocalDate(w.closeAt);
+  // Zidni sat iz čarobnjaka → stvarni trenutak u zoni izbora. Oba stupca sada
+  // dijele isto sidro kao `now` niže, pa se razlika startsAt/endsAt više ne
+  // može iskriviti (a s njom ni "nije zakazano" sentinela).
+  const startAt = zonedWallClockToInstant(w.startAt);
+  const closeAt = zonedWallClockToInstant(w.closeAt);
 
   if (!draft) {
     if (w.candidates.length < 2) return { success: false, error: "candidates" };

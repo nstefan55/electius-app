@@ -1,12 +1,14 @@
 import type { ComponentType, ReactNode } from "react";
+import { ELECTION_TIME_ZONE } from "@/lib/elections-view";
 
 // Shared voter-surface building blocks (voter-flow spec, design: Voter
 // Flow.dc.html). No hooks — usable from both server state screens and the
 // client flow. Styling follows design-system §7.15–7.17 + the prototype.
 
-// "pet, 12. lipnja · 18:00" / "Fri, June 12 · 06:00 PM" — UTC like the admin
-// start card, so server and browser render identical strings (no hydration
-// mismatch, deterministic across timezones). UTC sam po sebi nije dovoljan:
+// "pet, 12. lipnja · 18:00" / "Fri, June 12 · 06:00 PM" — u zoni izbora, kao i
+// admin kartice, pa poslužitelj i preglednik ispisuju isti niz (nema
+// hidracijske greške; fiksna zona je jednako determinirana kao nekadašnji UTC,
+// samo pokazuje sat koji je administrator zapravo unio). Zona sama nije dovoljna:
 // sat mora biti 2-digit jer kod numeric za hr-HR preglednik dopunjava nulom
 // (`09:41`), a Node ne (`9:41`) — hidracijska greška ispod 10 sati UTC.
 const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
@@ -18,12 +20,12 @@ export function formatVoterDateTime(iso: string | Date, locale: string): string 
     weekday: "short",
     day: "numeric",
     month: "long",
-    timeZone: "UTC",
+    timeZone: ELECTION_TIME_ZONE,
   }).format(d);
   const time = new Intl.DateTimeFormat(l, {
     hour: "2-digit",
     minute: "2-digit",
-    timeZone: "UTC",
+    timeZone: ELECTION_TIME_ZONE,
   }).format(d);
   return `${date} · ${time}`;
 }
