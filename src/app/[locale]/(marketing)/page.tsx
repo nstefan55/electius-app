@@ -17,7 +17,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { LandingNav } from "@/components/marketing/landing-nav";
-import { PricingPlans } from "@/components/marketing/pricing-plans";
+// import { PricingPlans } from "@/components/marketing/pricing-plans"; //TODO Add back when pricing is ready
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { BallotDemo } from "@/components/marketing/ballot-demo";
 import { DemoTrigger } from "@/components/marketing/demo-trigger";
@@ -472,29 +472,23 @@ export default async function Home({
       {/* ponytail: mailto CTA umjesto obrasca — ne postoji backend koji bi primao
           poruke; pravi obrazac (server action + Resend) kad zatreba. Sidro #contact
           živi ovdje, ne više na podnožju — navigacijski "Kontakt" vodi na odsjek. */}
-      <section id="contact" className={`bg-neutral-50 py-20 ${ANCHOR}`}>
+      <section id="contact" className={`bg-neutral-50 py-16 ${ANCHOR}`}>
         <div className={CONTAINER}>
           <SectionHeader
             kicker={t("contact.kicker")}
             title={t("contact.title")}
             subtitle={t("contact.subtitle")}
-            className="mb-10"
+            className="mb-8"
           />
-          <div className="mx-auto flex max-w-130 flex-col items-center rounded-lg border border-neutral-200 bg-white p-8 shadow-sm sm:p-10">
-            <span className="mb-5 inline-flex size-12 items-center justify-center rounded-lg bg-brand-50">
-              <Mail
-                className="size-6 text-brand-700"
-                strokeWidth={1.8}
-                aria-hidden="true"
-              />
-            </span>
+          <div className="flex flex-col items-center">
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              className="inline-flex h-12 items-center rounded-md bg-brand-700 px-7 font-heading text-base font-semibold text-white shadow-md hover:bg-brand-600"
+              className="inline-flex h-14 items-center gap-2.5 rounded-md bg-brand-700 px-8 font-heading text-[1.0625rem] font-semibold text-white shadow-md hover:bg-brand-600"
             >
+              <Mail className="size-4.5" aria-hidden="true" />
               {t("contact.cta")}
             </a>
-            <span className="mt-4 text-sm text-neutral-600">
+            <span className="mt-4 text-base text-neutral-600">
               {CONTACT_EMAIL}
             </span>
           </div>
