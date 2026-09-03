@@ -50,6 +50,8 @@ const DEMO = {
   adminName: "Demo User",
   email: "demo@electius.com",
   password: DEMO_PASSWORD,
+  // Iz public/, ne iz R2 — keyFromUrl vrati null, pa ga zamjena i brisanje preskaču.
+  logoUrl: "/demo/org-logo.png",
 };
 
 const DAY = 86_400_000;
@@ -342,7 +344,12 @@ async function main() {
   if (wiped.elections) console.log(`Obrisano izbora: ${wiped.elections}\n`);
 
   const organization = await prisma.organization.create({
-    data: { name: DEMO.orgName, type: "UNIVERSITY", contactEmail: DEMO.email },
+    data: {
+      name: DEMO.orgName,
+      type: "UNIVERSITY",
+      contactEmail: DEMO.email,
+      logoUrl: DEMO.logoUrl,
+    },
   });
 
   const admin = await prisma.user.create({
@@ -568,6 +575,9 @@ function report(r: {
   );
   console.log(`\nPrijava: ${app}/hr/login`);
   console.log(`  ${DEMO.email} / ${DEMO.password}`);
+  console.log(
+    `\nLogotip organizacije: ${DEMO.logoUrl} — izvještaj ga prikazuje samo uz Pro pravo.`,
+  );
 
   if (process.env.BILLING_ENABLED !== "true") {
     console.log(
