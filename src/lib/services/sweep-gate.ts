@@ -11,9 +11,9 @@ import { tokenExpiry } from "@/lib/services/token.service";
 // svaka greška ovdje pada u smjeru "meti kao danas".
 
 export const SWEEP_GATE_KEY = "sweep:nextDue";
-// D5: 1 h — najgore kašnjenje svega što ne pokriva invalidacija, ujedno i
-// ritam metle u praznom hodu (~24 buđenja dnevno). Jedna linija za prilagodbu.
-export const SWEEP_GATE_TTL_SECONDS = 60 * 60;
+// D5: 30 min — najgore kašnjenje svega što invalidacija ne pokriva (prečke
+// izlaznosti jašu samo na njemu, D9); u praznom hodu ~48 buđenja dnevno.
+export const SWEEP_GATE_TTL_SECONDS = 30 * 60;
 
 // "Nema budućih događaja" — TTL je taj koji ponovno otvara vrata.
 const SENTINEL = Number.MAX_SAFE_INTEGER;
