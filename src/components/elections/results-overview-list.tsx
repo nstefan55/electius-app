@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { archiveElection } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import { ArchiveConfirmDialog } from "@/components/elections/archive-confirm-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import {
   formatVotingDateTime,
@@ -60,8 +61,9 @@ const ACCESS_ICON = { live: Eye, sealed: Lock, closed: CircleCheck } as const;
 
 type Layout = "cards" | "rows";
 
+// onArchive samo otvara potvrdu (treba joj naziv); pečat pokreće dijalog.
 type ArchiveProps = {
-  onArchive: (id: string) => void;
+  onArchive: (row: { id: string; name: string }) => void;
   pending: boolean;
 };
 
@@ -70,13 +72,17 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
   // Preferencija prikaza, ne filtar — lokalno stanje, ne URL parametar.
   const [layout, setLayout] = useState<Layout>("cards");
   const [sealed, setSealed] = useState<ResultsRow | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const ta = useTranslations("dashboard.page.actions");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
   // Pečat je ista radnja kao u ⋯ izbornicima (/home, /elections), s istom
   // porukom. Nakon uspjeha redak pripada /archive — refresh ga uklanja odavde.
-  function onArchive(id: string) {
+  function seal(id: string) {
     startTransition(async () => {
       const res = await archiveElection(id);
       if (res.success) {
@@ -150,7 +156,7 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
               key={row.id}
               row={row}
               onSealed={setSealed}
-              onArchive={onArchive}
+              onArchive={setArchiveTarget}
               pending={pending}
             />
           ))}
@@ -162,7 +168,7 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
               key={row.id}
               row={row}
               onSealed={setSealed}
-              onArchive={onArchive}
+              onArchive={setArchiveTarget}
               pending={pending}
             />
           ))}
@@ -179,6 +185,16 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
       <p className="mt-5 px-0.5 text-xs text-neutral-600">{t("footnote")}</p>
 
       <SealedDialog row={sealed} onClose={() => setSealed(null)} />
+
+      <ArchiveConfirmDialog
+        target={archiveTarget}
+        pending={pending}
+        onOpenChange={(open) => !open && setArchiveTarget(null)}
+        onConfirm={(id) => {
+          setArchiveTarget(null);
+          seal(id);
+        }}
+      />
     </div>
   );
 }
@@ -319,7 +335,7 @@ function ExportButtons({
           disabled={pending}
           onClick={(e) => {
             stop(e);
-            onArchive(row.id);
+            onArchive({ id: row.id, name: row.name });
           }}
           className={cn(
             base,

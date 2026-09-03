@@ -427,6 +427,9 @@
         "deleteBody": "Trajno ćete izbrisati {name}. Ovo se ne može poništiti i svi povezani listići bit će uklonjeni.",
         "cancel": "Odustani",
         "confirmDelete": "Izbriši izbore",
+        "archiveTitle": "Arhivirati izbore?",
+        "archiveBody": "Izbori {name} bit će zapečaćeni i premješteni u arhivu. Rezultati, izvještaji i javna stranica ostaju dostupni, ali pečat se ne može poništiti.",
+        "confirmArchive": "Arhiviraj izbore",
         "toast": {
           "renamed": "Izbori preimenovani",
           "duplicated": "Izbori duplicirani",

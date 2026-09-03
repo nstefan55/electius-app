@@ -25,6 +25,7 @@ import {
 } from "@/actions/elections";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
+import { ArchiveConfirmDialog } from "@/components/elections/archive-confirm-dialog";
 import {
   formatVotingDateTime,
   resultsDetailAccess,
@@ -89,6 +90,7 @@ export function ElectionTopbar({
   const pathname = usePathname(); // bez prefiksa lokalizacije — odgovara ravnim hrefovima
   const [preview, setPreview] = useState(false);
   const [confirm, setConfirm] = useState<"close" | "remove" | null>(null);
+  const [archiveOpen, setArchiveOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
   const showEdit = status === "DRAFT" || status === "SCHEDULED";
@@ -151,8 +153,8 @@ export function ElectionTopbar({
       }
     });
 
-  // Bez potvrde, kao u ⋯ izbornicima: pečat ništa ne uklanja, korijen u poruci
-  // JE potvrda. ponytail: dodaj ConfirmDialog ako se pokaže slučajno pečaćenje.
+  // Pokreće se iz ArchiveConfirmDialog (isti dijalog kao u popisima); pečat
+  // ništa ne uklanja, ali se ne može poništiti, pa se prije pita.
   const handleArchive = () =>
     startTransition(async () => {
       const res = await archiveElection(id);
@@ -221,7 +223,7 @@ export function ElectionTopbar({
           {showArchive && (
             <button
               type="button"
-              onClick={handleArchive}
+              onClick={() => setArchiveOpen(true)}
               disabled={pending}
               className={`${GHOST_BTN} disabled:cursor-not-allowed disabled:opacity-40`}
             >
@@ -293,6 +295,16 @@ export function ElectionTopbar({
         confirm={confirm === "remove" ? t("removeConfirm") : t("closeConfirm")}
         pending={pending}
         onConfirm={confirm === "remove" ? handleRemove : handleClose}
+      />
+
+      <ArchiveConfirmDialog
+        target={archiveOpen ? { id, name: title } : null}
+        pending={pending}
+        onOpenChange={(open) => !open && setArchiveOpen(false)}
+        onConfirm={() => {
+          setArchiveOpen(false);
+          handleArchive();
+        }}
       />
     </>
   );

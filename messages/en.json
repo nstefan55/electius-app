@@ -427,6 +427,9 @@
         "deleteBody": "You're about to permanently delete {name}. This can't be undone and any associated ballots are removed.",
         "cancel": "Cancel",
         "confirmDelete": "Delete election",
+        "archiveTitle": "Archive this election?",
+        "archiveBody": "{name} will be sealed and moved to the archive. Results, reports and the public page stay available, but a seal cannot be undone.",
+        "confirmArchive": "Archive election",
         "toast": {
           "renamed": "Election renamed",
           "duplicated": "Election duplicated",
