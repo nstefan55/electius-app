@@ -2,20 +2,59 @@ import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
 
+// Vanjski izvori koje preglednik mora doseći. Oba se renderiraju kao obični
+// <img> (namjerno izvan next/image remotePatterns), pa ih img-src mora imenovati
+// ili pucaju svi logotipi i avatari.
+//
+// Doslovan literal, ne process.env: headers() se izračunava u BUILDU, pa bi
+// nedostajuća varijabla tiho ispustila izvor i slomila produkciju bez ijedne
+// greške. URL kante je javan — već stoji u HTML-u svake stranice s logotipom.
+const R2_PUBLIC_BUCKET = "https://pub-03d01bf5243c451ab194708fef1d518b.r2.dev";
+const GOOGLE_AVATARS = "https://lh3.googleusercontent.com";
+
+// Turbopack traži eval i HMR websocket; produkcija ne smije ni jedno.
+const isDev = process.env.NODE_ENV !== "production";
+
+// Puni CSP koji ograničava resurse.
+//
+// NEMA noncea, namjerno. Nonce je po zahtjevu, ISR kešira HTML — Next zato uz
+// nonce gasi statičku optimizaciju i ISR za CIJELU aplikaciju. To bi srušilo
+// ISR na /results/[id] (jedina keširana ruta, pinana u
+// static-route-boundaries.test.ts) i statični prerender /hr + /en. Ne dodavati
+// nonce ni 'strict-dynamic' bez te dvije žrtve na stolu.
+//
+// Cijena: 'unsafe-inline' na script-src, pa se ubrizgana inline skripta izvrši.
+// Drže je connect-src 'self' (nema kuda poslati plijen) i popis u img-src (nema
+// beacona). Ostatak rizika je uzak jer nijedan React sirovi-HTML slot ne prima
+// korisničke podatke — jedini je tvrdo kodirani <style> u ui/chart.tsx.
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  // Next ubacuje inline bootstrap (self.__next_f.push).
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // ui/chart.tsx ubacuje <style> element, recharts piše inline stilove.
+  "style-src 'self' 'unsafe-inline'",
+  // Bez data: i blob: — provjereno da ih ništa ne emitira: QR je inline <svg>,
+  // nema placeholder="blur" ni toDataURL, a preuzimanja preko createObjectURL
+  // vise na <a download>, što CSP ne pokriva. Vratiti data: ako se uvede blur
+  // ili pregled odabrane slike prije uploada.
+  `img-src 'self' ${R2_PUBLIC_BUCKET} ${GOOGLE_AVATARS}`,
+  // next/font/google se u buildu poslužuje s našeg origina, bez CDN-a.
+  "font-src 'self'",
+  // Nijedan klijentski SDK ne zove van: nema Stripe.js ni analitike, a odlazak
+  // na Checkout je navigacija, koju connect-src ne pokriva.
+  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  "frame-src 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  // Samo produkcija: nad http://localhost nadogradnja slomi svaki zahtjev.
+  ...(isDev ? [] : ["upgrade-insecure-requests"]),
+].join("; ");
+
 // Security response headers (production-readiness Layer 8). Applied uniformly to
 // every route, so they are identical for an existing vs. a missing/hidden
 // election — they add no oracle to /results/[id] (Gate 13 §11).
-//
-// The CSP here deliberately covers ONLY the directives that cannot break
-// scripts/styles/images: it hardens clickjacking (frame-ancestors, doubled by
-// X-Frame-Options for old browsers), <base> injection, plugin embedding and
-// cross-origin form posts — all verified safe (no iframes, no <object>, every
-// form posts same-origin). A full resource-restricting CSP (script-src/style-src/
-// img-src/connect-src) is a SEPARATE, larger job: recharts and Next's inline
-// bootstrap need either a per-request nonce (a proxy.ts change + strict-dynamic)
-// or 'unsafe-inline', and dev/turbopack (eval + HMR websockets) differs from
-// prod, so it can only be validated with a PRODUCTION browser pass — deferred,
-// see docs/2026-09-01/security-headers.md.
 //
 // HSTS carries no `preload` on purpose — the preload list is a hard-to-undo
 // commitment; 2 years + includeSubDomains is the safe default. HSTS over http
@@ -29,10 +68,7 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
-  {
-    key: "Content-Security-Policy",
-    value: "base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
-  },
+  { key: "Content-Security-Policy", value: contentSecurityPolicy },
 ];
 
 const nextConfig: NextConfig = {
