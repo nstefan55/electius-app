@@ -6,6 +6,32 @@ import { config } from "dotenv";
 config({ path: `.env.${process.env.NODE_ENV ?? "development"}` });
 import { defineConfig } from "prisma/config";
 
+const directUrl = process.env["DIRECT_URL"];
+
+// Bez DIRECT_URL-a Prisma javi "The datasource.url property is required in your
+// Prisma config file", što upućuje na OVU datoteku — a url je tu, prazna je samo
+// varijabla. Poruka je koštala pravog vremena, pa je ovdje zamijenjena onom koja
+// imenuje uzrok.
+//
+// Rušimo SAMO naredbe kojima baza stvarno treba: `prisma generate` radi i bez
+// ijednog URL-a i vrti se u buildu, a CI ga zove bez ijedne tajne — bezuvjetni
+// throw srušio bi svaki job.
+//
+// Namjerno NEMA pada na DATABASE_URL: taj je poolan (PgBouncer), a migracije
+// idu nepoolanom vezom. Tiha zamjena prekršila bi tu odluku bez ijednog traga.
+const needsDatabase = process.argv.some(
+  (arg) => arg === "migrate" || arg === "db" || arg === "studio",
+);
+
+if (needsDatabase && !directUrl) {
+  throw new Error(
+    "DIRECT_URL nije postavljen, pa migracija nema na što se spojiti. " +
+      "Postavi ga (nepoolani Neon URL) u okruženju koje pokreće naredbu — " +
+      "npr. Vercel → Settings → Environment Variables. Lokalno dolazi iz " +
+      `.env.${process.env.NODE_ENV ?? "development"}, koji nije u gitu.`,
+  );
+}
+
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
@@ -15,6 +41,6 @@ export default defineConfig({
   datasource: {
     // Migrations/CLI use the DIRECT (unpooled) Neon connection.
     // Runtime queries go through the pooled DATABASE_URL via the Neon adapter (src/lib/prisma.ts).
-    url: process.env["DIRECT_URL"],
+    url: directUrl,
   },
 });
