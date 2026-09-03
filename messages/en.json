@@ -17,6 +17,10 @@
       "prev": "Previous",
       "next": "Next",
       "goToPage": "Page {page}"
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password"
     }
   },
   "notFound": {

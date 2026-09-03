@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 
 // Reset-password form, reached from the emailed link. BetterAuth's endpoint
 // redirects here with ?token=… (valid) or ?error=INVALID_TOKEN (bad/expired) —
@@ -109,9 +110,8 @@ export function ResetPasswordForm() {
         >
           {t("password")}
         </label>
-        <input
+        <PasswordInput
           id="reset-password"
-          type="password"
           autoComplete="new-password"
           placeholder={t("passwordPlaceholder")}
           value={password}
@@ -129,10 +129,15 @@ export function ResetPasswordForm() {
           {t("passwordHelper")}
         </span>
       </div>
-      <label className="flex flex-col gap-1.5 text-sm font-medium text-neutral-800">
-        {t("confirmPassword")}
-        <input
-          type="password"
+      <div className="flex flex-col gap-1.5">
+        <label
+          htmlFor="reset-confirm"
+          className="text-sm font-medium text-neutral-800"
+        >
+          {t("confirmPassword")}
+        </label>
+        <PasswordInput
+          id="reset-confirm"
           autoComplete="new-password"
           placeholder={t("confirmPasswordPlaceholder")}
           value={confirmPassword}
@@ -140,7 +145,7 @@ export function ResetPasswordForm() {
           aria-invalid={invalid.confirmPassword || undefined}
           className={inputClass}
         />
-      </label>
+      </div>
       <Button
         type="submit"
         size="lg"
