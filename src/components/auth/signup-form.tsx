@@ -6,6 +6,7 @@ import { z } from "zod";
 import toast from "react-hot-toast";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
@@ -171,9 +172,8 @@ export function SignupForm() {
           >
             {t("password")}
           </label>
-          <input
+          <PasswordInput
             id="signup-password"
-            type="password"
             autoComplete="new-password"
             placeholder={t("passwordPlaceholder")}
             value={password}
@@ -189,10 +189,15 @@ export function SignupForm() {
             {t("passwordHelper")}
           </span>
         </div>
-        <label className={labelClass}>
-          {t("confirmPassword")}
-          <input
-            type="password"
+        <div className="flex flex-col gap-1.5">
+          <label
+            htmlFor="signup-confirm"
+            className="text-sm font-medium text-neutral-800"
+          >
+            {t("confirmPassword")}
+          </label>
+          <PasswordInput
+            id="signup-confirm"
             autoComplete="new-password"
             placeholder={t("confirmPasswordPlaceholder")}
             value={confirmPassword}
@@ -200,7 +205,7 @@ export function SignupForm() {
             aria-invalid={invalid.confirmPassword || undefined}
             className={inputClass}
           />
-        </label>
+        </div>
 
         <label className="flex items-start gap-2 text-sm leading-normal text-neutral-950">
           <input

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
 
@@ -132,9 +133,8 @@ export function LoginForm() {
               {t("forgotPassword")}
             </Link>
           </div>
-          <input
+          <PasswordInput
             id="login-password"
-            type="password"
             autoComplete="current-password"
             placeholder={t("passwordPlaceholder")}
             value={password}

@@ -9,6 +9,7 @@ import { useRouter } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";
 import { updateProfile } from "@/actions/settings";
 import { Button } from "@/components/ui/button";
+import { PasswordInput } from "@/components/ui/password-input";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import {
   ImageUploadSlot,
@@ -369,10 +370,15 @@ export function ProfileCard({
             noValidate
             className="flex flex-col gap-4 rounded-md border border-neutral-200 bg-neutral-50 p-4"
           >
-            <label className={`flex flex-col gap-1.5 ${labelClass}`}>
-              {t("password.current")}
-              <input
-                type="password"
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="profile-password-current"
+                className={labelClass}
+              >
+                {t("password.current")}
+              </label>
+              <PasswordInput
+                id="profile-password-current"
                 autoComplete="current-password"
                 value={passwords.current}
                 onChange={(e) =>
@@ -381,12 +387,17 @@ export function ProfileCard({
                 aria-invalid={passwordInvalid.current || undefined}
                 className={inputClass}
               />
-            </label>
+            </div>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className={`flex flex-col gap-1.5 ${labelClass}`}>
-                {t("password.new")}
-                <input
-                  type="password"
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="profile-password-new"
+                  className={labelClass}
+                >
+                  {t("password.new")}
+                </label>
+                <PasswordInput
+                  id="profile-password-new"
                   autoComplete="new-password"
                   value={passwords.next}
                   onChange={(e) =>
@@ -395,11 +406,16 @@ export function ProfileCard({
                   aria-invalid={passwordInvalid.next || undefined}
                   className={inputClass}
                 />
-              </label>
-              <label className={`flex flex-col gap-1.5 ${labelClass}`}>
-                {t("password.confirm")}
-                <input
-                  type="password"
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="profile-password-confirm"
+                  className={labelClass}
+                >
+                  {t("password.confirm")}
+                </label>
+                <PasswordInput
+                  id="profile-password-confirm"
                   autoComplete="new-password"
                   value={passwords.confirm}
                   onChange={(e) =>
@@ -408,7 +424,7 @@ export function ProfileCard({
                   aria-invalid={passwordInvalid.confirm || undefined}
                   className={inputClass}
                 />
-              </label>
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <Button

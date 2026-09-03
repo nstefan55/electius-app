@@ -17,6 +17,10 @@
       "prev": "Prethodna",
       "next": "Sljedeća",
       "goToPage": "Stranica {page}"
+    },
+    "password": {
+      "show": "Prikaži lozinku",
+      "hide": "Sakrij lozinku"
     }
   },
   "notFound": {
