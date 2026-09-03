@@ -5,8 +5,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // third seam here — the pipeline itself is covered by its own colocated tests.
 vi.mock("@/lib/prisma", () => ({
   prisma: {
-    election: { updateMany: vi.fn(), findFirst: vi.fn(), update: vi.fn() },
+    election: {
+      updateMany: vi.fn(),
+      findFirst: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
     voter: { count: vi.fn() },
+    archive: { deleteMany: vi.fn() },
+    vote: { deleteMany: vi.fn() },
+    $transaction: vi.fn().mockResolvedValue([]),
   },
 }));
 vi.mock("@/lib/auth/require-session", () => ({
@@ -21,6 +29,15 @@ vi.mock("@/lib/services/publication.service", () => ({
 // ovdje samo ožičenje (uspjeh briše rok, odbijanje ne dira Redis).
 vi.mock("@/lib/services/sweep-gate", () => ({
   clearSweepGate: vi.fn(),
+}));
+// Keš javne stranice rezultata je vlastiti šav — poništavanje ima svoje
+// kolocirane testove; ovdje se provjerava samo ožičenje (uspjeh poništava,
+// odbijena mutacija ne).
+vi.mock("@/lib/public-results-cache", () => ({
+  revalidatePublicResults: vi.fn(),
+}));
+vi.mock("@/lib/services/storage.service", () => ({
+  deleteObject: vi.fn(),
 }));
 // archive.service is its own seam — the seal itself is covered by its colocated
 // tests; here only the wiring and the error mapping.
@@ -39,6 +56,9 @@ const { sealElection, ArchiveError } = await import(
   "@/lib/services/archive.service"
 );
 const { clearSweepGate } = await import("@/lib/services/sweep-gate");
+const { revalidatePublicResults } = await import(
+  "@/lib/public-results-cache"
+);
 const {
   startElection,
   renameElection,
@@ -47,6 +67,7 @@ const {
   reminderPreview,
   sendElectionReminders,
   archiveElection,
+  deleteElection,
 } = await import("@/actions/elections");
 
 const session = {
@@ -78,6 +99,9 @@ beforeEach(() => {
   vi.mocked(sendReminders).mockReset();
   vi.mocked(sendReminders).mockResolvedValue({ sent: 0, failed: 0 });
   vi.mocked(clearSweepGate).mockReset().mockResolvedValue(undefined);
+  vi.mocked(revalidatePublicResults).mockReset();
+  vi.mocked(prisma.$transaction).mockReset().mockResolvedValue([] as never);
+  vi.mocked(prisma.election.delete).mockReset();
 });
 
 describe("startElection", () => {
@@ -349,6 +373,68 @@ describe("closeElection", () => {
 
     const result = await closeElection("el_1");
     expect(result).toEqual({ success: false, error: "failed" });
+  });
+
+  // /results/[id] je jedina poslužiteljski keširana ruta, a router.refresh() do
+  // nje ne dohvaća. Bez ovoga zatvoreni izbori do sat vremena i dalje prikazuju
+  // skriveni zaslon, iako zbroj postoji.
+  it("invalidates the cached public results page after a successful close", async () => {
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 1 });
+
+    await closeElection("el_1");
+    expect(revalidatePublicResults).toHaveBeenCalledWith("el_1");
+  });
+
+  // Poništavanje stoji NAKON atomske straže: zatvaranje koje nije pogodilo
+  // nijedan redak (dvoklik, tuđa organizacija, već zatvoreno) ništa ne mijenja,
+  // pa nema što ni poništiti.
+  it("does not invalidate when the guard matches 0 rows", async () => {
+    vi.mocked(prisma.election.updateMany).mockResolvedValue({ count: 0 });
+
+    await closeElection("el_draft");
+    expect(revalidatePublicResults).not.toHaveBeenCalled();
+  });
+});
+
+describe("deleteElection", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue({
+      reportKey: null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
+  });
+
+  it("invalidates the cached page — a deleted election must stop serving its tally", async () => {
+    expect(await deleteElection("el_1")).toEqual({ success: true });
+    expect(prisma.$transaction).toHaveBeenCalledTimes(1);
+    expect(revalidatePublicResults).toHaveBeenCalledWith("el_1");
+  });
+
+  it("does not invalidate a missing or cross-org election", async () => {
+    vi.mocked(prisma.election.findFirst).mockResolvedValue(null);
+
+    expect(await deleteElection("el_other")).toEqual({
+      success: false,
+      error: "forbidden",
+    });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(revalidatePublicResults).not.toHaveBeenCalled();
+  });
+
+  it("does not invalidate when the transaction fails — the row still exists", async () => {
+    vi.mocked(prisma.$transaction).mockRejectedValue(new Error("db down"));
+
+    expect(await deleteElection("el_1")).toEqual({
+      success: false,
+      error: "failed",
+    });
+    expect(revalidatePublicResults).not.toHaveBeenCalled();
+  });
+
+  it("rejects an empty id without touching the session or DB", async () => {
+    expect(await deleteElection("")).toEqual({ success: false, error: "invalid" });
+    expect(requireSession).not.toHaveBeenCalled();
+    expect(revalidatePublicResults).not.toHaveBeenCalled();
   });
 });
 

@@ -16,6 +16,7 @@ import {
 } from "@/lib/services/sweep-gate";
 import { pruneExpiredArchives } from "@/lib/services/archive.service";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
+import { revalidatePublicResults } from "@/lib/public-results-cache";
 import { canUseAdminTurnout, canUseAutoReminders } from "@/lib/entitlements";
 import { turnoutMilestoneDue, turnoutPct } from "@/lib/elections-view";
 
@@ -137,7 +138,12 @@ export async function POST(request: Request) {
       where: { id: e.id, status: "ACTIVE" },
       data: { status: "CLOSED" },
     });
+    if (count === 0) continue;
     closed += count;
+
+    // Isti prijelaz kao ručno zatvaranje, samo bez nadzora — i češći put do
+    // njega. Bez ovoga javna stranica do sat vremena tvrdi da glasanje traje.
+    revalidatePublicResults(e.id);
   }
 
   // Automatski podsjetnik 24 h prije zatvaranja (pro-features §2). Treći prolaz

@@ -11,6 +11,7 @@ import {
 import { deadlinePassed, mutationsFrozen } from "@/lib/services/token.service";
 import { clearSweepGate } from "@/lib/services/sweep-gate";
 import { deleteObject } from "@/lib/services/storage.service";
+import { revalidatePublicResults } from "@/lib/public-results-cache";
 
 // Election row-management mutations behind the dashboard three-dot menu.
 // Each action verifies the target election belongs to the session's org before
@@ -313,6 +314,12 @@ export async function closeElection(id: string): Promise<ActionResult> {
       data: { status: "CLOSED", endsAt: new Date() },
     });
     if (count === 0) return { success: false, error: "invalidStatus" };
+
+    // Javna stranica rezultata upravo je prešla sa skrivenog zaslona na zbroj
+    // (resultsDetailAccess sada vraća "closed"), a mijenja se i ispisani endsAt.
+    // Poništi njezin ISR zapis — inače kašnjenje traje do TTL-a (1 h). NAKON
+    // straže: zatvaranje koje nije pogodilo nijedan redak nema što poništiti.
+    revalidatePublicResults(id);
     return { success: true };
   } catch {
     return { success: false, error: "failed" };
@@ -340,6 +347,10 @@ export async function deleteElection(id: string): Promise<ActionResult> {
       prisma.vote.deleteMany({ where: { electionId: id } }),
       prisma.election.delete({ where: { id } }),
     ]);
+
+    // Izbora više nema, ali keširana stranica bi njegov zbroj posluživala do
+    // TTL-a. Skriveni zaslon je jedini ispravan odgovor od ovog trenutka.
+    revalidatePublicResults(id);
 
     // Baza prva, R2 drugi, i vlastiti catch: pad brisanja objekta ne smije
     // prijaviti neuspjeh za izbore kojih više nema. Glasno, nikad progutano.
