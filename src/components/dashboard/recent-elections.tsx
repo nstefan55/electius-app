@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import {
   formatVotingDate,
+  shortRoot,
   sortRecent,
   STATUS_STYLES,
   type DashboardElection,
@@ -39,10 +40,6 @@ const GRID = "lg:grid-cols-[minmax(0,1fr)_120px_190px_130px_44px]";
 
 const MENU_ITEM =
   "flex h-9 cursor-pointer items-center gap-2.5 rounded-md px-2.5 text-sm text-neutral-800 outline-none select-none data-highlighted:bg-neutral-100";
-
-// Skraćeni Merkle korijen za poruku o uspjehu — cijeli se vidi u reviziji arhive.
-const shortRoot = (root?: string) =>
-  root ? `${root.slice(0, 4)}…${root.slice(-4)}` : "";
 
 export function RecentElections({
   elections,
@@ -311,8 +308,9 @@ export function RecentElections({
                   </div>
 
                   {/* Row actions — absolute top-right on mobile, last cell on desktop */}
-                  {/* lg:relative (not static) so the menu stacks above the stretched link */}
-                  <div className="absolute top-3 right-3 lg:relative lg:justify-self-end">
+                  {/* lg:relative (not static) so the menu stacks above the stretched link;
+                      top/right se resetiraju — relativni pomaci inače gurnu gumb 12px dolje-lijevo */}
+                  <div className="absolute top-3 right-3 lg:relative lg:top-auto lg:right-auto lg:justify-self-end">
                     <Menu.Root>
                       <Menu.Trigger
                         aria-label={t("actions.menuLabel")}

@@ -6,6 +6,7 @@ import { Menu } from "@base-ui/react/menu";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import toast from "react-hot-toast";
 import {
+  Archive,
   ChevronDown,
   Copy,
   Eye,
@@ -20,6 +21,7 @@ import {
   formatVotingDate,
   matchesTurnout,
   matchesWindow,
+  shortRoot,
   STATUS_STYLES,
   windowYears,
   type DashboardElection,
@@ -31,6 +33,7 @@ import {
 import {
   renameElection,
   duplicateElection,
+  archiveElection,
   deleteElection,
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -212,6 +215,33 @@ export function ElectionsList({
       () => deleteElection(id),
       () => toast.success(tp("actions.toast.deleted")),
     );
+  }
+
+  // Pečat pada tek nakon uspjeha, ne optimistično: pečaćenje se može odbiti.
+  // Redak ostaje (popis prikazuje i arhivirane), samo mu status prelazi u ARCHIVED.
+  function onArchive(id: string) {
+    startTransition(async () => {
+      const res = await archiveElection(id);
+      if (res.success) {
+        setRows((rs) =>
+          rs.map((r) =>
+            r.id === id ? { ...r, status: "ARCHIVED" as const } : r,
+          ),
+        );
+        toast.success(
+          tp("actions.toast.sealed", { root: shortRoot(res.merkleRoot) }),
+        );
+      } else {
+        toast.error(
+          tp(
+            res.error === "invalidStatus"
+              ? "actions.toast.archiveNotClosed"
+              : "actions.toast.error",
+          ),
+        );
+      }
+      router.refresh();
+    });
   }
 
   return (
@@ -439,8 +469,9 @@ export function ElectionsList({
                     </div>
 
                     {/* Row actions — absolute top-right on mobile, last cell on desktop.
-                        lg:relative (not static) so the menu stacks above the stretched link */}
-                    <div className="absolute top-3 right-3 lg:relative lg:justify-self-end">
+                        lg:relative (not static) so the menu stacks above the stretched link;
+                        top/right se resetiraju — relativni pomaci inače gurnu gumb 12px dolje-lijevo */}
+                    <div className="absolute top-3 right-3 lg:relative lg:top-auto lg:right-auto lg:justify-self-end">
                       <Menu.Root>
                         <Menu.Trigger
                           aria-label={tp("actions.menuLabel")}
@@ -485,6 +516,18 @@ export function ElectionsList({
                                 <Copy className="size-4" />
                                 {tp("actions.duplicate")}
                               </Menu.Item>
+                              {/* Pečat samo nad zatvorenima — stavka postoji
+                                  samo tamo gdje može uspjeti; čuvar je na
+                                  serveru (precedent: /home). */}
+                              {e.status === "CLOSED" && (
+                                <Menu.Item
+                                  className={MENU_ITEM}
+                                  onClick={() => onArchive(e.id)}
+                                >
+                                  <Archive className="size-4" />
+                                  {tp("actions.archive")}
+                                </Menu.Item>
+                              )}
                               <Menu.Separator className="my-1 h-px bg-border" />
                               <Menu.Item
                                 className={cn(

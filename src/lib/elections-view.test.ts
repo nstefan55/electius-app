@@ -9,6 +9,7 @@ import {
   formatVotingDateTime,
   matchesQuery,
   quorumRequiredVoters,
+  shortRoot,
   timeLeftParts,
   turnoutPct,
   zonedWallClockToInstant,
@@ -613,5 +614,15 @@ describe("godina zatvaranja prati zonu izbora", () => {
       "2026",
     ]);
     expect(formatVotingDate(closes, "hr")).toBe("1. sij");
+  });
+});
+
+describe("shortRoot", () => {
+  it("zadržava prva i zadnja četiri znaka korijena", () => {
+    expect(shortRoot("abcd0123456789wxyz")).toBe("abcd…wxyz");
+  });
+
+  it("prazan niz bez korijena", () => {
+    expect(shortRoot(undefined)).toBe("");
   });
 });
