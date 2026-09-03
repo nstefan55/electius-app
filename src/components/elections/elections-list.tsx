@@ -37,6 +37,7 @@ import {
   deleteElection,
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import { ArchiveConfirmDialog } from "@/components/elections/archive-confirm-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { ELECTIONS_PER_PAGE } from "@/lib/constants/pagination";
 import { usePagination } from "@/lib/use-pagination";
@@ -113,6 +114,10 @@ export function ElectionsList({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -518,11 +523,13 @@ export function ElectionsList({
                               </Menu.Item>
                               {/* Pečat samo nad zatvorenima — stavka postoji
                                   samo tamo gdje može uspjeti; čuvar je na
-                                  serveru (precedent: /home). */}
+                                  serveru (precedent: /home). Otvara potvrdu. */}
                               {e.status === "CLOSED" && (
                                 <Menu.Item
                                   className={MENU_ITEM}
-                                  onClick={() => onArchive(e.id)}
+                                  onClick={() =>
+                                    setArchiveTarget({ id: e.id, name: e.name })
+                                  }
                                 >
                                   <Archive className="size-4" />
                                   {tp("actions.archive")}
@@ -592,6 +599,16 @@ export function ElectionsList({
           </AlertDialog.Popup>
         </AlertDialog.Portal>
       </AlertDialog.Root>
+
+      <ArchiveConfirmDialog
+        target={archiveTarget}
+        pending={isPending}
+        onOpenChange={(open) => !open && setArchiveTarget(null)}
+        onConfirm={(id) => {
+          setArchiveTarget(null);
+          onArchive(id);
+        }}
+      />
     </div>
   );
 }

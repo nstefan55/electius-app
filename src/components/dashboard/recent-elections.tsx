@@ -28,6 +28,7 @@ import {
   deleteElection,
 } from "@/actions/elections";
 import { Link, useRouter } from "@/i18n/navigation";
+import { ArchiveConfirmDialog } from "@/components/elections/archive-confirm-dialog";
 import {
   DASHBOARD_RECENT_ELECTIONS_LIMIT,
   DASHBOARD_RECENT_STEP,
@@ -63,6 +64,10 @@ export function RecentElections({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const [archiveTarget, setArchiveTarget] = useState<{
     id: string;
     name: string;
   } | null>(null);
@@ -347,11 +352,13 @@ export function RecentElections({
                             {/* Pečaćenje ide samo nad zatvorenim izborima, pa
                                 stavka postoji samo tamo — inače bi odbijenica
                                 bila pravilo, a ne rub. Čuvar ostaje i na
-                                serveru (precedent: Dodaj birače). */}
+                                serveru (precedent: Dodaj birače). Otvara potvrdu. */}
                             {e.status === "CLOSED" && (
                               <Menu.Item
                                 className={MENU_ITEM}
-                                onClick={() => onArchive(e.id)}
+                                onClick={() =>
+                                  setArchiveTarget({ id: e.id, name: e.name })
+                                }
                               >
                                 <Archive className="size-4" />
                                 {t("actions.archive")}
@@ -433,6 +440,16 @@ export function RecentElections({
           </AlertDialog.Popup>
         </AlertDialog.Portal>
       </AlertDialog.Root>
+
+      <ArchiveConfirmDialog
+        target={archiveTarget}
+        pending={isPending}
+        onOpenChange={(open) => !open && setArchiveTarget(null)}
+        onConfirm={(id) => {
+          setArchiveTarget(null);
+          onArchive(id);
+        }}
+      />
     </div>
   );
 }
