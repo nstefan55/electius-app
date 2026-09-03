@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dialog } from "@base-ui/react/dialog";
+import toast from "react-hot-toast";
 import {
+  Archive,
   ChevronRight,
   CircleCheck,
   Download,
@@ -13,10 +15,12 @@ import {
   Lock,
   Rows2,
 } from "lucide-react";
-import { Link } from "@/i18n/navigation";
+import { archiveElection } from "@/actions/elections";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Pagination } from "@/components/ui/pagination";
 import {
   formatVotingDateTime,
+  shortRoot,
   type ResultsAccess,
   type ResultsRow,
 } from "@/lib/elections-view";
@@ -56,11 +60,39 @@ const ACCESS_ICON = { live: Eye, sealed: Lock, closed: CircleCheck } as const;
 
 type Layout = "cards" | "rows";
 
+type ArchiveProps = {
+  onArchive: (id: string) => void;
+  pending: boolean;
+};
+
 export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
   const t = useTranslations("dashboard.resultsPage");
   // Preferencija prikaza, ne filtar — lokalno stanje, ne URL parametar.
   const [layout, setLayout] = useState<Layout>("cards");
   const [sealed, setSealed] = useState<ResultsRow | null>(null);
+  const ta = useTranslations("dashboard.page.actions");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+
+  // Pečat je ista radnja kao u ⋯ izbornicima (/home, /elections), s istom
+  // porukom. Nakon uspjeha redak pripada /archive — refresh ga uklanja odavde.
+  function onArchive(id: string) {
+    startTransition(async () => {
+      const res = await archiveElection(id);
+      if (res.success) {
+        toast.success(ta("toast.sealed", { root: shortRoot(res.merkleRoot) }));
+      } else {
+        toast.error(
+          ta(
+            res.error === "invalidStatus"
+              ? "toast.archiveNotClosed"
+              : "toast.error",
+          ),
+        );
+      }
+      router.refresh();
+    });
+  }
 
   // Klijentsko stranicanje: resultsRows() dohvaća SVE statuse pa u JS-u odbacuje
   // DRAFT/SCHEDULED/ARCHIVED — uz `take: 12` u upitu stranica bi nakon odbacivanja
@@ -114,13 +146,25 @@ export function ResultsOverviewList({ rows }: { rows: ResultsRow[] }) {
       ) : layout === "cards" ? (
         <div className="grid grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-[18px]">
           {pageItems.map((row) => (
-            <ResultsCard key={row.id} row={row} onSealed={setSealed} />
+            <ResultsCard
+              key={row.id}
+              row={row}
+              onSealed={setSealed}
+              onArchive={onArchive}
+              pending={pending}
+            />
           ))}
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm">
           {pageItems.map((row) => (
-            <ResultsRowItem key={row.id} row={row} onSealed={setSealed} />
+            <ResultsRowItem
+              key={row.id}
+              row={row}
+              onSealed={setSealed}
+              onArchive={onArchive}
+              pending={pending}
+            />
           ))}
         </div>
       )}
@@ -217,8 +261,13 @@ function StatusChip({
 // PDF vodi na pregled izvještaja (lokalizirani Link), CSV izravno na preuzimanje
 // (obični <a> — /api je izvan [locale] segmenta i Content-Disposition preuzima
 // datoteku sam). Onemogućen redak nema poveznicu, pa ostaje <button disabled>.
-function ExportButtons({ row }: { row: ResultsRow }) {
+function ExportButtons({
+  row,
+  onArchive,
+  pending,
+}: { row: ResultsRow } & ArchiveProps) {
   const t = useTranslations("dashboard.resultsPage");
+  const ta = useTranslations("dashboard.page.actions");
   const locale = useLocale();
   const disabled = row.access === "sealed";
 
@@ -232,7 +281,7 @@ function ExportButtons({ row }: { row: ResultsRow }) {
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <div className="relative z-10 flex items-center gap-2">
+    <div className="relative z-10 flex flex-wrap items-center gap-2">
       {disabled ? (
         <button type="button" disabled className={cn(base, DISABLED)}>
           <FileText className="size-[15px]" />
@@ -262,6 +311,25 @@ function ExportButtons({ row }: { row: ResultsRow }) {
           <Download className="size-[15px]" />
           {t("csv")}
         </a>
+      )}
+      {/* Pečat samo nad zatvorenima; arhivirani redak odlazi na /archive. */}
+      {row.status === "CLOSED" && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={(e) => {
+            stop(e);
+            onArchive(row.id);
+          }}
+          className={cn(
+            base,
+            ENABLED,
+            "disabled:cursor-not-allowed disabled:opacity-40",
+          )}
+        >
+          <Archive className="size-[15px]" />
+          {ta("archive")}
+        </button>
       )}
     </div>
   );
@@ -306,10 +374,12 @@ function OpenTarget({
 function ResultsCard({
   row,
   onSealed,
+  onArchive,
+  pending,
 }: {
   row: ResultsRow;
   onSealed: (row: ResultsRow) => void;
-}) {
+} & ArchiveProps) {
   const { t, style, Icon, line } = useRowParts(row);
 
   return (
@@ -336,7 +406,7 @@ function ResultsCard({
       </div>
 
       <div className="mt-0.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-3 border-t border-neutral-100 pt-4">
-        <ExportButtons row={row} />
+        <ExportButtons row={row} onArchive={onArchive} pending={pending} />
         <span className="ml-auto inline-flex items-center gap-1 text-[0.8125rem] font-semibold whitespace-nowrap text-neutral-600 transition-colors group-hover:text-brand-700">
           {t("viewResults")}
           <ChevronRight className="size-4" />
@@ -349,10 +419,12 @@ function ResultsCard({
 function ResultsRowItem({
   row,
   onSealed,
+  onArchive,
+  pending,
 }: {
   row: ResultsRow;
   onSealed: (row: ResultsRow) => void;
-}) {
+} & ArchiveProps) {
   const { style, Icon, line } = useRowParts(row);
 
   return (
@@ -376,7 +448,7 @@ function ResultsRowItem({
       </div>
 
       <div className="flex flex-shrink-0 items-center gap-2">
-        <ExportButtons row={row} />
+        <ExportButtons row={row} onArchive={onArchive} pending={pending} />
         <span className="mx-0.5 h-6 w-px bg-neutral-200" />
         <ChevronRight className="size-5 text-neutral-400 transition-colors group-hover:text-brand-700" />
       </div>

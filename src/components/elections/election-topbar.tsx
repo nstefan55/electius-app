@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { AlertDialog } from "@base-ui/react/alert-dialog";
 import { Dialog } from "@base-ui/react/dialog";
 import {
+  Archive,
   ArrowLeft,
   CirclePause,
   Download,
@@ -17,12 +18,17 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { closeElection, deleteElection } from "@/actions/elections";
+import {
+  archiveElection,
+  closeElection,
+  deleteElection,
+} from "@/actions/elections";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { StatusBadge } from "@/components/elections/status-badge";
 import {
   formatVotingDateTime,
   resultsDetailAccess,
+  shortRoot,
   type ElectionStatus,
   type ResultsMode,
 } from "@/lib/elections-view";
@@ -34,6 +40,7 @@ import {
 // Action visibility is purely status-driven, straight from the spec:
 //   Edit    DRAFT | SCHEDULED   (editing a running election is not allowed)
 //   Close   ACTIVE only         (ends the window early, irreversible)
+//   Archive CLOSED only         (seals the record — there is no unseal)
 //   Remove  everything BUT ACTIVE
 // Preview + Exit are always available.
 export interface BallotOption {
@@ -75,6 +82,8 @@ export function ElectionTopbar({
   // statusa moraju glasiti IDENTIČNO ovdje i u modalu na /results — dva
   // prijevoda istog pravila razišla bi se prvom izmjenom.
   const tr = useTranslations("dashboard.resultsPage");
+  // Pečat: oznaka i poruke iz namespacea ⋯ izbornika — ista radnja na četiri mjesta.
+  const ta = useTranslations("dashboard.page.actions");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname(); // bez prefiksa lokalizacije — odgovara ravnim hrefovima
@@ -84,6 +93,7 @@ export function ElectionTopbar({
 
   const showEdit = status === "DRAFT" || status === "SCHEDULED";
   const showClose = status === "ACTIVE";
+  const showArchive = status === "CLOSED";
   const showRemove = status !== "ACTIVE";
 
   // Pregled PDF izvještaja je cjelostranični podprikaz: vlastita traka (natrag +
@@ -141,6 +151,25 @@ export function ElectionTopbar({
       }
     });
 
+  // Bez potvrde, kao u ⋯ izbornicima: pečat ništa ne uklanja, korijen u poruci
+  // JE potvrda. ponytail: dodaj ConfirmDialog ako se pokaže slučajno pečaćenje.
+  const handleArchive = () =>
+    startTransition(async () => {
+      const res = await archiveElection(id);
+      if (res.success) {
+        toast.success(ta("toast.sealed", { root: shortRoot(res.merkleRoot) }));
+        router.refresh(); // traka se ponovno iscrtava kao ARCHIVED
+      } else {
+        toast.error(
+          ta(
+            res.error === "invalidStatus"
+              ? "toast.archiveNotClosed"
+              : "toast.error",
+          ),
+        );
+      }
+    });
+
   return (
     <>
       <header className="-mx-8 -mt-8 mb-6 flex min-h-19 flex-wrap items-center justify-between gap-5 border-b border-border bg-neutral-50 px-8 py-3.5 print:hidden">
@@ -186,6 +215,18 @@ export function ElectionTopbar({
             >
               <CirclePause className="size-4" aria-hidden />
               {t("close")}
+            </button>
+          )}
+
+          {showArchive && (
+            <button
+              type="button"
+              onClick={handleArchive}
+              disabled={pending}
+              className={`${GHOST_BTN} disabled:cursor-not-allowed disabled:opacity-40`}
+            >
+              <Archive className="size-4" aria-hidden />
+              {ta("archive")}
             </button>
           )}
 

@@ -246,6 +246,10 @@ export const resultsRows = (els: DashboardElection[]): ResultsRow[] =>
     })
     .sort((a, b) => ACCESS_ORDER[a.access] - ACCESS_ORDER[b.access]);
 
+// Skraćeni Merkle korijen za poruku o uspjehu — cijeli se vidi u reviziji arhive.
+export const shortRoot = (root?: string) =>
+  root ? `${root.slice(0, 4)}…${root.slice(-4)}` : "";
+
 // Rastav trajanja na dane/sate/minute. Vraća dijelove, ne oznaku, da sufiksi
 // jedinica ostanu u katalozima. Odsječeno na nuli: negativno trajanje čita se
 // 0h 0m umjesto da broji unatrag.
