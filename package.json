@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.53",
+  "version": "0.9.54",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -68,6 +68,7 @@
     "node": "24.x"
   },
   "overrides": {
-    "deepmerge-ts": "^8.0.2"
+    "deepmerge-ts": "^8.0.2",
+    "mysql2": "^3.24.2"
   }
 }
