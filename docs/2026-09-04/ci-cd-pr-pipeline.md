@@ -1,8 +1,9 @@
 # CI/CD PR Pipeline — pull requests, branch rules, and subagent reviews in Actions
 
-**Branch:** `feature/pr-pipeline` · **Version:** 0.9.56 (patch, 0.9.x lock)
+**Describes:** the work shipped by `feature/pr-pipeline` as **v0.9.56**, merged via **PR #2** (`5552953`).
+This document lands separately, in its own docs-only pull request, because it was written after that merge.
 **Spec:** `context/features/ci-cd-pr-pipeline.md` (design, 2026-09-04) · **Builds on:** `context/ci-cd-pipeline/electius-ci-cd-pipeline-spec.md` (2026-08-30) and `docs/2026-08-30/ci-cd-pipeline.md`
-**Date:** 2026-09-04 · **Application behaviour change:** none. Two workflow files, one ignore rule, three agent files, one version bump.
+**Date:** 2026-09-04 · **Application behaviour change in v0.9.56:** none. Two workflow files, one ignore rule, three agent files.
 
 > The August pipeline work shipped four gates that run on every push. This ships the half it
 > deferred: the pull-request flow those gates were designed to gate, the branch rules that make
