@@ -42,7 +42,12 @@ permissions:
   id-token: write         # the action's OIDC app token
 
 concurrency:
-  group: claude-${{ github.event.pull_request.number || github.event.issue.number }}
+  # Event-aware, for the same reason ci.yml's group is. Without github.event_name here, an
+  # issue_comment on a PR shares a group with that PR's review and cancel-in-progress kills the
+  # review mid-flight. Vercel's bot comments on every PR within seconds of it opening, so this
+  # was not a corner case: it cancelled the review on PR #3 three seconds in, and the comment run
+  # then skipped every job, so the review died for nothing.
+  group: claude-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number }}
   cancel-in-progress: true
 
 jobs:
