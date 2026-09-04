@@ -41,7 +41,17 @@ yarn-error.log*
 next-env.d.ts
 
 
-!.claude
+# .claude — ONLY the three agents the CI reviewers invoke are tracked (D1,
+# context/features/ci-cd-pr-pipeline.md). Everything else stays local: agent-memory/ is
+# unattended-run output no human has read, settings.local.json is machine-specific, skills/
+# read context/ files that are not in the repo, and coder/code-scanner are invoked by no
+# workflow. The never-stage-.claude habit is now a rule: `git add .claude` cannot sweep them in.
+.claude/*
+!.claude/agents/
+.claude/agents/*
+!.claude/agents/pr-reviewer.md
+!.claude/agents/auth-auditor.md
+!.claude/agents/ui-reviewer.md
 CLAUDE.md
 AGENTS.md
 !context/*
