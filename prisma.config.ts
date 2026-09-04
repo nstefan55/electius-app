@@ -19,9 +19,11 @@ const directUrl = process.env["DIRECT_URL"];
 //
 // Namjerno NEMA pada na DATABASE_URL: taj je poolan (PgBouncer), a migracije
 // idu nepoolanom vezom. Tiha zamjena prekršila bi tu odluku bez ijednog traga.
-const needsDatabase = process.argv.some(
-  (arg) => arg === "migrate" || arg === "db" || arg === "studio",
-);
+// `migrate diff` radi i bez baze (--from-empty); traži je samo uz config datasource.
+const [, , command, sub] = process.argv;
+const needsDatabase =
+  (command === "migrate" || command === "db" || command === "studio") &&
+  (sub !== "diff" || process.argv.some((a) => a.includes("config-datasource")));
 
 if (needsDatabase && !directUrl) {
   throw new Error(
