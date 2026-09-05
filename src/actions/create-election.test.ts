@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { session } from "./session-fixture";
 
 // Mock the two seams (DB + session) per the action-test pattern.
 vi.mock("@/lib/prisma", () => ({
@@ -26,24 +27,6 @@ const { resolveEntitlement } = await import(
 );
 const { clearSweepGate } = await import("@/lib/services/sweep-gate");
 const { createElection } = await import("@/actions/create-election");
-
-const session = {
-  user: {
-    email: "admin@example.com",
-    name: "A",
-    organization: "Org",
-    image: null,
-    organizationLogo: null,
-    isPro: false,
-  },
-  organizationId: "org_1",
-  accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largerText: false,
-    focusOutlines: true,
-  },
-};
 
 const basePayload = {
   title: "Student council",

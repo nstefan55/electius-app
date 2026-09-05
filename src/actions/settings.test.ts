@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { session } from "./session-fixture";
 import { Prisma } from "@/generated/prisma/client";
 
 // Server actions call requireSession() + prisma directly — mock both so the
@@ -29,17 +30,6 @@ const {
 const { DELETE_TOKEN_PREFIX } = await import(
   "@/lib/services/account-deletion.service"
 );
-
-const session = {
-  user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
-  organizationId: "org_1",
-  accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largerText: false,
-    focusOutlines: true,
-  },
-};
 
 beforeEach(() => {
   vi.mocked(requireSession).mockResolvedValue(session);

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { session } from "./session-fixture";
 
 // Isti obrazac kao elections.test.ts: mockiraj prisma + requireSession +
 // publication.service, provjeravaj ulaze u mockove — nikad pravu bazu.
@@ -33,24 +34,6 @@ const { resolveEntitlement } = await import(
 );
 const { addVoters, updateVoterName, removeVoter, resendVoterInvite } =
   await import("@/actions/voters");
-
-const session = {
-  user: {
-    email: "admin@example.com",
-    name: "A",
-    organization: "Org",
-    image: null,
-    organizationLogo: null,
-    isPro: false,
-  },
-  organizationId: "org_1",
-  accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largerText: false,
-    focusOutlines: true,
-  },
-};
 
 // Otvoren prozor je zadana vrijednost: mutationsFrozen čita datume, pa bi ih
 // svaki test inače morao ponavljati. Testovi koji ispituju gotove izbore

@@ -16,7 +16,14 @@ export default defineConfig({
       include: ["src/actions/**/*.ts", "src/lib/**/*.ts"],
       // Ovaj popis ZAMJENJUJE Vitestove zadane iskljucke, ne dopunjuje ih — pa pokriva i
       // .spec/.bench/__tests__ konvencije: test datoteka u nazivniku digla bi postotak.
-      exclude: ["**/*.{test,spec,bench}.ts", "**/__tests__/**", "**/*.d.ts"],
+      exclude: [
+        "**/*.{test,spec,bench}.ts",
+        "**/__tests__/**",
+        "**/*.d.ts",
+        // Fixture, ne izvorni kod. Bez ovoga session-fixture.ts (jedan
+        // `export const`, 100 % i bez grana) ulazi u nazivnik i diže postotak.
+        "**/*-fixture.ts",
+      ],
       // cobertura je jedini format koji actions/upload-code-coverage prima.
       reporter: ["text", "text-summary", "cobertura"],
       reportsDirectory: "coverage",
