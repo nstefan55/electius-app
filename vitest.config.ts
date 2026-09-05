@@ -16,7 +16,7 @@ export default defineConfig({
       include: ["src/actions/**/*.ts", "src/lib/**/*.ts"],
       exclude: ["**/*.test.ts", "**/*.d.ts"],
       // cobertura je jedini format koji actions/upload-code-coverage prima.
-      reporter: ["text-summary", "cobertura"],
+      reporter: ["text", "text-summary", "cobertura"],
       reportsDirectory: "coverage",
     },
   },
