@@ -14,20 +14,25 @@ This document lands separately, in its own pull request, because it was written 
 
 ## 1. The gap
 
-The `main` ruleset (`enforcement: active`) carries six rules. Two of them name a *tool* rather than
-a workflow job:
+When this branch was opened, the `main` ruleset (`enforcement: active`) carried two rules that name
+a *tool* rather than a workflow job, and neither had anything reporting to it:
 
-| Rule | Expects | Existed on 2026-09-05 |
+| Rule | Expects | State when the branch opened |
 | --- | --- | --- |
 | `code_coverage` | a coverage report, minimum 80% | nothing produced one |
 | `code_scanning` | CodeQL, `errors` / `high_or_higher` | no CodeQL workflow |
 
-This is a failure mode worth naming, because it does not look like one. A required status check
-with no producer is not reported as failing — it is reported as **missing**, and a pull request
-with a missing required check simply never becomes mergeable. There is no red X to click into and
-no log to read. The repository looked healthy and merges were impossible.
+This is a failure mode worth naming, because it does not look like one. A required check with no
+producer is not reported as failing — it is reported as **missing**, and a pull request with a
+missing required check simply never becomes mergeable. There is no red X to click into and no log
+to read. The repository looked healthy and merges were impossible.
 
-The fix is not to relax the rules. It is to supply what they are asking for.
+The fix is not to relax the rules. It is to supply what they are asking for — which is what this
+branch did for `code_scanning`, and *attempted* for `code_coverage`. See §4: the coverage producer
+exists and runs, but its upload has nowhere to land until a repository setting is enabled, so the
+`code_coverage` rule was **removed from the ruleset** rather than left blocking. Read §6 for where
+that leaves things; the honest summary is that coverage is measured and reported in the job log,
+and is not yet enforced.
 
 ---
 
@@ -45,7 +50,7 @@ Invariant #8 says tests cover `src/actions/` and `src/lib/` **only** — no comp
 the browser and Playwright own that surface. A whole-`src` percentage would therefore be measuring
 components that deliberately have no tests, and the number would say nothing about whether the
 tested code is tested well. Measured under this scope: **82.23% lines**, comfortably above the
-ruleset's 80% floor.
+80% floor the rule asked for — a rule that is not currently on the ruleset (§4).
 
 **The exclude list replaces Vitest's defaults, it does not extend them.** That was the second
 commit on the branch and it is the subtle one. Written as `["**/*.test.ts"]` the list drops
@@ -122,23 +127,39 @@ The literal is the interpolated `head.repo.full_name`. On a fork PR it would not
 `$GITHUB_REPOSITORY`, and the action **exits 0** — a clean skip with a notice, not a failure. The
 workflow-level guard was duplicating a guard the action already performs.
 
-So the condition went back to the simpler form, with the comment now stating what is true:
+So the condition went back to the simpler form:
 
 ```yaml
 # PRs and main only: ci.yml fires on bare push AND pull_request, so a branch with an open
 # PR would otherwise upload the same report twice. Forks need no clause here — the action
-# skips them itself (verified in the run log: "Skipping coverage upload for fork PR").
+# guards them itself: its shell body, printed verbatim in the run log's ##[group]Run block,
+# compares the interpolated head.repo.full_name against GITHUB_REPOSITORY and exits 0 on a
+# mismatch. Read from the action's source, not from an observed fork run — this repo has none.
 if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
 ```
 
-The two conditions are behaviourally identical for this repository, which has no forks. They
-differ on exactly one input — a fork PR — where the old one skipped the step and the new one runs
-it and lets the action no-op. The reason to prefer the new one is not behaviour, it is that the
-old one's comment asserted the upload would *fail* on a fork, and the log shows it does not. A
-wrong comment on a CI gate is how a future reader re-adds a redundant guard.
+**Be precise about what that evidence is.** The `##[group]Run` block prints the script GitHub is
+*about* to execute, so the quoted `if` and its `::notice::` are the action's source, echoed. In the
+run that produced them the head repo *matched*, so the fork branch never fired — nobody has watched
+this action skip a real fork PR, because this repository has never had one. It is a strong reading
+of what the action does, not an observation of it doing it. The first draft of this comment said
+"verified in the run log", which overstates that; the wording above is the correction.
 
-**Transferable:** the `##[group]Run` block prints what a composite action actually executes.
-Reading it settles questions about action behaviour that reasoning from documentation cannot.
+The two conditions are behaviourally identical for this repository. They differ on exactly one
+input — a fork PR — where the old one skipped the step and the new one runs it and lets the action
+no-op. The reason to prefer the new one is not behaviour, it is that the old one's comment asserted
+the upload would *fail* on a fork, and the action's own source says otherwise. A wrong comment on a
+CI gate is how a future reader re-adds a redundant guard.
+
+**Transferable:** the `##[group]Run` block prints what a composite action will execute, which
+settles questions that reasoning from documentation cannot — as long as you distinguish reading the
+script from watching the branch run.
+
+**Recorded tradeoff:** this now leans on behaviour internal to
+`actions/upload-code-coverage@`**`v1`**, a floating tag, so a future `v1.x` could change that guard
+with no diff here. Blast radius today is nil — no forks are possible, a fork's token is read-only,
+and `fail-on-error: false`. Consistent with how every other action in these workflows is pinned, so
+it is noted rather than changed.
 
 ---
 
@@ -153,11 +174,18 @@ with `fail-on-error: false`:
 
 There is nowhere to upload to until **Settings → Security → Code quality → "Code coverage
 analysis"** is switched on for the repository. A gate must not go red over a toggle nobody has
-flipped, so the failure is soft. **Flip `fail-on-error: true` once the first report lands** — until
-then the `code_coverage` ruleset rule has a producer that cannot deliver, and the 82.23% is
-measured locally and in the job log but never recorded against a commit. This is owner console
-work; the application cannot detect it, the same silent-no-op class as the Upstash, R2 and Resend
-variables.
+flipped, so the failure is soft.
+
+That toggle is also why the `code_coverage` **rule is no longer on the ruleset**. The ruleset's
+`updated_at` is roughly half a minute before PR #5 merged, which is the shape of a rule removed to
+let a blocked merge through — the producer could not deliver, so the requirement was dropped rather
+than the merge held. The 82.23% is real, and it is measured on every run, but at the moment it is
+recorded only in the job log and never against a commit.
+
+**Two owner console steps, in this order:** switch "Code coverage analysis" on, confirm a report
+actually lands on a commit, then flip `fail-on-error: true` and re-add the `code_coverage` rule.
+Re-adding the rule first re-blocks every PR. The application cannot detect any of this — the same
+silent-no-op class as the Upstash, R2 and Resend variables.
 
 **`@action-validator/cli` reports `ci.yml` invalid.** It is a false positive, and it pre-dates this
 branch:
@@ -196,15 +224,19 @@ output into a variable and read `$?` immediately.
 
 ## 6. The ruleset as it now stands
 
-All six rules on `main` have a producer, and PR #5 was the first merge to satisfy every one:
+Every rule now on `main` has a producer, and PR #5 was the first merge to satisfy all of them:
 
 | Rule | Producer |
 | --- | --- |
 | `required_status_checks` — `quality`, `migration-presence`, `secret-scan`, `dependency-audit`, `pr-hygiene` | `ci.yml` |
-| `code_scanning` — CodeQL | `codeql.yml` |
-| `code_coverage` — min 80% | `ci.yml` upload step (soft until the setting is enabled, §4) |
+| `code_scanning` — CodeQL, `errors` / `high_or_higher` | `codeql.yml` |
 | `pull_request` — 0 approvals, merge commits only, thread resolution required | the flow itself |
 | `deletion` · `non_fast_forward` | GitHub |
+
+**`code_coverage` is deliberately absent** from that list — it was on the ruleset when this branch
+opened and is not now (§4). The producer ships and runs; the rule comes back once its upload has
+somewhere to land. Anyone reading `e9fe1ba`'s commit message, which describes the rule as present,
+is reading something that was true when it was written.
 
 `required_approving_review_count` is **0**, which is correct for a single-maintainer repository:
 GitHub does not permit self-approval, so any non-zero value with no bypass actor makes `main`
