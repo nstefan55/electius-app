@@ -1856,6 +1856,7 @@
   "voter": {
     "flow": {
       "stepLabel": "Korak {step} od 5",
+      "back": "Natrag",
       "invite": {
         "title": "Pozvani ste na glasovanje",
         "sub": "{org} — {title}",
@@ -1885,8 +1886,7 @@
         "votingFor": "Glasujete za",
         "votingForMulti": "{count, plural, one {Glasujete za # opciju} few {Glasujete za # opcije} other {Glasujete za # opcija}}",
         "final": "Nakon predaje glas je konačan i ne može se promijeniti.",
-        "cta": "Potvrdi i predaj glas",
-        "back": "Natrag"
+        "cta": "Potvrdi i predaj glas"
       },
       "confirmed": {
         "title": "Vaš glas je zabilježen",

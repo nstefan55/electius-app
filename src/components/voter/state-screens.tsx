@@ -16,6 +16,7 @@ import {
   HelpCard,
   StateHero,
   VoterAlert,
+  VoterCard,
 } from "./voter-ui";
 
 // Server-rendered non-happy states (voter-flow spec §1, prototype sections
@@ -33,7 +34,7 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
 
   if (ballot.state === "invalid") {
     return (
-      <div className="flex flex-col gap-5">
+      <VoterCard>
         <StateHero
           icon={CircleX}
           tone="error"
@@ -42,7 +43,7 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
           topPad
         />
         <HelpCard title={t("help.title")} body={t("help.body")} />
-      </div>
+      </VoterCard>
     );
   }
 
@@ -54,7 +55,7 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
 
   if (ballot.state === "expired") {
     return (
-      <div className="flex flex-col gap-5">
+      <VoterCard>
         <StateHero
           icon={Clock}
           tone="warning"
@@ -66,13 +67,13 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
           {t("expired.cta")}
         </Link>
         <HelpCard title={t("help.title")} body={t("help.body")} />
-      </div>
+      </VoterCard>
     );
   }
 
   if (ballot.state === "used") {
     return (
-      <div className="flex flex-col gap-5">
+      <VoterCard>
         <StateHero
           icon={ShieldCheck}
           tone="brand"
@@ -87,47 +88,53 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
         >
           {t("used.alertBody")}
         </VoterAlert>
-      </div>
+      </VoterCard>
     );
   }
 
   if (ballot.state === "notStarted") {
     return (
-      <div className="flex flex-col gap-5">
+      <VoterCard>
         <StateHero
           icon={CalendarDays}
           tone="brand"
           title={t("notStarted.title")}
-          sub={ballot.hasToken ? t("notStarted.sub") : t("notStarted.subGeneric")}
+          sub={
+            ballot.hasToken ? t("notStarted.sub") : t("notStarted.subGeneric")
+          }
           topPad
         />
-        <div className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-white p-4 text-sm">
+        <div className="flex flex-col gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm">
           <div className="flex items-baseline justify-between gap-3">
-            <span className="text-neutral-600">{t("notStarted.opensLabel")}</span>
+            <span className="text-neutral-600">
+              {t("notStarted.opensLabel")}
+            </span>
             <span className="font-heading font-semibold text-brand-700">
               {formatVoterDateTime(election.startsAt, locale)}
             </span>
           </div>
           {closes ? (
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-neutral-600">{t("notStarted.closesLabel")}</span>
+              <span className="text-neutral-600">
+                {t("notStarted.closesLabel")}
+              </span>
               <span className="font-semibold text-neutral-950">{closes}</span>
             </div>
           ) : null}
         </div>
         {ballot.hasToken ? (
-          <p className="text-center text-xs text-neutral-400">
+          <p className="text-center text-xs text-neutral-600">
             {t("notStarted.keep")}
           </p>
         ) : null}
-      </div>
+      </VoterCard>
     );
   }
 
   // closed — voted / not-voted / no-token (QR visitor) variants.
   const sub = closes ? t("closed.sub", { closes }) : t("closed.subNoDate");
   return (
-    <div className="flex flex-col gap-5">
+    <VoterCard>
       <StateHero
         icon={Flag}
         tone="neutral"
@@ -151,7 +158,7 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
           {t("closed.noResults")}
         </p>
       )}
-      <p className="text-center text-xs text-neutral-400">{t("closed.anon")}</p>
-    </div>
+      <p className="text-center text-xs text-neutral-600">{t("closed.anon")}</p>
+    </VoterCard>
   );
 }

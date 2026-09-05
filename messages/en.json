@@ -1856,6 +1856,7 @@
   "voter": {
     "flow": {
       "stepLabel": "Step {step} of 5",
+      "back": "Go back",
       "invite": {
         "title": "You've been invited to vote",
         "sub": "{org} — {title}",
@@ -1885,8 +1886,7 @@
         "votingFor": "You are voting for",
         "votingForMulti": "{count, plural, one {You are voting for # option} other {You are voting for # options}}",
         "final": "Once submitted, your vote is final and cannot be changed.",
-        "cta": "Confirm & submit",
-        "back": "Go back"
+        "cta": "Confirm & submit"
       },
       "confirmed": {
         "title": "Your vote has been recorded",

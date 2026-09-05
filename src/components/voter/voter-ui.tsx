@@ -13,7 +13,10 @@ import { ELECTION_TIME_ZONE } from "@/lib/elections-view";
 // (`09:41`), a Node ne (`9:41`) — hidracijska greška ispod 10 sati UTC.
 const DATE_LOCALE: Record<string, string> = { hr: "hr-HR", en: "en-US" };
 
-export function formatVoterDateTime(iso: string | Date, locale: string): string {
+export function formatVoterDateTime(
+  iso: string | Date,
+  locale: string,
+): string {
   const d = new Date(iso);
   const l = DATE_LOCALE[locale] ?? locale;
   const date = new Intl.DateTimeFormat(l, {
@@ -68,12 +71,14 @@ export function StateHero({
   title,
   sub,
   topPad = true,
+  titleSize = "md",
 }: {
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   tone: "brand" | "success" | "error" | "warning" | "neutral";
   title: string;
   sub: string;
   topPad?: boolean;
+  titleSize?: "lg" | "md";
 }) {
   const circle = {
     brand: "bg-brand-50 text-brand-700",
@@ -83,16 +88,29 @@ export function StateHero({
     neutral: "bg-neutral-100 text-neutral-600",
   }[tone];
   return (
-    <div className={`text-center ${topPad ? "pt-9" : ""}`}>
+    <div className={`text-center ${topPad ? "pt-3" : ""}`}>
       <div
         className={`mx-auto mb-4 flex size-16 items-center justify-center rounded-full ${circle}`}
       >
         <Icon className="size-7.5" aria-hidden />
       </div>
-      <h1 className="font-heading text-2xl font-bold text-neutral-800">
+      <h1
+        className={`font-heading font-bold text-neutral-800 ${titleSize === "lg" ? "text-3xl" : "text-2xl"}`}
+      >
         {title}
       </h1>
       <p className="mt-2 text-base leading-relaxed text-neutral-600">{sub}</p>
+    </div>
+  );
+}
+
+// §8.2 sadržajna kartica — bijela, radius-lg, shadow-sm, 24px pada. Svaki
+// zaslon toka i svaki state screen sjedi u njoj; točkice napretka (§7.16)
+// stoje IZNAD nje, kako spec i crta.
+export function VoterCard({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-5 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm">
+      {children}
     </div>
   );
 }
@@ -111,10 +129,11 @@ export function VoterAlert({
 }) {
   const styles =
     variant === "success"
-      ? "bg-success-50 border-success-500 text-success-700"
-      : "bg-warning-50 border-warning-500 text-warning-700";
+      ? "bg-success-50 text-success-700"
+      : "bg-warning-50 text-warning-700";
+  // Bez lijevog ruba (§7.10 ga traži) — korisnička odluka za cijeli tok.
   return (
-    <div className={`rounded-md border-l-3 p-4 ${styles}`}>
+    <div className={`rounded-md p-4 ${styles}`}>
       <div className="flex items-start gap-2.5">
         <Icon className="mt-0.5 size-5 shrink-0" aria-hidden />
         <div className="min-w-0">
@@ -129,7 +148,7 @@ export function VoterAlert({
 // Flat "think this is a mistake?" card (invalid / expired / race screens).
 export function HelpCard({ title, body }: { title: string; body: string }) {
   return (
-    <div className="rounded-lg border border-neutral-200 bg-white p-4">
+    <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4">
       <p className="text-sm font-semibold text-neutral-950">{title}</p>
       <p className="mt-1 text-sm leading-normal text-neutral-600">{body}</p>
     </div>
@@ -142,4 +161,4 @@ export const BTN_PRIMARY_XL =
 export const BTN_SECONDARY_LG =
   "inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-md border-[1.5px] border-brand-700 bg-white px-6 font-semibold text-brand-700 transition-colors hover:bg-brand-50";
 export const BTN_GHOST_MD =
-  "inline-flex h-10 w-full cursor-pointer items-center justify-center rounded-md px-4 text-neutral-600 transition-colors hover:bg-neutral-100";
+  "inline-flex h-11 w-full cursor-pointer items-center justify-center rounded-md px-4 text-neutral-600 transition-colors hover:bg-neutral-100";
