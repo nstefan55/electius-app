@@ -9,6 +9,7 @@ import {
   BTN_PRIMARY_XL,
   StateHero,
   VoterAlert,
+  VoterCard,
 } from "./voter-ui";
 
 // QR / no-token entry (voter-flow spec §4, prototype section 05): election
@@ -61,7 +62,7 @@ export function RequestLinkForm({
   // 5.3 — identical whether or not the email is on the voter list.
   if (sentTo) {
     return (
-      <div className="flex flex-col gap-5">
+      <VoterCard>
         <StateHero
           icon={MailCheck}
           tone="brand"
@@ -76,7 +77,7 @@ export function RequestLinkForm({
         >
           {t("qr.sentBack")}
         </button>
-      </div>
+      </VoterCard>
     );
   }
 
@@ -88,13 +89,13 @@ export function RequestLinkForm({
         e.preventDefault();
         void submit();
       }}
-      className="flex flex-col gap-4"
+      className="flex flex-col gap-4 rounded-lg border border-neutral-200 bg-white p-6 shadow-sm"
     >
-      <div className="pt-6">
+      <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-brand-700">
           {t("qr.overline")}
         </p>
-        <h1 className="mt-2 font-heading text-2xl font-bold text-neutral-800">
+        <h1 className="mt-2 font-heading text-3xl font-bold text-neutral-800">
           {electionTitle}
         </h1>
         <p className="mt-2.5 text-base leading-relaxed text-neutral-600">
@@ -156,7 +157,7 @@ export function RequestLinkForm({
           t("qr.cta")
         )}
       </button>
-      <p className="text-center text-xs text-neutral-400">{t("qr.privacy")}</p>
+      <p className="text-center text-xs text-neutral-600">{t("qr.privacy")}</p>
     </form>
   );
 }
