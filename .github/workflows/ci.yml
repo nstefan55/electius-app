@@ -47,14 +47,19 @@ jobs:
       - run: npm run typecheck              # tsc --noEmit — the class of error Vitest cannot see
       - run: npm run test:coverage          # the same suite as `npm run test`, plus a cobertura report
 
-      # Feeds the `code_coverage` rule on the `main` ruleset. Scope is src/actions + src/lib
+      # Feeds the `code_coverage` ruleset rule — which is NOT on `main` right now: the upload 404s
+      # until the repo setting is on, so the rule was removed rather than left blocking every PR
+      # (docs/2026-09-05/ci-required-checks-and-coverage.md §4). Scope is src/actions + src/lib
       # (vitest.config.ts): invariant #8 says those are the only things this repo tests, so a
       # whole-src percentage would be measuring components that deliberately have none.
-      # A fork PR's token is read-only, so there the upload is skipped rather than failed.
+      # A fork PR's token is read-only, so the ACTION exits 0 there rather than failing.
       - name: upload coverage report
-        # PRs and main only (your call) — but keyed on head.repo so a FORK PR is skipped:
-        # GitHub sends a read-only token to forks, so the upload there fails and reads as our bug.
-        if: github.event.pull_request.head.repo.full_name == github.repository || github.ref == 'refs/heads/main'
+        # PRs and main only: ci.yml fires on bare push AND pull_request, so a branch with an open
+        # PR would otherwise upload the same report twice. Forks need no clause here — the action
+        # guards them itself: its shell body, printed verbatim in the run log's ##[group]Run block,
+        # compares the interpolated head.repo.full_name against GITHUB_REPOSITORY and exits 0 on a
+        # mismatch. Read from the action's source, not from an observed fork run — this repo has none.
+        if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
         uses: actions/upload-code-coverage@v1
         with:
           file: coverage/cobertura-coverage.xml
