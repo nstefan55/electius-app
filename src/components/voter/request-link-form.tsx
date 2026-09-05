@@ -128,7 +128,7 @@ export function RequestLinkForm({
           placeholder={t("qr.emailPlaceholder")}
           aria-invalid={error ? true : undefined}
           aria-describedby="voter-email-note"
-          className={`h-12 rounded-md border bg-neutral-100 px-3 text-base text-neutral-950 shadow-xs transition-colors placeholder:text-neutral-400 focus:border-brand-700 focus:bg-white focus:outline-none focus:ring-[3px] focus:ring-brand-700/30 ${
+          className={`h-12 rounded-md border bg-neutral-100 px-3 text-base text-neutral-950 shadow-xs transition-colors placeholder:text-neutral-400 focus:border-brand-700 focus:bg-white focus:shadow-focus ${
             error ? "border-error-500 bg-white" : "border-neutral-200"
           }`}
         />

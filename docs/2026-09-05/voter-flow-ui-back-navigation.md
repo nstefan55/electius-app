@@ -29,11 +29,7 @@ product.
 
 ```diff
 - className={`… rounded-2xl border-2 p-5 … shadow-sm transition-colors duration-150 ${
--   selected ? "border-brand-700 bg-brand-50"
--            : "border-neutral-200 bg-white hover:border-brand-500 hover:bg-brand-50"
-+ className={`… rounded-2xl p-5 … shadow-sm transition-colors duration-150 focus-visible:shadow-focus ${
-+   selected ? "border-2 border-brand-700 bg-brand-50"
-+            : "border-[1.5px] border-neutral-200 bg-white hover:border-brand-500 hover:bg-brand-50"
++ className={`… rounded-2xl border-2 p-5 … shadow-sm transition-colors duration-150 focus-visible:shadow-focus ${
 ```
 
 `focus-visible:shadow-focus` is itself a utility, so it wins inside the same layer.
@@ -110,8 +106,9 @@ Per explicit request, for the whole flow:
 - the 4px `brand-700` bar on a **selected option card**
 - the `border-l-3` on **`VoterAlert`** (used/closed/QR screens)
 
-Recorded as a deliberate deviation at both sites. Selection is still **not colour-alone** — it
-keeps the check circle plus a border-width change (2px selected vs 1.5px unselected).
+Recorded as a deliberate deviation at both sites. Selection is still **not colour-alone** — the
+check circle carries it (a shape cue, independent of colour). See §5 for why the border width is
+deliberately *not* the second cue.
 
 ---
 
@@ -124,12 +121,14 @@ load-bearing sentence on the flow was in the one colour the design system forbid
 `neutral400OnContent: 0`. `placeholder:text-neutral-400` on the email input is legitimate and
 was kept.
 
-**Type scale.** Headings were compressed a full step. `StateHero` gained a `size` prop because it
-is shared by two groups with different intended sizes:
+**Type scale.** Headings were compressed a full step. `StateHero` gained a `titleSize` prop because it
+is shared by two groups with different intended sizes (named for the font size it sets — the
+component always renders an `<h1>`, so a name like `size="h1"` would have implied a heading level
+it does not control):
 
 | Screen | was | now |
 |---|---|---|
-| 1 Invite · 5 Confirmed (`StateHero size="h1"`) | 24px | **30px** (h1) |
+| 1 Invite · 5 Confirmed (`StateHero titleSize="lg"`) | 24px | **30px** (h1) |
 | 2 Details · QR entry (own `<h1>`) | 24px | **30px** (h1) |
 | 3 Cast · 4 Review (own `<h1>`) | 20px | **24px** (h2) |
 | invalid / expired / used / notStarted / closed / fail / race | 24px | **24px** — unchanged, already correct |
@@ -138,8 +137,28 @@ is shared by two groups with different intended sizes:
 accessibility wins). This matters more now that the fix adds two more ghost buttons. The
 copy-hash button keeps its 32px look (§7.17) but gains a 44px hit area via `after:-inset-1.5`.
 
-**Also:** `aria-live="polite"` on the multi-choice counter; option borders to §7.15 widths;
-review card `p-5` → `p-6`.
+**Also:** review card `p-5` → `p-6`, and `request-link-form.tsx`'s hand-rolled
+`focus:ring-[3px] focus:ring-brand-700/30` — a byte-for-byte re-derivation of `--shadow-focus` —
+replaced with `focus:shadow-focus` (invariant #5; it sits beside `shadow-xs`, so it is the same
+layer-precedence case as §1).
+
+**`aria-live="polite"` on the multi-choice counter, and the way it is mounted matters.** A live
+region only announces changes made *after* it is in the DOM, so rendering the region and its first
+content together never fires. The region is therefore mounted for the whole multi-choice step and
+its **text** varies:
+
+```tsx
+{multi ? (
+  <span aria-live="polite" …>
+    {picks.length > 0 ? t("cast.counter", { count: picks.length }) : ""}
+  </span>
+) : null}
+```
+
+**Option border width is deliberately constant (`border-2`).** §7.15 specifies 1.5px unselected /
+2px selected, and that was tried — but it reflows the card on every toggle, and `border-[1.5px]`
+rounds to 1px on a DPR-1 screen anyway, so it bought a layout shift and no visible difference.
+Selection stays non-colour-alone through the check circle.
 
 ---
 

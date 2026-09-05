@@ -170,7 +170,7 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
           <StateHero
             icon={Check}
             tone="success"
-            size="h1"
+            titleSize="lg"
             title={t("confirmed.title")}
             sub={t("confirmed.sub")}
             topPad={false}
@@ -227,7 +227,7 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
             <StateHero
               icon={Mail}
               tone="brand"
-              size="h1"
+              titleSize="lg"
               title={t("invite.title")}
               sub={t("invite.sub", {
                 org: election.organizationName,
@@ -317,12 +317,14 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
               <p className="text-sm text-neutral-600">
                 {t(multi ? "cast.subMulti" : "cast.subSingle")}
               </p>
-              {multi && picks.length > 0 ? (
+              {multi ? (
                 <span
                   aria-live="polite"
                   className="whitespace-nowrap text-xs font-semibold text-brand-700"
                 >
-                  {t("cast.counter", { count: picks.length })}
+                  {picks.length > 0
+                    ? t("cast.counter", { count: picks.length })
+                    : ""}
                 </span>
               ) : null}
             </div>
@@ -340,10 +342,10 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
                     role={multi ? "checkbox" : "radio"}
                     aria-checked={selected}
                     onClick={() => toggle(o.id)}
-                    className={`relative min-h-16 w-full cursor-pointer rounded-2xl p-5 text-left shadow-sm transition-colors duration-150 focus-visible:shadow-focus ${
+                    className={`relative min-h-16 w-full cursor-pointer rounded-2xl border-2 p-5 text-left shadow-sm transition-colors duration-150 focus-visible:shadow-focus ${
                       selected
-                        ? "border-2 border-brand-700 bg-brand-50"
-                        : "border-[1.5px] border-neutral-200 bg-white hover:border-brand-500 hover:bg-brand-50"
+                        ? "border-brand-700 bg-brand-50"
+                        : "border-neutral-200 bg-white hover:border-brand-500 hover:bg-brand-50"
                     }`}
                   >
                     {selected ? (

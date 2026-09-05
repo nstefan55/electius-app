@@ -71,14 +71,14 @@ export function StateHero({
   title,
   sub,
   topPad = true,
-  size = "h2",
+  titleSize = "md",
 }: {
   icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
   tone: "brand" | "success" | "error" | "warning" | "neutral";
   title: string;
   sub: string;
   topPad?: boolean;
-  size?: "h1" | "h2";
+  titleSize?: "lg" | "md";
 }) {
   const circle = {
     brand: "bg-brand-50 text-brand-700",
@@ -95,7 +95,7 @@ export function StateHero({
         <Icon className="size-7.5" aria-hidden />
       </div>
       <h1
-        className={`font-heading font-bold text-neutral-800 ${size === "h1" ? "text-3xl" : "text-2xl"}`}
+        className={`font-heading font-bold text-neutral-800 ${titleSize === "lg" ? "text-3xl" : "text-2xl"}`}
       >
         {title}
       </h1>
