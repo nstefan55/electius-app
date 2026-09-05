@@ -3,7 +3,11 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
-import { voterRowSchema } from "@/lib/wizard-csv";
+import {
+  dedupeVoterRows,
+  toVoterFields,
+  voterRowSchema,
+} from "@/lib/wizard-csv";
 import {
   inviteVoter,
   publishElection,
@@ -100,13 +104,7 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
 
     // @@unique([email, electionId]) bi odbio cijeli createMany na duplikatu, pa
     // se filtrira unaprijed: prvo unutar unosa, zatim prema postojećem popisu.
-    const seen = new Set(election.voters.map((v) => v.email.toLowerCase()));
-    const fresh = rows.filter((r) => {
-      const key = r.email.toLowerCase();
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
+    const fresh = dedupeVoterRows(rows, election.voters.map((v) => v.email));
     const skipped = rows.length - fresh.length;
     if (fresh.length === 0) return { success: true, added: 0, skipped };
 
@@ -123,15 +121,7 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
     }
 
     await prisma.voter.createMany({
-      data: fresh.map((r) => {
-        const [firstName, ...rest] = r.name.split(" ");
-        return {
-          electionId,
-          email: r.email,
-          firstName,
-          lastName: rest.join(" ") || null,
-        };
-      }),
+      data: fresh.map((r) => ({ electionId, ...toVoterFields(r) })),
     });
 
     // Glasanje već traje → pozovi odmah. publishElection cilja samo PENDING,

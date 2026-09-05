@@ -220,11 +220,9 @@ export async function resendInvitations(
 
   try {
     const { organizationId } = await requireSession();
-    const owned = await prisma.election.findFirst({
-      where: { id, organizationId, status: "ACTIVE" },
-      select: { id: true },
-    });
-    if (!owned) return { success: false, error: "invalidStatus" };
+    if (!(await assertOwnedActive(id, organizationId))) {
+      return { success: false, error: "invalidStatus" };
+    }
 
     const result = await publishElection(id);
     return { success: true, ...result };

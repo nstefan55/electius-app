@@ -3,7 +3,12 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/auth/require-session";
-import { candidateRowSchema, voterRowSchema } from "@/lib/wizard-csv";
+import {
+  candidateRowSchema,
+  dedupeVoterRows,
+  toVoterFields,
+  voterRowSchema,
+} from "@/lib/wizard-csv";
 import {
   canUseAdminTurnout,
   canUseAutoReminders,
@@ -89,13 +94,7 @@ export async function createElection(
 
   // One row per unique email — @@unique([email, electionId]) would reject the
   // whole nested create on a duplicate.
-  const seen = new Set<string>();
-  const voters = w.voters.filter((v) => {
-    const key = v.email.toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const voters = dedupeVoterRows(w.voters);
 
   try {
     const { organizationId, user } = await requireSession();
@@ -172,16 +171,7 @@ export async function createElection(
             orderIndex: i,
           })),
         },
-        voters: {
-          create: voters.map((v) => {
-            const [firstName, ...rest] = v.name.split(" ");
-            return {
-              email: v.email,
-              firstName,
-              lastName: rest.join(" ") || null,
-            };
-          }),
-        },
+        voters: { create: voters.map(toVoterFields) },
       },
       select: { id: true },
     });

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { session } from "./session-fixture";
 
 // Dva šava kao i u ostalim testovima akcija: sesija i sloj podataka. Ovdje se
 // mocka db modul, a ne Prisma, jer se pinja upravo predaja organizacije dalje.
@@ -8,24 +9,6 @@ vi.mock("@/lib/auth/require-session", () => ({ requireSession: vi.fn() }));
 const { getElectionTurnout } = await import("@/lib/db/elections");
 const { requireSession } = await import("@/lib/auth/require-session");
 const { fetchTurnout } = await import("@/actions/dashboard");
-
-const session = {
-  user: {
-    email: "admin@example.com",
-    name: "A",
-    organization: "Org",
-    image: null,
-    organizationLogo: null,
-    isPro: false,
-  },
-  organizationId: "org_1",
-  accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largerText: false,
-    focusOutlines: true,
-  },
-};
 
 beforeEach(() => {
   vi.mocked(requireSession).mockReset().mockResolvedValue(session);

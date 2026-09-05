@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { session } from "./session-fixture";
 
 // Same seam-mocking pattern as settings.test.ts: mock prisma + requireSession,
 // assert on the mock inputs — never hit the real DB. publication.service is a
@@ -69,17 +70,6 @@ const {
   archiveElection,
   deleteElection,
 } = await import("@/actions/elections");
-
-const session = {
-  user: { email: "admin@example.com", name: "A", organization: "Org", image: null, organizationLogo: null, isPro: false },
-  organizationId: "org_1",
-  accessibility: {
-    reduceMotion: false,
-    highContrast: false,
-    largerText: false,
-    focusOutlines: true,
-  },
-};
 
 beforeEach(() => {
   vi.mocked(requireSession).mockReset();

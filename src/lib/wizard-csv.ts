@@ -90,3 +90,40 @@ export function parseVotersCsv(text: string): CsvParseResult<VoterRow> {
   });
   return { rows, skipped };
 }
+
+// ───────── Birači: dedupliciranje + preslikavanje u redak ─────────
+//
+// Čarobnjak (korak 3) i naknadno dodavanje dijele isti ulaz (voterRowSchema) i
+// isti izlaz (redak u Voter), pa dijele i ova dva pravila. Prije je svaka staza
+// imala vlastitu kopiju: promjena pravila o imenu ili o usporedbi adresa morala
+// bi pogoditi obje, a promašaj se ne bi vidio nigdje — obje kopije same za
+// sebe rade.
+
+// @@unique([email, electionId]) odbio bi cijeli upis na duplikatu, pa se
+// filtrira unaprijed. `existing` su adrese koje su već u bazi: čarobnjak ih
+// nema (izbori tek nastaju), dodavanje ih donosi iz istog upita koji je
+// provjerio vlasništvo.
+export function dedupeVoterRows(
+  rows: VoterRow[],
+  existing: string[] = [],
+): VoterRow[] {
+  const seen = new Set(existing.map((e) => e.toLowerCase()));
+  return rows.filter((r) => {
+    const key = r.email.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Jedno polje `name` → firstName + lastName: prva riječ je ime, ostatak
+// prezime. Bez electionId — čarobnjak ga upisuje ugniježdeno (izbori još
+// nemaju id), dodavanje ga dopisuje samo.
+export function toVoterFields(row: VoterRow): {
+  email: string;
+  firstName: string;
+  lastName: string | null;
+} {
+  const [firstName, ...rest] = row.name.split(" ");
+  return { email: row.email, firstName, lastName: rest.join(" ") || null };
+}

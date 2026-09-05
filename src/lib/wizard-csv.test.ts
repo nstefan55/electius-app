@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   CSV_MAX_BYTES,
+  dedupeVoterRows,
   parseCandidatesCsv,
   parseVotersCsv,
+  toVoterFields,
   validateCsvFile,
 } from "./wizard-csv";
 
@@ -161,5 +163,53 @@ describe("kružni tok s izvozom", () => {
       rows: [{ name: "Ana Kovačević", email: "ana@unizg.hr" }],
       skipped: 0,
     });
+  });
+});
+
+// Oba pravila dijele čarobnjak i naknadno dodavanje birača. Testovi stoje uz
+// shemu jer bi ih inače nadzirala samo dva testa radnji, svaki sa svoje strane.
+describe("dedupeVoterRows", () => {
+  const row = (email: string, name = "Ana Kovačević") => ({ name, email });
+
+  it("uklanja duplikat unutar samog unosa", () => {
+    const rows = [row("a@x.hr"), row("a@x.hr"), row("b@x.hr")];
+    expect(dedupeVoterRows(rows)).toEqual([row("a@x.hr"), row("b@x.hr")]);
+  });
+
+  it("usporedba ne razlikuje velika i mala slova", () => {
+    expect(dedupeVoterRows([row("Ana@X.hr"), row("ana@x.HR")])).toHaveLength(1);
+  });
+
+  it("filtrira i prema adresama koje su već u bazi", () => {
+    const kept = dedupeVoterRows([row("a@x.hr"), row("b@x.hr")], ["A@X.hr"]);
+    expect(kept).toEqual([row("b@x.hr")]);
+  });
+
+  it("bez postojećih adresa zadržava sve jedinstvene retke", () => {
+    expect(dedupeVoterRows([row("a@x.hr"), row("b@x.hr")])).toHaveLength(2);
+  });
+});
+
+describe("toVoterFields", () => {
+  it("prva riječ je ime, ostatak prezime", () => {
+    const f = toVoterFields({ name: "Ana Marija Kovačević", email: "a@x.hr" });
+    expect(f).toEqual({
+      email: "a@x.hr",
+      firstName: "Ana",
+      lastName: "Marija Kovačević",
+    });
+  });
+
+  it("jedna riječ ostavlja prezime praznim, ne praznim nizom", () => {
+    expect(toVoterFields({ name: "Ana", email: "a@x.hr" })).toEqual({
+      email: "a@x.hr",
+      firstName: "Ana",
+      lastName: null,
+    });
+  });
+
+  it("ne nosi electionId — njega dopisuje pozivatelj", () => {
+    const keys = Object.keys(toVoterFields({ name: "Ana", email: "a@x.hr" }));
+    expect(keys.sort()).toEqual(["email", "firstName", "lastName"]);
   });
 });
