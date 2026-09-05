@@ -30,6 +30,9 @@ concurrency:
 jobs:
   quality:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      code-quality: write                   # actions/upload-code-coverage — the only job that needs it
     steps:
       - uses: actions/checkout@v7
         with:
@@ -42,7 +45,23 @@ jobs:
       - run: npx prisma generate            # lint + tsc need src/generated/prisma; exits 0 with no DB env
       - run: npm run lint
       - run: npm run typecheck              # tsc --noEmit — the class of error Vitest cannot see
-      - run: npm run test
+      - run: npm run test:coverage          # the same suite as `npm run test`, plus a cobertura report
+
+      # Feeds the `code_coverage` rule on the `main` ruleset. Scope is src/actions + src/lib
+      # (vitest.config.ts): invariant #8 says those are the only things this repo tests, so a
+      # whole-src percentage would be measuring components that deliberately have none.
+      # A fork PR's token is read-only, so there the upload is skipped rather than failed.
+      - name: upload coverage report
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-code-coverage@v1
+        with:
+          file: coverage/cobertura-coverage.xml
+          language: TypeScript
+          label: code-coverage/vitest
+          # ponytail: false until Settings > Security > Code quality > "Code coverage analysis"
+          # is switched on — until then there is nowhere to upload to, and a gate must not go red
+          # over a toggle nobody has flipped. Flip to true once the first report lands.
+          fail-on-error: false
 
   migration-presence:
     # Enforces "never db push" at source: a schema change must carry a migration.

@@ -1,0 +1,48 @@
+name: CodeQL
+
+# Advanced setup, deliberately: GitHub's default setup is a UI toggle whose PUT endpoint
+# refuses this account's token (404 — code-scanning writes need the `security_events`
+# scope), and every other gate this repo has already lives in .github/workflows where a
+# reviewer can see it. The `code_scanning` rule on the `main` ruleset reads what this
+# uploads; without this workflow that rule has no tool reporting and blocks every PR.
+#
+# `actions` is analysed beside the app code on purpose: the workflows in this directory
+# interpolate ${{ }} into shell, which is the injection class the actions queries exist
+# to catch.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "41 3 * * 1"   # Mondays 03:41 UTC — beside ci.yml's full-history secret scan
+
+permissions:
+  contents: read
+
+concurrency:
+  group: codeql-${{ github.event_name }}-${{ github.ref }}   # event-aware, same reason as ci.yml
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write   # the SARIF upload
+      actions: read
+    strategy:
+      fail-fast: false         # a failure in one language must still report the other
+      matrix:
+        language: [javascript-typescript, actions]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none     # neither language compiles; skips autobuild, so no DB env is needed
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"

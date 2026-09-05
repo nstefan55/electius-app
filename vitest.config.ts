@@ -9,6 +9,16 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    coverage: {
+      provider: "v8",
+      // Mjeri se SAMO ono sto se po invarijanti #8 i testira (src/actions + src/lib).
+      // Globalni postotak bi brojao komponente koje namjerno nemaju testove.
+      include: ["src/actions/**/*.ts", "src/lib/**/*.ts"],
+      exclude: ["**/*.test.ts", "**/*.d.ts"],
+      // cobertura je jedini format koji actions/upload-code-coverage prima.
+      reporter: ["text-summary", "cobertura"],
+      reportsDirectory: "coverage",
+    },
   },
   resolve: {
     alias: {
