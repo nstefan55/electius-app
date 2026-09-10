@@ -8,9 +8,9 @@ import {
   Check,
   EyeOff,
   FileSearch,
-  FileX2,
+  // FileX2, — vidi zakomentirani odsjek „Problem”
   Mail,
-  MessageSquareWarning,
+  // MessageSquareWarning, — vidi zakomentirani odsjek „Problem”
   PanelsTopLeft,
   Play,
   Send,
@@ -21,17 +21,16 @@ import { LandingNav } from "@/components/marketing/landing-nav";
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
 import { BallotDemo } from "@/components/marketing/ballot-demo";
 import { DemoTrigger } from "@/components/marketing/demo-trigger";
-import { IconCard, SectionHeader } from "@/components/marketing/section";
+import {
+  FlowStep,
+  IconCard,
+  SectionHeader,
+  TrackLabel,
+} from "@/components/marketing/section";
 import { LOCALES } from "@/i18n/config";
 import { APEX_ORIGIN, CONTACT_EMAIL, signUpUrl } from "@/lib/urls";
 
-// Apex odredišna stranica — vlasnik pravog "/" (sudar korijena: marketing drži /,
-// pregled nadzorne ploče ostaje /home — domain-architecture-spec §3).
-// Jedina javna i indeksabilna stranica u aplikaciji, pa se metapodaci isplate
-// samo ovdje. CTA-ovi su obični <a> iz src/lib/urls.ts (apex → dashboard host),
-// nikad isto-hostni <Link>.
-
-const CONTAINER = "mx-auto max-w-295 px-6";
+const CONTAINER = "mx-auto max-w-350 px-6";
 const ANCHOR = "scroll-mt-20"; // ljepljiva navigacija je visoka 72px
 
 export async function generateMetadata({
@@ -47,8 +46,6 @@ export async function generateMetadata({
   return {
     title,
     description,
-    // Bez metadataBase Next ne moze pretvoriti relativne og/canonical putanje
-    // u apsolutne, a skeneri drustvenih mreza primaju samo apsolutne.
     ...(APEX_ORIGIN ? { metadataBase: new URL(APEX_ORIGIN) } : {}),
     alternates: {
       canonical: `/${locale}`,
@@ -59,8 +56,6 @@ export async function generateMetadata({
       title,
       description,
       locale,
-      // .webp, ne .png: PNG izvornik nikad nije zavrsio u public/ pa je
-      // svaka podijeljena kartica bila 404. Dimenzije su stvarne.
       images: [
         { url: "/marketing/hero-banner.webp", width: 2560, height: 1086 },
       ],
@@ -77,23 +72,26 @@ export default async function Home({
   setRequestLocale(locale);
   const t = await getTranslations("marketing");
 
-  const problems = ["paper", "forms", "enterprise"] as const;
-  const problemIcons = {
-    paper: <FileX2 className="size-6 text-error-700" strokeWidth={1.8} />,
-    forms: (
-      <MessageSquareWarning
-        className="size-6 text-warning-700"
-        strokeWidth={1.8}
-      />
-    ),
-    enterprise: (
-      <PanelsTopLeft className="size-6 text-neutral-600" strokeWidth={1.8} />
-    ),
+  const adminSteps = [
+    "prepare",
+    "publish",
+    "vote",
+    "results",
+    "archive",
+  ] as const;
+  const adminStepIcons = {
+    prepare: <PanelsTopLeft className="size-6 text-brand-700" strokeWidth={1.8} />,
+    publish: <Send className="size-6 text-brand-700" strokeWidth={1.8} />,
+    vote: <Activity className="size-6 text-brand-700" strokeWidth={1.8} />,
+    results: <FileSearch className="size-6 text-brand-700" strokeWidth={1.8} />,
+    archive: <Archive className="size-6 text-brand-700" strokeWidth={1.8} />,
   };
-  const problemTints = {
-    paper: "bg-error-50",
-    forms: "bg-warning-50",
-    enterprise: "bg-neutral-100",
+
+  const voterSteps = ["link", "cast", "receipt"] as const;
+  const voterStepIcons = {
+    link: <Mail className="size-6 text-brand-700" strokeWidth={1.8} />,
+    cast: <Check className="size-6 text-brand-700" strokeWidth={1.8} />,
+    receipt: <ShieldCheck className="size-6 text-brand-700" strokeWidth={1.8} />,
   };
 
   const features = [
@@ -113,35 +111,15 @@ export default async function Home({
     archive: Archive,
   };
 
-  // NOTE: odsjek „Dokaz” (4 brojke + 3 izjave) je zakomentiran — sadržaj je bio
-  // izmišljen, a proizvod još nema kupce (homepage-spec D1). Podaci i sam odsjek
-  // ostaju u kodu i u katalozima pod `marketing.placeholder.*` da se vrate jednim
-  // potezom kad postoje prave brojke i pristanak za citate.
-  // const stats = t.raw("placeholder.stats") as { num: string; label: string }[];
-  // const quotes = t.raw("placeholder.quotes") as {
-  //   quote: string;
-  //   name: string;
-  //   initials: string;
-  //   role: string;
-  // }[];
-  // const quoteTints = ["bg-brand-900", "bg-brand-700", "bg-success-700"];
-
   return (
     <>
       <LandingNav />
 
       {/* ───────── 1 · Hero ───────── */}
-      {/* Puna visina ekrana minus ljepljiva navigacija (72px). `svh` jer se na
-          mobitelu adresna traka skuplja — `vh` bi ostavio prazninu. */}
       <section
         id="top"
         className={`relative isolate flex min-h-[calc(100svh-4.5rem)] items-center bg-brand-50 ${ANCHOR}`}
       >
-        {/* ponytail: next/image umjesto CSS background-image — ovo je LCP element
-            jedine indeksabilne stranice, a CSS pozadina zaobilazi optimizaciju.
-            Trenutni banner: 3168×1344 WebP / 26 KB. og:image i dalje pokazuje na
-            /marketing/hero-banner.webp (2560×1086) — namjerno, dimenzije ondje
-            moraju odgovarati datoteci koju scraper stvarno dohvaća. */}
         <Image
           src="/hero/hero_banner.webp"
           alt=""
@@ -151,18 +129,16 @@ export default async function Home({
           className="-z-10 object-cover object-center"
         />
         <div
-          className={`${CONTAINER} grid w-full grid-cols-1 items-center gap-16 py-20 lg:grid-cols-[1.04fr_0.96fr]`}
+          className={`${CONTAINER} grid w-full grid-cols-1 items-center gap-16 py-20 lg:grid-cols-[31.25rem_1fr] lg:gap-16`}
         >
           <div>
-            {/* min-h + py, ne fiksni h: hrvatski natpis se na 390px lomi u dva reda
-                i probijao je pilulu. Na desktopu stane u jedan red, pa min-h drži staru visinu. */}
             <div className="mb-5.5 inline-flex min-h-7.5 items-center gap-2 rounded-full bg-brand-100 px-3.5 py-1 sm:px-3">
               <span className="size-1.75 rounded-full bg-brand-700" />
               <span className="font-heading text-[0.78125rem] font-semibold tracking-[0.04em] text-brand-700">
                 {t("hero.badge")}
               </span>
             </div>
-            <h1 className="mb-5.5 font-heading text-[2.5rem] leading-[1.08] font-bold tracking-tight text-brand-900 sm:text-[3.375rem]">
+            <h1 className="mb-5.5 font-heading text-[2.5rem] leading-[1.08] font-bold tracking-tight text-brand-900 sm:text-[3rem]">
               {t("hero.title")}
             </h1>
             <p className="mb-8.5 max-w-[30em] text-[1.1875rem] leading-relaxed text-neutral-600">
@@ -203,89 +179,66 @@ export default async function Home({
             </div>
           </div>
 
-          {/* Maketa listića — ilustracija proizvoda, ne podatak. */}
-          <div className="relative">
-            <div className="relative z-1 rounded-xl border border-neutral-200 bg-white p-6 shadow-lg">
-              <div className="mb-4.5 flex items-center justify-between">
-                <div>
-                  <div className="font-heading text-base font-semibold text-neutral-800">
-                    {t("hero.card.election")}
-                  </div>
-                  <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
-                    {t("hero.card.choose")}
-                  </div>
-                </div>
-                <span className="inline-flex h-6 items-center gap-1.5 rounded-full bg-success-50 px-2.5">
-                  <span className="size-1.5 animate-[elLivePulse_2s_infinite] rounded-full bg-success-500" />
-                  <span className="text-xs font-semibold text-success-700">
-                    {t("hero.card.live")}
-                  </span>
-                </span>
-              </div>
+          {/* Hero Mockup */}
+          <Image
+            src="/marketing/assets/electius-product-mockup-hero-trimmed.png"
+            alt={t("hero.mockupAlt")}
+            width={2338}
+            height={1020}
+            priority
+            quality={100}
+            sizes="(min-width: 1400px) 788px, (min-width: 1024px) calc(100vw - 612px), 100vw"
+            className="h-auto w-full"
+          />
+        </div>
+      </section>
 
-              <div className="flex flex-col gap-2.5">
-                <div className="relative rounded-xl border-2 border-brand-700 bg-brand-50 px-4.5 py-4 shadow-xs">
-                  <div className="absolute top-3 bottom-3 left-0 w-1 rounded-r-sm bg-brand-700" />
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
-                        {t("hero.card.cand1")}
-                      </div>
-                      <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
-                        {t("hero.card.cand1Platform")}
-                      </div>
-                    </div>
-                    <span className="inline-flex size-6 items-center justify-center rounded-full bg-brand-700">
-                      <Check
-                        className="size-3.25 text-white"
-                        strokeWidth={3}
-                        aria-hidden="true"
-                      />
-                    </span>
-                  </div>
-                </div>
-                <div className="rounded-xl border-[1.5px] border-neutral-200 bg-white px-4.5 py-4">
-                  <div className="font-heading text-[0.9375rem] font-semibold text-neutral-800">
-                    {t("hero.card.cand2")}
-                  </div>
-                  <div className="mt-0.5 text-[0.8125rem] text-neutral-600">
-                    {t("hero.card.cand2Platform")}
-                  </div>
-                </div>
-              </div>
+      {/* ───────── 2 · Kako funkcionira ───────── */}
+      <section id="how" className={`bg-white py-24 ${ANCHOR}`}>
+        <div className={CONTAINER}>
+          <SectionHeader
+            kicker={t("how.kicker")}
+            title={t("how.title")}
+            subtitle={t("how.subtitle")}
+          />
 
-              <div className="mt-4 rounded-md bg-neutral-100 px-3.5 py-3">
-                <div className="mb-1 text-[0.6875rem] font-semibold tracking-[0.04em] text-neutral-600 uppercase">
-                  {t("hero.card.receipt")}
-                </div>
-                <div className="font-mono text-[0.78125rem] leading-normal break-all text-neutral-800">
-                  0x a3f9 7c21 e0b4 · d51f 9a08 …
-                </div>
-              </div>
-            </div>
-
-            <div className="absolute -right-3.5 bottom-10 z-2 flex animate-[elFloat_5s_ease-in-out_infinite] items-center gap-2.5 rounded-lg border border-neutral-200 bg-white px-4 py-3 shadow-md">
-              <span className="inline-flex size-8.5 items-center justify-center rounded-full bg-brand-50">
-                <ShieldCheck
-                  className="size-4.5 text-brand-700"
-                  aria-hidden="true"
+          {/* Traka administratora — pet faza */}
+          <div className="mt-14">
+            <TrackLabel>{t("how.adminTrack")}</TrackLabel>
+            <ol className="relative mt-8 grid grid-cols-1 gap-10 before:absolute before:top-7 before:right-[10%] before:left-[10%] before:hidden before:h-px before:bg-neutral-200 md:grid-cols-5 md:gap-6 md:before:block">
+              {adminSteps.map((k, i) => (
+                <FlowStep
+                  key={k}
+                  n={i + 1}
+                  icon={adminStepIcons[k]}
+                  title={t(`how.admin.${k}.title`)}
+                  body={t(`how.admin.${k}.body`)}
                 />
-              </span>
-              <div>
-                <div className="font-heading text-[0.9375rem] leading-none font-bold text-neutral-800">
-                  {t("hero.card.votes")}
-                </div>
-                <div className="mt-0.75 text-xs text-success-700">
-                  {t("hero.card.verified")}
-                </div>
-              </div>
-            </div>
+              ))}
+            </ol>
+          </div>
+
+          {/* Traka birača  */}
+          <div className="mt-10 rounded-xl border border-neutral-200/70 px-6 py-10 sm:px-10">
+            <TrackLabel>{t("how.voterTrack")}</TrackLabel>
+            {/* Tri stupca → središta na 16.67/50/83.33 %. */}
+            <ol className="relative mt-8 grid grid-cols-1 gap-10 before:absolute before:top-7 before:right-[16.666%] before:left-[16.666%] before:hidden before:h-px before:bg-neutral-200 md:grid-cols-3 md:gap-6 md:before:block">
+              {voterSteps.map((k, i) => (
+                <FlowStep
+                  key={k}
+                  n={i + 1}
+                  icon={voterStepIcons[k]}
+                  title={t(`how.voter.${k}.title`)}
+                  body={t(`how.voter.${k}.body`)}
+                />
+              ))}
+            </ol>
           </div>
         </div>
       </section>
 
-      {/* ───────── 2 · Problem ───────── */}
-      <section id="how" className={`bg-white py-24 ${ANCHOR}`}>
+      {/* ───────── 2 · Problem Section - Hidden ───────── */}
+      {/* <section id="how" className={`bg-white py-24 ${ANCHOR}`}>
         <div className={CONTAINER}>
           <SectionHeader
             kicker={t("problem.kicker")}
@@ -304,7 +257,7 @@ export default async function Home({
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ───────── 3 · Priča ───────── */}
       <section className="relative overflow-hidden bg-brand-900 py-25">
@@ -469,7 +422,7 @@ export default async function Home({
       </section>
 
       {/* ───────── 8 · Kontakt ───────── */}
-      {/* ponytail: mailto CTA umjesto obrasca — ne postoji backend koji bi primao
+      {/* mailto CTA umjesto obrasca — ne postoji backend koji bi primao
           poruke; pravi obrazac (server action + Resend) kad zatreba. Sidro #contact
           živi ovdje, ne više na podnožju — navigacijski "Kontakt" vodi na odsjek. */}
       <section id="contact" className={`bg-neutral-50 py-16 ${ANCHOR}`}>
@@ -495,7 +448,7 @@ export default async function Home({
         </div>
       </section>
 
-      {/* ───────── 9 · Završni CTA ───────── */}
+      {/* ───────── 9 · Završni CTA ─────────
       <section
         id="cta"
         className={`relative overflow-hidden bg-brand-900 py-25 ${ANCHOR}`}
@@ -531,7 +484,7 @@ export default async function Home({
             </DemoTrigger>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* ───────── 9 · Podnožje ───────── */}
       <footer className="bg-[#142844] pt-16 pb-10">

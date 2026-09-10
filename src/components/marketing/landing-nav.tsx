@@ -31,7 +31,7 @@ export function LandingNav() {
       <header className="sticky top-0 z-50 border-b border-neutral-200 bg-white/90 backdrop-blur-md backdrop-saturate-150">
       <nav
         aria-label={t("label")}
-        className="mx-auto flex h-18 max-w-295 items-center justify-between gap-6 px-6"
+        className="mx-auto flex h-18 max-w-350 items-center justify-between gap-6 px-6"
       >
         <Link href="/" className="flex flex-none items-center gap-2.5">
           <Image

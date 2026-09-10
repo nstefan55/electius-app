@@ -1467,17 +1467,49 @@
       "unions": "Sindikate",
       "universities": "Sveučilišta",
       "boards": "Uprave i zadruge",
-      "card": {
-        "election": "Izbori za upravu 2025.",
-        "choose": "Odaberite jednog kandidata",
-        "live": "Uživo",
-        "cand1": "Dr. Amara Osei",
-        "cand1Platform": "Kontinuitet i reforma",
-        "cand2": "Liam Becker",
-        "cand2Platform": "Novi smjer",
-        "receipt": "Vaša provjerljiva potvrda",
-        "votes": "1.284 glasa",
-        "verified": "Sve kriptografski provjereno"
+      "mockupAlt": "Nadzorna ploča Electiusa s pregledom izbora i izlaznosti, uz listić otvoren na mobitelu."
+    },
+    "how": {
+      "kicker": "Kako funkcionira",
+      "title": "Od pripreme do arhive — u jednom alatu.",
+      "subtitle": "Vi vodite izbore kroz pet faza. Birač otvori poveznicu, glasa i dobije potvrdu — bez računa, bez aplikacije i bez vaše pomoći.",
+      "adminTrack": "Vi, administrator",
+      "voterTrack": "Vaš birač",
+      "admin": {
+        "prepare": {
+          "title": "Priprema",
+          "body": "Čarobnjak u pet koraka: pitanje, kandidati, pravila i popis birača iz CSV-a."
+        },
+        "publish": {
+          "title": "Objava",
+          "body": "Svaki birač dobiva osobnu poveznicu na e-mail. Za dvoranu i plakat postoji QR kod."
+        },
+        "vote": {
+          "title": "Glasovanje",
+          "body": "Pratite izlaznost dok traje i podsjetite one koji još nisu glasali."
+        },
+        "results": {
+          "title": "Rezultati",
+          "body": "Grafovi, kvorum i PDF izvještaj čim se glasovanje zatvori."
+        },
+        "archive": {
+          "title": "Arhiva",
+          "body": "Merkleov pečat i revizijski trag koji možete predati svakome tko pita."
+        }
+      },
+      "voter": {
+        "link": {
+          "title": "Otvara poveznicu",
+          "body": "Bez računa i bez lozinke. Poveznica vrijedi jednom i zatim istječe."
+        },
+        "cast": {
+          "title": "Glasa",
+          "body": "Pet zaslona na mobitelu, ispod dvije minute."
+        },
+        "receipt": {
+          "title": "Dobiva potvrdu",
+          "body": "Kriptografski otisak listića. Glas ostaje anoniman — ni vi ne vidite tko je što glasao."
+        }
       }
     },
     "problem": {
