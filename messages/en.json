@@ -1467,17 +1467,49 @@
       "unions": "Unions",
       "universities": "Universities",
       "boards": "Boards & co-ops",
-      "card": {
-        "election": "2025 Board Election",
-        "choose": "Choose one candidate",
-        "live": "Live",
-        "cand1": "Dr. Amara Osei",
-        "cand1Platform": "Continuity & Reform",
-        "cand2": "Liam Becker",
-        "cand2Platform": "New Direction",
-        "receipt": "Your verifiable receipt",
-        "votes": "1,284 votes",
-        "verified": "All cryptographically verified"
+      "mockupAlt": "The Electius dashboard showing an election overview and turnout, beside a ballot open on a phone."
+    },
+    "how": {
+      "kicker": "How it works",
+      "title": "From setup to archive — in one tool.",
+      "subtitle": "You run the election through five phases. Your voter opens a link, votes and gets a receipt — no account, no app and no help from you.",
+      "adminTrack": "You, the administrator",
+      "voterTrack": "Your voter",
+      "admin": {
+        "prepare": {
+          "title": "Setup",
+          "body": "A five-step wizard: the question, the candidates, the rules and your voter list from a CSV."
+        },
+        "publish": {
+          "title": "Invitations",
+          "body": "Every voter gets a personal link by email. For a room or a poster, there is a QR code."
+        },
+        "vote": {
+          "title": "Voting",
+          "body": "Watch turnout as it happens and nudge the people who have not voted yet."
+        },
+        "results": {
+          "title": "Results",
+          "body": "Charts, quorum and a PDF report the moment voting closes."
+        },
+        "archive": {
+          "title": "Archive",
+          "body": "A Merkle seal and an audit trail you can hand to anyone who asks."
+        }
+      },
+      "voter": {
+        "link": {
+          "title": "Opens the link",
+          "body": "No account, no password. The link works once and then expires."
+        },
+        "cast": {
+          "title": "Votes",
+          "body": "Five screens on a phone, under two minutes."
+        },
+        "receipt": {
+          "title": "Gets a receipt",
+          "body": "A cryptographic fingerprint of the ballot. The vote stays anonymous — not even you can see who chose what."
+        }
       }
     },
     "problem": {

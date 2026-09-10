@@ -79,6 +79,28 @@ const nextConfig: NextConfig = {
   // unmatched URLs in that topology (confirmed: it falls back to the built-in 404 instead
   // of any [locale]-nested not-found.tsx) — global-not-found.tsx is the documented fix.
   experimental: { globalNotFound: true },
+  // Optimizator slika. Next 16 već po zadanom daje WebP i 4-satni TTL, pa se
+  // ovdje mijenja samo ono što stvarno nosi dobitak:
+  //   formats  — AVIF ispred WebP-a (~20-30 % manje na plosnatom UI sadržaju);
+  //              preglednik bira preko Accept zaglavlja, stari padaju na WebP.
+  //   minimumCacheTTL — 30 dana umjesto 4 sata. Marketinške slike se ne mijenjaju
+  //              između deployeva. ⚠ /_next/image URL NE sadrži hash datoteke, pa
+  //              se predmemorija probija PREIMENOVANJEM datoteke, ne novim sadržajem
+  //              na istom imenu.
+  //   qualities — uvjet iz prethodne verzije ovog komentara je NASTUPIO: maketa
+  //              proizvoda je snimka sučelja sa 7-8px tekstom, a AVIF q75 ju je
+  //              stiskao na 10,5 KB pri 750px (izvorni webp je 92 KB pri 2357px)
+  //              — mjereno, i toliko je mekoća bila vidljiva. Next 16 odbija svaku
+  //              vrijednost koja nije na ovom popisu (vrati 44-bajtnu grešku, ne
+  //              sliku), pa `quality={90}` bez ovog retka tiho razbije <Image>.
+  //              75 ostaje prva jer je i dalje zadana za sve ostale slike.
+  // Bez `remotePatterns`: R2 i Google avatari se renderiraju kao obični <img>
+  // (vidi CSP komentar gore), pa ne prolaze kroz ovaj optimizator.
+  images: {
+    formats: ["image/avif", "image/webp"],
+    qualities: [75, 90, 100],
+    minimumCacheTTL: 2592000,
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
