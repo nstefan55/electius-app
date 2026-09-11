@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { proPlan } from "@/lib/billing";
 import { stripeClient, stripeConfigured } from "@/lib/stripe";
 import {
+  assertProjectionLanded,
   projectEntitlement,
   stampArchiveRetention,
 } from "@/lib/services/billing.service";
@@ -52,6 +53,7 @@ export const emailVerificationEnabled =
 // postoji pravni subjekt, a bezuvjetna montaža bi od Stripe ključeva napravila
 // uvjet za podizanje cijele aplikacije (vidi lib/stripe.ts). Bez ključeva
 // aplikacija radi točno kao prije ove faze.
+
 function billingPlugin() {
   return stripePlugin({
     stripeClient: stripeClient(),
@@ -93,28 +95,50 @@ function billingPlugin() {
         },
       }),
       // Sve kuke pišu isto pravo kroz projectEntitlement — jedini pisac.
-      onSubscriptionComplete: async ({ subscription }) => {
-        await projectEntitlement("complete", subscription.referenceId, subscription);
+      //
+      // `event` se prosljeđuje jer Stripe NE jamči redoslijed isporuke: bez
+      // event.created projekcija ne može znati da je upravo primila stariji
+      // događaj od onoga koji je već primijenila. Plugin ga daje svakoj kuki
+      // (tipiziran), a dosad se odbacivao.
+      onSubscriptionComplete: async ({ event, subscription }) => {
+        await projectEntitlement("complete", subscription.referenceId, subscription, event);
       },
       // Pretplata otvorena izvan Checkouta (Stripe dashboard) — ista projekcija.
-      onSubscriptionCreated: async ({ subscription }) => {
-        await projectEntitlement("created", subscription.referenceId, subscription);
+      onSubscriptionCreated: async ({ event, subscription }) => {
+        await projectEntitlement("created", subscription.referenceId, subscription, event);
       },
-      onSubscriptionUpdate: async ({ subscription }) => {
-        await projectEntitlement("update", subscription.referenceId, subscription);
+      onSubscriptionUpdate: async ({ event, subscription }) => {
+        await projectEntitlement("update", subscription.referenceId, subscription, event);
       },
       // cancel_at_period_end: status je i dalje active, pa isPro OSTAJE true —
       // razdoblje je plaćeno. Projekcija to izvodi sama iz statusa.
-      onSubscriptionCancel: async ({ subscription }) => {
-        await projectEntitlement("cancel", subscription.referenceId, subscription);
+      onSubscriptionCancel: async ({ event, subscription }) => {
+        await projectEntitlement("cancel", subscription.referenceId, subscription, event);
       },
       // Razdoblje je isteklo: pravo pada i arhive dobivaju rok zadržavanja.
       // Pečat NIKAD ne briše redak — vidi billing.service.
-      onSubscriptionDeleted: async ({ subscription }) => {
-        await projectEntitlement("deleted", subscription.referenceId, subscription);
-        await stampArchiveRetention(subscription.referenceId);
+      onSubscriptionDeleted: async ({ event, subscription }) => {
+        const applied = await projectEntitlement(
+          "deleted",
+          subscription.referenceId,
+          subscription,
+          event,
+        );
+        // Samo ako je projekcija doista primijenjena: zastarjeli `deleted`
+        // isporučen nakon novijeg događaja ne smije pečatiti rok zadržavanja
+        // arhive organizacije koja je u međuvremenu opet Pro.
+        if (applied) await stampArchiveRetention(subscription.referenceId);
       },
     },
+    // Zadnja crta obrane za TIHI gubitak upisa. Plugin svaku kuku pretplate
+    // omata try/catch-om koji grešku samo zapiše (dist/index.mjs:409-411,
+    // :457-459), pa bi Prisma iznimka završila kao HTTP 200 i Stripe NIKAD ne bi
+    // ponovio. onEvent se zove izvan te hvataljke, a unutar vanjske, pa iznimka
+    // odavde postaje 400 — a Stripe ponavlja na svaki ne-2xx odgovor.
+    //
+    // Potpis se poklapa točno ((event: Stripe.Event) => Promise<void>), pa
+    // funkcija ide izravno — bez omotača koji bi mogao progutati istu iznimku.
+    onEvent: assertProjectionLanded,
   });
 }
 
