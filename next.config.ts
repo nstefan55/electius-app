@@ -102,7 +102,30 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 2592000,
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      // BetterAuth sam postavlja no-store SAMO na /get-session
+      // (better-auth/dist/api/routes/session.mjs:33 — jedini `no-store` u
+      // cijelom routes/ stablu). /list-sessions, /list-accounts i
+      // /account-info ne postavljaju ništa, a vraćaju tokene sesija, IP-ove,
+      // user-agente i identifikatore povezanih računa.
+      //
+      // Next NE stavlja no-store na route handlere automatski (izmjereno na
+      // /api/cron/*), pa bi kolačićem autentificiran GET ostao bez ijedne
+      // direktive. RFC 9111 §3.5 zabranjuje dijeljeno keširanje samo za
+      // zahtjeve s Authorization zaglavljem — kolačići NISU pokriveni, pa ih
+      // posrednički proxy smije keširati heuristički.
+      //
+      // Vercel danas ne kešira odgovore funkcija bez eksplicitne direktive, a
+      // ispred njega nema CDN-a (apex i dashboard razrješavaju se na Vercelove
+      // anycast IP-ove, ne Cloudflareove — dakle grey cloud). Ovo je zato
+      // dubinska obrana, a vrijednost je ista koju BetterAuth već koristi za
+      // get-session, pa se ništa ne sukobljava.
+      {
+        source: "/api/auth/:path*",
+        headers: [{ key: "Cache-Control", value: "no-store" }],
+      },
+    ];
   },
 };
 

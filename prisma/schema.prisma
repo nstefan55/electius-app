@@ -90,6 +90,21 @@ model Organization {
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
+  // event.created POSLJEDNJEG Stripe događaja primijenjenog na pravo ove
+  // organizacije. Brana redoslijeda, ne podatak o naplati — zato stoji ovdje, a
+  // ne na Subscriptionu: referenceId ondje NIJE jedinstven (kupac koji otkaže pa
+  // se vrati dobiva drugi redak), pa bi marker po pretplati imao krivu zrnatost.
+  //
+  // Zašto uopće postoji: Stripe ne jamči redoslijed isporuke, a projekcija je
+  // apsolutno postavljanje stanja bez pojma o vremenu (billing.service), pa
+  // zastarjeli `updated{trialing}` isporučen NAKON `deleted` vraća isPro na true
+  // — izmjereno u produkcijskom testu 2026-08-21 (F4/P5). Posljedica nije samo
+  // prihod: deletionGate čita isPro + stripeSubscriptionId, pa uskrsnula
+  // pretplata BLOKIRA GDPR brisanje računa, a u Portalu nema što otkazati.
+  //
+  // Null = nijedan događaj još nije primijenjen (i svaki prvi prolazi).
+  billingEventAppliedAt DateTime?
+
   admins    User[]
   elections Election[]
 
