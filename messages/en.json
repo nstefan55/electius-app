@@ -1545,46 +1545,6 @@
       "chip2": "Integrity provable",
       "chip3": "Everything archived"
     },
-    "placeholder": {
-      "stats": [
-        {
-          "num": "2.4M+",
-          "label": "Votes cast securely"
-        },
-        {
-          "num": "850+",
-          "label": "Organizations onboard"
-        },
-        {
-          "num": "99.99%",
-          "label": "Election-day uptime"
-        },
-        {
-          "num": "100%",
-          "label": "Ballots independently verifiable"
-        }
-      ],
-      "quotes": [
-        {
-          "quote": "Our annual board election used to take a committee three days to count. With Electius results were certified the moment voting closed — and nobody questioned them.",
-          "name": "Renata Kovač",
-          "initials": "RK",
-          "role": "Secretary, National Trade Union"
-        },
-        {
-          "quote": "Student turnout jumped because voting took two minutes on a phone. The verifiable receipt ended every ‘was my vote counted?’ email overnight.",
-          "name": "Daniel Mendez",
-          "initials": "DM",
-          "role": "President, Student Union"
-        },
-        {
-          "quote": "The full audit trail satisfied our legal review on the first pass. Every resolution we’ve passed since lives in one searchable archive.",
-          "name": "Sofia Oduya",
-          "initials": "SO",
-          "role": "Board Chair, Housing Co-op"
-        }
-      ]
-    },
     "features": {
       "kicker": "What’s inside",
       "title": "Everything an election needs, nothing it doesn’t.",
@@ -1895,6 +1855,7 @@
     }
   },
   "voter": {
+    "noticeLink": "How we handle your data",
     "flow": {
       "stepLabel": "Step {step} of 5",
       "back": "Go back",
@@ -2399,8 +2360,131 @@
             "Electius is a processor: we handle your data solely on that organization's instructions. About you we hold an email address, an optional first and last name, an invitation status and a hash of your voting link — nothing else.",
             "We do not know how you voted and cannot find out. That you voted is visible to your organization.",
             "Send questions and requests — rectification, erasure, objection — to the organization running the election. If you contact us, we will refer you to it.",
-            "This policy is not the notice that organization owes you under Art. 14 GDPR. That notice has to come from them."
+            "The notice Article 14 GDPR owes you is published separately, on behalf of your organization — it is short and written for you. The organization remains responsible for it being accurate for its own election."
+          ],
+          "noticeLabel": "Privacy notice for voters"
+        }
+      }
+    },
+    "voterNotice": {
+      "meta": {
+        "title": "Privacy notice for voters — Electius",
+        "description": "What happens to your data when an organization invites you to vote: where we got your address, who is responsible, how long it is kept and how to exercise your rights."
+      },
+      "eyebrow": "For voters",
+      "title": "Privacy notice for voters",
+      "updated": "Last updated: 12 September 2026",
+      "intro": "You received a voting link, but you never gave us your address — the organization running the election did. That is exactly why this notice is owed to you, under Article 14 of the General Data Protection Regulation. It is deliberately short: everything in it is about you.",
+      "behalf": {
+        "title": "Who is giving you this notice",
+        "body": "This notice is published by Electius on behalf of the organization running the election. That organization is the controller; Electius is its processor and acts only on its instructions. The organization remains responsible for this being accurate for its own election."
+      },
+      "tocTitle": "Contents",
+      "s": {
+        "source": {
+          "title": "Where we got your address",
+          "body": [
+            "Your email address was entered by the organization running the election — by hand or by importing a file. It took the address from records it already held: enrolment, membership, employment or a similar list.",
+            "Electius did not collect your address, did not look it up anywhere, and does not use it for anything other than this election."
           ]
+        },
+        "who": {
+          "title": "Who is responsible",
+          "body": [
+            "The controller is the organization that invited you — a university, trade union, company or association. Its name and email address are in the invitation you received. It decided to hold the election, it compiled the voter list, and it answers for the processing of your data.",
+            "Electius is the processor: we run the technical side and act only on that organization's instructions. We may not use your data for our own purposes, and we do not.",
+            "If you cannot find the organization's contact details, write to us and we will pass your request on to it."
+          ]
+        },
+        "what": {
+          "title": "What we hold about you",
+          "body": [
+            "This list is complete — it is everything about you that exists in the system:"
+          ],
+          "bullets": [
+            "Your email address, where the ballot was delivered.",
+            "Your first and last name, if the organization entered them. An election can be run with addresses alone.",
+            "Your status: invitation pending, invitation sent, vote cast.",
+            "A hash of your voting link. The link itself, in readable form, is stored nowhere — it exists only in the message you received.",
+            "A marker that delivery failed, if the email provider reported that the address does not accept mail.",
+            "Your IP address — briefly, to limit repeated attempts, and in our hosting provider's access logs."
+          ],
+          "after": [
+            "We hold no password, because you do not have one: you are never asked to create an account. While you vote we set no cookie at all, and the ballot page is excluded from our page-view measurement."
+          ]
+        },
+        "why": {
+          "title": "Why, and on what legal basis",
+          "body": [
+            "There is one purpose: to deliver your ballot, let you vote once, and record that you have used your vote. The data is not used for anything else — no advertising, no profiling, no sharing with third parties.",
+            "The legal basis is determined by the organization running the election, because it is their election. It will normally be their legal obligation, or their legitimate interest in running an election required by their own statutes. Only they can tell you the exact basis for this election.",
+            "No decision about you is made automatically, and we do not carry out profiling."
+          ]
+        },
+        "secrecy": {
+          "title": "How you voted",
+          "body": [
+            "How you voted is known to nobody — not the organization, not Electius. A vote record in the database has no field pointing at a voter and no relation to the voter list. That link does not exist, so no query, export, backup or court order can produce it.",
+            "The order of the records reveals nothing either: every vote is given a cryptographically random sequence number, and at sealing the records are sorted alphabetically by their hash.",
+            "That you voted is visible, and has to be — otherwise the organization could not remind those who have not, or establish whether quorum was reached. So it is visible that you voted, but not for whom.",
+            "The confirmation code you receive after voting proves that your vote is included in the sealed record. It does not reveal how you voted — neither to you nor to us."
+          ]
+        },
+        "recipients": {
+          "title": "Who else sees it",
+          "body": [
+            "The voter list is seen by the administrators of the organization running the election. Beyond them, the data passes through the service providers Electius uses:"
+          ],
+          "bullets": [
+            "Neon — the database the list is stored in.",
+            "Resend — sending the invitation and reminder; it receives your address, the election name, the organization name and the voting link.",
+            "Vercel — serving the application; it receives traffic and the corresponding access logs.",
+            "Upstash — rate limiting; it receives your IP address and, if you request a new link yourself, your email address, as keys that expire on their own."
+          ],
+          "after": [
+            "We do not sell your data and give it to nobody outside this list. The full provider list, with processing regions and the legal basis for any transfer outside the European Economic Area, is in the privacy policy."
+          ]
+        },
+        "retention": {
+          "title": "How long it is kept",
+          "body": [
+            "These are not descriptive formulations like \"as long as necessary\" but the actual values in the system:"
+          ],
+          "bullets": [
+            "The voting link: until the election closes, or 30 days from opening if the election has no set end. Every reminder issues a new link and thereby revokes the previous one.",
+            "Your row on the voter list: until the organization deletes it or closes its account. That period is set by them, not by us.",
+            "The vote itself: permanently — it is the record of an election that was held — but with no connection to you whatsoever.",
+            "Your IP address in rate limiting: up to 15 minutes."
+          ]
+        },
+        "rights": {
+          "title": "Your rights",
+          "body": [
+            "You may request access to your data, its rectification or erasure, restriction of processing and data portability, and you may object to the processing."
+          ],
+          "bullets": [
+            "Send your request to the organization running the election — it is the controller and it decides. If you contact us, we will pass it on.",
+            "The organization can correct a name or an address immediately, in the voter list.",
+            "Erasure in the middle of an open election changes the electorate and may create or destroy a quorum, so the organization weighs such a request against the rules its election is run under.",
+            "A cast vote cannot be erased by anyone, us included: it is not linked to you, so it cannot be found."
+          ],
+          "after": [
+            "If you believe your data is not being handled lawfully, you may contact the Croatian Personal Data Protection Agency (AZOP), Selska cesta 136, 10000 Zagreb, azop.hr. A complaint is made against the controller — that is, against the organization running the election."
+          ]
+        },
+        "contact": {
+          "title": "Who to contact",
+          "body": [
+            "The organization that invited you, first; its address is in the invitation. If you cannot reach it, or do not know who to ask, write to us and we will pass your request on:"
+          ],
+          "note": "We answer voters on behalf of the organization and in agreement with it. We cannot decide your request ourselves, because we are not the controller."
+        },
+        "more": {
+          "title": "More detail",
+          "body": [
+            "The full privacy policy — service providers with their processing regions, retention periods for every kind of data, and our contact details — is published separately."
+          ],
+          "linkLabel": "Privacy policy"
         }
       }
     },

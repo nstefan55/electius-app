@@ -547,6 +547,19 @@ export default async function PrivacyPolicy({
                   {list("s.voters.body").map((p) => (
                     <P key={p}>{p}</P>
                   ))}
+                  {/* Obveza iz čl. 14. je organizacijina, ali nijedna je neće
+                      ispuniti sama, pa je obavijest objavljena u njezino ime.
+                      Poveznica stoji ovdje jer je ovo jedino mjesto na kojem
+                      birač koji je dolutao u pravila privatnosti uopće sazna
+                      da za njega postoji kraći i njemu pisan dokument. */}
+                  <p className="text-[0.9375rem]">
+                    <Link
+                      href="/privacy/voters"
+                      className="font-medium text-brand-700 underline"
+                    >
+                      {s("voters.noticeLabel")}
+                    </Link>
+                  </p>
                 </div>
               </div>
             </Section>

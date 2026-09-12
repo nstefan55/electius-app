@@ -70,3 +70,32 @@ describe("/results/[id] zadržava oba izvoza koja pale ISR", () => {
     expect(page).toMatch(/export\s+function\s+generateStaticParams/);
   });
 });
+
+// Rasporedi (layout.tsx) NISU granice: primaju params, pa smiju pozvati
+// setRequestLocale i jezik proslijediti izričito. Ali samo ako to i učine —
+// getTranslations() bez jezika pada na isto čitanje zaglavlja i ruši istu
+// rutu. Razlika je jedan izostavljeni argument, a kvar je HTTP 500 na javnoj
+// stranici, pa se traži oboje: poziv setRequestLocale I izričit `locale` u
+// svakom pozivu prema next-intl/server.
+describe("rasporedi u stablu ISR rute prosljeđuju jezik izričito", () => {
+  const layouts = DIRS.map((d) => join(d, "layout.tsx")).filter((f) =>
+    existsSync(f),
+  );
+
+  it("uopće pronalazi rasporede", () => {
+    expect(layouts.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it.each(layouts)("%s ne čita zaglavlja preko next-intl", (file) => {
+    const src = readFileSync(file, "utf8");
+    if (!/from\s+["']next-intl\/server["']/.test(src)) return;
+
+    expect(src).toMatch(/setRequestLocale\(/);
+    // getTranslations("ns") bi posegnuo za zaglavljem; traži se oblik s
+    // objektom koji nosi locale.
+    for (const call of src.match(/getTranslations\([^)]*\)/g) ?? []) {
+      expect(call).toMatch(/locale/);
+    }
+    expect(src).not.toMatch(/getLocale\(/);
+  });
+});
