@@ -52,3 +52,11 @@ export const confirmDeletionUrl = (token: string) =>
 // Kontakt za pitanja o integritetu zapisa. Ispisuju ga PDF izvještaj i modal
 // revizije u arhivi — jedna definicija, da se dvije adrese ne raziđu.
 export const CONTACT_EMAIL = "contact@electius.com";
+
+// Pravila privatnosti. ŽIVE NA APEXU (marketing grupa), a poveznice na njih
+// najčešće kreću s dashboard hosta — prijava, registracija, postavke — pa ovo
+// mora biti apsolutna, međuhostovska adresa. Relativni /privacy s dashboard
+// hosta završio bi na prijavi: ruta nije u PUBLIC_AUTH_PATHS, a dodati je tamo
+// ne može se, jer se ta lista prelijeva u DASHBOARD_ONLY_PATHS pa bi apeks
+// preusmjeravao vlastitu stranicu.
+export const privacyUrl = () => `${APEX}/privacy`;

@@ -1,6 +1,7 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Download } from "lucide-react";
 import { SettingsCard } from "@/components/settings/settings-card";
+import { privacyUrl } from "@/lib/urls";
 
 // "Izvoz podataka" na /settings (profile-settings-phase-6-spec §1) — pravo na
 // prijenosivost podataka (GDPR čl. 20), blizanac brisanja iz faze 4.
@@ -13,6 +14,7 @@ import { SettingsCard } from "@/components/settings/settings-card";
 // kao odbijena prijenosivost, a onemogućen gumb je isto to s manje riječi.
 export async function DataExportCard() {
   const t = await getTranslations("dashboard.settings.export");
+  const tp = await getTranslations("legal.privacy");
   const locale = await getLocale();
 
   return (
@@ -28,7 +30,20 @@ export async function DataExportCard() {
         </a>
       </div>
 
-      <p className="text-xs leading-relaxed text-neutral-600">{t("note")}</p>
+      <p className="text-xs leading-relaxed text-neutral-600">
+        {t("note")}{" "}
+        {/* Jedina poveznica na pravila u nadzornoj ploči, namjerno baš ovdje:
+            izvoz i brisanje računa su GDPR kontrole, pa ovo je mjesto na kojem
+            ih netko i traži. Međuhostovska je — pravila žive na apeksu. */}
+        <a
+          href={privacyUrl()}
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium text-brand-700 hover:underline"
+        >
+          {tp("title")}
+        </a>
+      </p>
     </SettingsCard>
   );
 }

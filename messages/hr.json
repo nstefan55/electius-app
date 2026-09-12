@@ -213,7 +213,8 @@
         "passwordHelper": "Koristite 8 ili više znakova.",
         "confirmPassword": "Potvrdite lozinku",
         "confirmPasswordPlaceholder": "Ponovite lozinku",
-        "terms": "Slažem se s <terms>Uvjetima korištenja</terms> i <privacy>Pravilima privatnosti</privacy>.",
+        "terms": "Slažem se s <terms>Uvjetima korištenja</terms>.",
+        "privacyNote": "Vaše podatke obrađujemo kako je opisano u <privacy>Pravilima privatnosti</privacy>.",
         "submit": "Otvori račun",
         "otp": {
           "title": "Unesite kod za potvrdu",
@@ -2011,6 +2012,380 @@
       "anon": "Prikazani su samo zbirni rezultati — pojedinačni glasovi su anonimni.",
       "hiddenTitle": "Rezultati nisu objavljeni",
       "hiddenSub": "Rezultate ovih izbora objavljuje organizator. Ako mislite da bi trebali biti dostupni, obratite se organizatoru."
+    }
+  },
+  "legal": {
+    "privacy": {
+      "meta": {
+        "title": "Pravila privatnosti",
+        "description": "Kako Electius postupa s osobnim podacima administratora i birača: što prikupljamo, na kojoj pravnoj osnovi, koliko dugo čuvamo i koja su vaša prava."
+      },
+      "eyebrow": "Pravni dokumenti",
+      "title": "Pravila privatnosti",
+      "updated": "Zadnja izmjena: 12. rujna 2026.",
+      "draft": {
+        "title": "Dokument u pripremi za objavu",
+        "body": "Electius još nije pokrenut i pravna osoba koja će biti voditelj obrade još nije registrirana. Sve navedeno opisuje kako aplikacija stvarno radi danas — svaki podatak, rok i obrada očitani su iz koda. Podaci o voditelju obrade u odjeljku „Tko smo mi” dopunit će se prije objave, a dokument prije toga pregledava odvjetnik specijaliziran za zaštitu osobnih podataka."
+      },
+      "intro": "Ova pravila objašnjavaju kako Electius postupa s osobnim podacima. Pisana su za administratore organizacija — osobe koje otvaraju račun i provode izbore. Ako ste birač koji je dobio poveznicu za glasovanje, vaša je situacija pravno drukčija i objašnjena je u odjeljku „Za birače” na dnu stranice.",
+      "tocTitle": "Sadržaj",
+      "s": {
+        "who": {
+          "title": "Tko smo mi",
+          "body": "Voditelj obrade za podatke administratora organizacije je:",
+          "entityLabel": "Naziv",
+          "entity": "— dopunit će se prije objave —",
+          "addressLabel": "Adresa sjedišta",
+          "address": "— dopunit će se prije objave —",
+          "emailLabel": "Kontakt",
+          "note": "Za podatke birača Electius nije voditelj obrade nego izvršitelj obrade. Voditelj je organizacija koja provodi izbore — vidi odjeljak „Za birače”."
+        },
+        "what": {
+          "title": "Čime se Electius bavi",
+          "body": "Electius je platforma za elektroničko glasovanje. Organizacija — sveučilište, sindikat, tvrtka ili udruga — pripremi izbore, učita popis birača i objavi ih. Svaki birač e-poštom dobije jedinstvenu poveznicu i glasuje bez otvaranja računa, lozinke i registracije. Nakon zatvaranja izbora sustav izračuna rezultate i zapečati zapis kriptografski provjerljivom Merkleovom strukturom."
+        },
+        "collect": {
+          "title": "Koje podatke prikupljamo",
+          "adminTitle": "Administrator organizacije",
+          "adminIntro": "Ove podatke prikupljamo izravno od vas, ili od Googlea ako se prijavljujete Google računom.",
+          "colData": "Podatak",
+          "colSource": "Odakle dolazi",
+          "admin": [
+            [
+              "Ime i prezime",
+              "Registracija i početno postavljanje računa"
+            ],
+            [
+              "Adresa e-pošte",
+              "Registracija ili prijava Google računom"
+            ],
+            [
+              "Lozinka — isključivo kao scrypt sažetak",
+              "Registracija. Lozinku u čitljivom obliku ne spremamo i ne zapisujemo u zapisnike."
+            ],
+            [
+              "Oznaka je li adresa e-pošte potvrđena",
+              "Potvrda jednokratnim kodom"
+            ],
+            [
+              "Profilna slika, ako je postavite",
+              "Vaše učitavanje ili Google profil"
+            ],
+            [
+              "Jezik sučelja",
+              "Postavke profila"
+            ],
+            [
+              "Oznaka plana i identifikatori pretplate u Stripeu",
+              "Plaćanje, samo za Pro plan"
+            ],
+            [
+              "IP adresa",
+              "Prijava — sprema se uz sesiju, radi sigurnosti"
+            ],
+            [
+              "Podaci o pregledniku (user agent)",
+              "Prijava — sprema se uz sesiju, radi sigurnosti"
+            ],
+            [
+              "Pristupni tokeni za Google",
+              "Samo ako se prijavljujete Google računom"
+            ],
+            [
+              "Naziv, vrsta, kontaktna e-pošta i logotip organizacije",
+              "Početno postavljanje i postavke profila"
+            ]
+          ],
+          "voterTitle": "Birač",
+          "voterIntro": "Podatke birača ne prikupljamo mi. Unosi ih vaša organizacija — ručno ili uvozom CSV datoteke — i ona odlučuje koje će podatke unijeti.",
+          "voter": [
+            [
+              "Adresa e-pošte",
+              "Popis birača koji je unijela organizacija"
+            ],
+            [
+              "Ime i prezime — neobavezno",
+              "Isti popis. Izbori se mogu provesti i samo s adresama e-pošte, bez imena."
+            ],
+            [
+              "Status pozivnice: na čekanju, poslana, glas predan",
+              "Sustav"
+            ],
+            [
+              "Oznaka neuspjele dostave e-pošte",
+              "Povratna informacija pružatelja usluge e-pošte kad je poruka odbijena ili prijavljena"
+            ],
+            [
+              "Poveznica za glasovanje — isključivo kao SHA-256 sažetak",
+              "Sustav. Poveznica u čitljivom obliku postoji samo u primljenoj e-pošti i nigdje drugdje."
+            ]
+          ],
+          "notTitle": "Što namjerno ne prikupljamo",
+          "not": [
+            "Nikakvu analitiku. Nema Google Analyticsa, Plausiblea, Vercel Analyticsa ni Sentryja — u aplikaciji nema nijednog analitičkog paketa.",
+            "Nikakvo oglašavanje, praćenje između web-mjesta ni kolačiće trećih strana.",
+            "Nikakvo praćenje otvaranja ni klikova u e-pošti. Oboje je isključeno i mora ostati isključeno: praćenje klikova prepisalo bi poveznicu koja je ujedno tajni token za glasovanje.",
+            "Nikakve podatke o platnim karticama. Plaćanje se u cijelosti odvija na Stripeovim stranicama i polje za karticu u Electiusu ne postoji.",
+            "Nikakvu preciznu lokaciju. Iz IP adrese ne izvodimo ni državu — spremljena je samo radi sigurnosti sesije.",
+            "Nikakve imenike, popise kontakata ni identifikatore uređaja."
+          ]
+        },
+        "basis": {
+          "title": "Zašto podatke obrađujemo i na kojoj osnovi",
+          "intro": "Svaka obrada ima točno jednu svrhu i točno jednu pravnu osnovu.",
+          "colPurpose": "Svrha",
+          "colBasis": "Pravna osnova",
+          "rows": [
+            [
+              "Otvaranje i vođenje računa te pružanje usluge",
+              "Izvršenje ugovora — čl. 6. st. 1. t. (b) GDPR-a"
+            ],
+            [
+              "Transakcijska e-pošta: jednokratni kod, obnova lozinke, potvrda brisanja računa, obavijest o promjeni lozinke",
+              "Izvršenje ugovora — čl. 6. st. 1. t. (b)"
+            ],
+            [
+              "Naplata i izdavanje računa za Pro plan",
+              "Izvršenje ugovora — čl. 6. st. 1. t. (b)"
+            ],
+            [
+              "Ograničavanje broja zahtjeva, sprječavanje zlouporabe te IP adresa i podaci o pregledniku uz sesiju",
+              "Legitiman interes — čl. 6. st. 1. t. (f): sigurnost usluge"
+            ],
+            [
+              "Marketinška e-pošta",
+              "Ne šaljemo je. Ako to ikad počnemo, tražit ćemo zasebnu privolu — nikad spojenu s registracijom."
+            ]
+          ],
+          "voterNote": "Podatke birača obrađujemo isključivo prema dokumentiranim uputama organizacije koja provodi izbore (čl. 28. st. 3. t. (a) GDPR-a). Pravnu osnovu za tu obradu određuje i objavljuje sama organizacija."
+        },
+        "ballot": {
+          "title": "Tajnost glasovanja",
+          "intro": "Ovo je najvažnije obećanje proizvoda, pa ga navodimo točno — ni riječ jače nego što stvarno vrijedi.",
+          "colClaim": "Tvrdnja",
+          "colVerdict": "Vrijedi?",
+          "colWhy": "Zašto",
+          "yes": "Da",
+          "no": "Ne",
+          "claims": {
+            "how": {
+              "claim": "Ne možemo saznati kako je netko glasao.",
+              "why": "Zapis o glasu u bazi nema polje koje upućuje na birača i nema vezu s tablicom birača. Ta veza u bazi ne postoji, pa je ne može proizvesti nijedan upit, izvoz, sigurnosna kopija ni sudski nalog."
+            },
+            "order": {
+              "claim": "Redoslijed zapisa ne otkriva redoslijed glasovanja.",
+              "why": "Svaki glas dobiva kriptografski slučajan redni broj, a listovi Merkleove strukture sortiraju se abecedno. Vremenski redoslijed time nestaje."
+            },
+            "whether": {
+              "claim": "Ne znamo jeste li glasali.",
+              "why": "Status birača mijenja se u „glas predan”. Vaša organizacija vidi tko je glasao — i mora vidjeti, jer inače ne može podsjetiti one koji nisu."
+            },
+            "identity": {
+              "claim": "Vaš identitet uopće ne spremamo.",
+              "why": "Vaša adresa e-pošte je spremljena. Njome vam se isporučuje listić."
+            }
+          },
+          "receipt": "Kod potvrde koji dobijete nakon glasovanja dokazuje da je vaš glas uključen u zapečaćeni zapis. On ne otkriva — ni vama ni nama — kako ste glasali."
+        },
+        "cookies": {
+          "title": "Kolačići",
+          "body": "Electius postavlja isključivo kolačiće nužne za rad usluge. Analitičkih kolačića nema jer u aplikaciji nema nijednog analitičkog alata.",
+          "colName": "Kolačić",
+          "colPurpose": "Svrha",
+          "colDuration": "Trajanje",
+          "colOptOut": "Kako ga izbjeći",
+          "rows": [
+            [
+              "Kolačić prijave",
+              "Održava administratora prijavljenim i štiti od CSRF napada",
+              "7 dana",
+              "Odjava ili brisanje podataka preglednika. Nadzorna ploča bez njega ne može raditi."
+            ]
+          ],
+          "bullets": [
+            "Nema oglašivačkih kolačića, praćenja između web-mjesta ni kolačića trećih strana.",
+            "Postupak glasovanja ne postavlja nijedan kolačić. Birač može ispuniti listić s potpuno blokiranim kolačićima.",
+            "Signal Do Not Track: nikakvo praćenje ne provodimo, pa ga taj signal nema što isključiti."
+          ],
+          "banner": "Zato ne prikazujemo traku za privolu za kolačiće. Kolačić nužan za uslugu koju ste izričito zatražili izuzet je od privole."
+        },
+        "processors": {
+          "title": "Pružatelji usluga",
+          "intro": "Electius se oslanja na sljedeće pružatelje usluga, koji u naše ime obrađuju podatke. Popis ažuriramo prije nego što dodamo novog pružatelja.",
+          "colName": "Pružatelj",
+          "colPurpose": "Čemu služi",
+          "colData": "Koji podaci do njega dolaze",
+          "rows": [
+            [
+              "Vercel",
+              "Posluživanje aplikacije i isporuka sadržaja",
+              "Sav promet prema aplikaciji i pripadajući zapisnici pristupa"
+            ],
+            [
+              "Neon",
+              "PostgreSQL baza podataka",
+              "Svi podaci navedeni u odjeljku „Koje podatke prikupljamo”"
+            ],
+            [
+              "Cloudflare R2",
+              "Pohrana datoteka: logotipi i profilne slike u javnom spremniku, PDF izvještaji o izborima u privatnom",
+              "Slike i generirani izvještaji"
+            ],
+            [
+              "Resend",
+              "Slanje transakcijske e-pošte",
+              "Adresa primatelja, naziv izbora, naziv organizacije i poveznica za glasovanje"
+            ],
+            [
+              "Upstash",
+              "Ograničavanje broja zahtjeva i raspored pozadinskih poslova",
+              "IP adrese i adrese e-pošte, kao kratkotrajni ključevi s automatskim istekom"
+            ],
+            [
+              "Stripe",
+              "Naplata, samo za Pro plan",
+              "Adresa e-pošte i podaci o naplati. Podaci o kartici nikad ne prolaze kroz Electius."
+            ],
+            [
+              "Google",
+              "Prijava Google računom, ako je sami odaberete",
+              "Adresa e-pošte, ime i profilna slika"
+            ]
+          ]
+        },
+        "retention": {
+          "title": "Koliko dugo čuvamo podatke",
+          "intro": "Svaki rok u nastavku stvarna je vrijednost u kodu, a ne opisna formulacija poput „koliko je potrebno”.",
+          "colData": "Podatak",
+          "colPeriod": "Rok čuvanja",
+          "rows": [
+            [
+              "Poveznica za glasovanje",
+              "Do zatvaranja izbora; 30 dana od pokretanja ako izbori nemaju zadani kraj. Slanje podsjetnika izdaje novu poveznicu i time poništava prethodnu, pa radi samo najnovija."
+            ],
+            [
+              "Jednokratni kod za prijavu",
+              "10 minuta"
+            ],
+            [
+              "Poveznica za obnovu lozinke",
+              "1 sat, jednokratna"
+            ],
+            [
+              "Poveznica za potvrdu brisanja računa",
+              "24 sata, jednokratna"
+            ],
+            [
+              "Sesija, uključujući IP adresu i podatke o pregledniku",
+              "7 dana"
+            ],
+            [
+              "Dokazna građa zapečaćenog izbornog zapisa",
+              "Besplatni plan: jednu kalendarsku godinu od pečaćenja, nakon čega se briše. Pro plan: čuva se trajno."
+            ],
+            [
+              "Korijenski sažetak, sažetak rezultata i PDF izvještaj zapečaćenih izbora",
+              "Trajno — to je zapis o provedenim izborima"
+            ],
+            [
+              "Račun administratora i svi podaci organizacije",
+              "Do zahtjeva za brisanje; brišu se čim potvrdite poveznicu iz e-pošte"
+            ]
+          ],
+          "note": "Rok čuvanja dokazne građe ponovno se provjerava u trenutku brisanja, a ne u trenutku pečaćenja. Organizacija koja u međuvremenu prijeđe na Pro plan neće izgubiti građu koja je ranije bila označena za brisanje.",
+          "deletion": "Brisanje računa briše i zapečaćene izborne zapise te organizacije. Ako vam je zapis potreban i nakon zatvaranja računa, preuzmite ga prije brisanja — izvoz podataka i PDF izvještaji dostupni su u aplikaciji."
+        },
+        "security": {
+          "title": "Sigurnost",
+          "intro": "Navodimo samo ono što je stvarno ugrađeno.",
+          "bullets": [
+            "Sav promet ide preko TLS-a, uz HSTS i sigurnosna zaglavlja (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) na svakoj ruti.",
+            "Lozinke se spremaju isključivo kao scrypt sažetak. U čitljivom obliku ne spremaju se i ne zapisuju.",
+            "Poveznice za glasovanje spremaju se isključivo kao SHA-256 sažetak. Poveznica u čitljivom obliku postoji samo u primljenoj e-pošti.",
+            "Svaki upit u nadzornoj ploči ograničen je na vašu organizaciju već u samom uvjetu upita. Zahtjev za tuđim izborima vraća isti odgovor kao zahtjev za nepostojećima, pa se ni postojanje tuđih podataka ne može ustanoviti.",
+            "Tajnost glasovanja proizlazi iz strukture baze, a ne iz internog pravila — vidi odjeljak „Tajnost glasovanja”.",
+            "Zapečaćeni izborni zapisi zaštićeni su Merkleovom strukturom, pa se svaka naknadna izmjena rezultata može otkriti.",
+            "Broj pokušaja prijave, izvoza, učitavanja datoteka i glasovanja je ograničen.",
+            "Dvofaktorska potvrda jednokratnim kodom putem e-pošte."
+          ],
+          "breach": "Povredu osobnih podataka prijavljujemo nadzornom tijelu u roku od 72 sata (čl. 33. GDPR-a), a pogođene osobe obavještavamo kad je rizik za njihova prava visok (čl. 34.). Ako se povreda tiče podataka birača, bez odgode obavještavamo organizaciju koja te izbore provodi, jer je ona voditelj obrade.",
+          "noCert": "Nemamo certifikat ISO 27001 ni SOC 2 i ne tvrdimo da ga imamo."
+        },
+        "rights": {
+          "title": "Vaša prava",
+          "intro": "Dva od ovih prava već su ugrađena u aplikaciju i ostvaruju se u nekoliko klikova, bez pisanja poruke.",
+          "colRight": "Pravo",
+          "colHow": "Kako ga ostvariti",
+          "rows": [
+            [
+              "Pristup podacima — čl. 15.",
+              "Obuhvaćeno izvozom iz sljedećeg retka"
+            ],
+            [
+              "Prenosivost — čl. 20.",
+              "Postavke → Izvoz podataka: cijela organizacija u jednoj JSON datoteci"
+            ],
+            [
+              "Brisanje — čl. 17.",
+              "Postavke → Brisanje računa. Potvrđuje se poveznicom iz e-pošte, nakon čega se brišu i pohranjene datoteke."
+            ],
+            [
+              "Ispravak — čl. 16.",
+              "Profil. Podatke birača ispravlja organizacija u popisu birača."
+            ],
+            [
+              "Ograničenje obrade — čl. 18.",
+              "Pošaljite nam poruku"
+            ],
+            [
+              "Prigovor — čl. 21.",
+              "Pošaljite nam poruku"
+            ],
+            [
+              "Automatizirano odlučivanje — čl. 22.",
+              "Ne provodimo ga. Nijedna odluka o vama ne donosi se automatizirano."
+            ]
+          ],
+          "response": "Na zahtjev odgovaramo u roku od mjesec dana. Za složene zahtjeve rok se može produljiti za dodatna dva mjeseca, o čemu vas obavještavamo unutar prvog mjeseca.",
+          "authorityTitle": "Nadzorno tijelo",
+          "authority": "Ako smatrate da s vašim podacima ne postupamo u skladu s propisima, možete se obratiti Agenciji za zaštitu osobnih podataka (AZOP), Selska cesta 136, 10000 Zagreb, azop.hr.",
+          "voterTrap": "Ako ste birač, zahtjev najprije uputite organizaciji koja provodi izbore. Ona je voditelj obrade, a mi joj u tome pomažemo. Brisanje birača usred otvorenih izbora mijenja biračko tijelo i može stvoriti ili poništiti kvorum, pa takav zahtjev ne možemo izvršiti samostalno."
+        },
+        "transfers": {
+          "title": "Prijenos podataka izvan EGP-a",
+          "body": "Pružatelje usluga biramo tako da podatke, gdje god je to moguće, obrađuju u Europskoj uniji. Resend šalje e-poštu iz regije eu-west-1 (Irska). Kad pružatelj podatke obrađuje izvan Europskoga gospodarskog prostora, prijenos se temelji na standardnim ugovornim klauzulama Europske komisije (Provedbena odluka (EU) 2021/914) i na mjerama zaštite opisanima u ugovoru o obradi podataka toga pružatelja.",
+          "pending": "Točne regije obrade za svakog pružatelja iz gornje tablice potvrđujemo prije objave ovih pravila i tada ih ovdje navodimo pojedinačno."
+        },
+        "children": {
+          "title": "Djeca",
+          "body": [
+            "Electius je poslovni alat za organizacije i nije namijenjen djeci. Za otvaranje računa administratora potrebno je imati najmanje 16 godina; ako utvrdimo da je račun otvorila mlađa osoba, brišemo ga.",
+            "Birači ne otvaraju račun i nama ne daju ništa — njihovi podaci dolaze s popisa koji unosi organizacija. U Hrvatskoj je dob za privolu iz čl. 8. GDPR-a 16 godina, a to pitanje pripada organizaciji koja provodi izbore, ne Electiusu.",
+            "Izbori u srednjim školama i na fakultetima realan su slučaj upotrebe, pa organizacija koja provodi izbore među maloljetnicima mora sama procijeniti osnovu obrade i o njoj obavijestiti birače."
+          ]
+        },
+        "changes": {
+          "title": "Izmjene ovih pravila",
+          "body": "Kad ova pravila izmijenimo, mijenjamo i datum na vrhu stranice. O bitnim izmjenama administratore obavještavamo e-poštom. Ako vaše podatke ikad budemo htjeli obrađivati u novu svrhu, obavijestit ćemo vas prije te obrade, a ne nakon nje.",
+          "noAcceptance": "Ova pravila nisu ugovor koji prihvaćate — ona su obavijest koju vam dugujemo. Zato nastavak korištenja usluge ne tumačimo kao pristanak na izmjene."
+        },
+        "contact": {
+          "title": "Kontakt",
+          "body": "Za svako pitanje o ovim pravilima ili za ostvarivanje svojih prava pišite nam na:",
+          "note": "Nemamo imenovanog službenika za zaštitu osobnih podataka jer ga propis za našu obradu ne zahtijeva. Na poruke odgovara osoba zadužena za zaštitu podataka u Electiusu.",
+          "escalation": "Ako niste zadovoljni našim odgovorom, možete se obratiti AZOP-u — podaci su u odjeljku „Vaša prava”."
+        },
+        "voters": {
+          "title": "Za birače",
+          "body": [
+            "Ako ste dobili poveznicu za glasovanje, vaš voditelj obrade nije Electius nego organizacija koja provodi izbore — sveučilište, sindikat, tvrtka ili udruga. Ona je odlučila provesti izbore, ona je unijela vašu adresu i ona za tu odluku odgovara.",
+            "Electius je izvršitelj obrade: vaše podatke obrađujemo isključivo prema njezinim uputama. O vama čuvamo adresu e-pošte, neobavezno ime i prezime, status pozivnice i sažetak poveznice za glasovanje — ništa više.",
+            "Kako ste glasali ne znamo i ne možemo saznati. Da ste glasali vidi vaša organizacija.",
+            "Pitanja i zahtjeve — ispravak, brisanje, prigovor — uputite organizaciji koja provodi izbore. Ako se obratite nama, proslijedit ćemo vas njoj.",
+            "Ova pravila nisu obavijest koju vam ta organizacija duguje po čl. 14. GDPR-a. Nju vam mora dati ona."
+          ]
+        }
+      }
     }
   }
 }

@@ -13,7 +13,47 @@ const LINKS = [
   { href: "#contact", key: "contact" },
 ] as const;
 
-export function LandingNav() {
+// Odsjeci na koje ova navigacija cilja žive na ODREDIŠNOJ stranici. Na svakoj
+// drugoj stranici u (marketing) grupi golo sidro `#how` ne vodi nikamo — a
+// poveznica koja ne vodi nikamo je poveznica koja laže, isto pravilo zbog kojeg
+// stupac povjerenja u podnožju i Uvjeti korištenja ostaju običan tekst. Zato
+// takve stranice (npr. /privacy) postavljaju `sectionsElsewhere`, pa poveznice
+// postaju `/{locale}/#how` i vode natrag na odredišnu stranicu, na pravo mjesto.
+// Zastavica je imenovana po tome ŠTO RADI, a ne po tome gdje odsjeci žive: i
+// odredišna stranica i /privacy slažu se da odsjeci žive na početnoj, pa bi ih
+// `sectionsOnHome` natjerao da predaju suprotne vrijednosti. `elsewhere` je
+// istinito točno kad tekuća stranica NIJE ona koja te odsjeke drži.
+function SectionLink({
+  href,
+  sectionsElsewhere,
+  className,
+  onClick,
+  children,
+}: {
+  href: string;
+  sectionsElsewhere: boolean;
+  className: string;
+  onClick?: () => void;
+  children: React.ReactNode;
+}) {
+  // Na samoj odredišnoj stranici ostaje goli <a>: obično skakanje unutar
+  // stranice, bez usmjeravanja kroz router.
+  return sectionsElsewhere ? (
+    <Link href={`/${href}`} onClick={onClick} className={className}>
+      {children}
+    </Link>
+  ) : (
+    <a href={href} onClick={onClick} className={className}>
+      {children}
+    </a>
+  );
+}
+
+export function LandingNav({
+  sectionsElsewhere = false,
+}: {
+  sectionsElsewhere?: boolean;
+}) {
   const t = useTranslations("marketing.nav");
   const [open, setOpen] = useState(false);
 
@@ -49,13 +89,14 @@ export function LandingNav() {
 
         <div className="hidden items-center gap-8.5 md:flex">
           {LINKS.map((l) => (
-            <a
+            <SectionLink
               key={l.key}
               href={l.href}
+              sectionsElsewhere={sectionsElsewhere}
               className="text-[0.9375rem] font-medium text-neutral-600 hover:text-brand-700"
             >
               {t(l.key)}
-            </a>
+            </SectionLink>
           ))}
         </div>
 
@@ -97,14 +138,15 @@ export function LandingNav() {
           >
             <div className="flex flex-col gap-1">
               {LINKS.map((l) => (
-                <a
+                <SectionLink
                   key={l.key}
                   href={l.href}
+                  sectionsElsewhere={sectionsElsewhere}
                   onClick={() => setOpen(false)}
                   className="flex min-h-11 items-center text-base font-medium text-neutral-600"
                 >
                   {t(l.key)}
-                </a>
+                </SectionLink>
               ))}
               <a
                 href={signInUrl()}

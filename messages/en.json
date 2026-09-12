@@ -213,7 +213,8 @@
         "passwordHelper": "Use 8 or more characters.",
         "confirmPassword": "Confirm password",
         "confirmPasswordPlaceholder": "Repeat your password",
-        "terms": "I agree to the <terms>Terms of service</terms> and <privacy>Privacy policy</privacy>.",
+        "terms": "I agree to the <terms>Terms of service</terms>.",
+        "privacyNote": "We handle your data as described in our <privacy>Privacy policy</privacy>.",
         "submit": "Create account",
         "otp": {
           "title": "Enter your verification code",
@@ -2011,6 +2012,380 @@
       "anon": "Only aggregate results are shown — individual votes are anonymous.",
       "hiddenTitle": "Results are not published",
       "hiddenSub": "Results for this election are published by the organizer. If you believe they should be available, contact the organizer."
+    }
+  },
+  "legal": {
+    "privacy": {
+      "meta": {
+        "title": "Privacy policy",
+        "description": "How Electius handles personal data for organization admins and voters: what we collect, on what legal basis, how long we keep it and what your rights are."
+      },
+      "eyebrow": "Legal",
+      "title": "Privacy policy",
+      "updated": "Last updated: 12 September 2026.",
+      "draft": {
+        "title": "Document in preparation for publication",
+        "body": "Electius has not launched yet and the legal entity that will act as controller is not yet registered. Everything below describes how the application actually works today — every data item, retention period and processing operation was read off the code. The controller details in “Who we are” will be completed before publication, and the document is reviewed by a data-protection lawyer before then."
+      },
+      "intro": "This policy explains how Electius handles personal data. It is written for organization admins — the people who create an account and run elections. If you are a voter who received a voting link, your position is legally different and is explained in “For voters” at the bottom of this page.",
+      "tocTitle": "Contents",
+      "s": {
+        "who": {
+          "title": "Who we are",
+          "body": "The controller for organization admin data is:",
+          "entityLabel": "Legal name",
+          "entity": "— to be completed before publication —",
+          "addressLabel": "Registered address",
+          "address": "— to be completed before publication —",
+          "emailLabel": "Contact",
+          "note": "For voter data Electius is not the controller but a processor. The controller is the organization running the election — see “For voters”."
+        },
+        "what": {
+          "title": "What Electius does",
+          "body": "Electius is an electronic voting platform. An organization — a university, a union, a company or an association — prepares an election, uploads a voter list and publishes it. Each voter receives a unique link by email and votes without creating an account, a password or a registration. Once voting closes the system computes the results and seals the record with a cryptographically verifiable Merkle structure."
+        },
+        "collect": {
+          "title": "What we collect",
+          "adminTitle": "Organization admin",
+          "adminIntro": "We collect this directly from you, or from Google if you sign in with a Google account.",
+          "colData": "Data",
+          "colSource": "Where it comes from",
+          "admin": [
+            [
+              "Name",
+              "Sign-up and initial account setup"
+            ],
+            [
+              "Email address",
+              "Sign-up or Google sign-in"
+            ],
+            [
+              "Password — as a scrypt hash only",
+              "Sign-up. We never store or log the password in readable form."
+            ],
+            [
+              "Email-verified flag",
+              "One-time code verification"
+            ],
+            [
+              "Profile picture, if you set one",
+              "Your upload or your Google profile"
+            ],
+            [
+              "Interface language",
+              "Profile settings"
+            ],
+            [
+              "Plan flag and Stripe subscription identifiers",
+              "Payment, Pro plan only"
+            ],
+            [
+              "IP address",
+              "Sign-in — stored with the session, for security"
+            ],
+            [
+              "Browser details (user agent)",
+              "Sign-in — stored with the session, for security"
+            ],
+            [
+              "Google access tokens",
+              "Only if you sign in with a Google account"
+            ],
+            [
+              "Organization name, type, contact email and logo",
+              "Initial setup and profile settings"
+            ]
+          ],
+          "voterTitle": "Voter",
+          "voterIntro": "We do not collect voter data. Your organization enters it — manually or by importing a CSV file — and decides which fields to enter.",
+          "voter": [
+            [
+              "Email address",
+              "The voter list entered by the organization"
+            ],
+            [
+              "First and last name — optional",
+              "The same list. An election can be run on email addresses alone, with no names."
+            ],
+            [
+              "Invitation status: pending, sent, voted",
+              "The system"
+            ],
+            [
+              "Delivery-failure marker",
+              "Feedback from the email provider when a message is rejected or reported"
+            ],
+            [
+              "Voting link — as a SHA-256 hash only",
+              "The system. The link in readable form exists only in the email you received, and nowhere else."
+            ]
+          ],
+          "notTitle": "What we deliberately do not collect",
+          "not": [
+            "No analytics of any kind. No Google Analytics, no Plausible, no Vercel Analytics, no Sentry — the application contains no analytics package at all.",
+            "No advertising, no cross-site tracking, no third-party cookies.",
+            "No email open or click tracking. Both are off and must stay off: click tracking would rewrite the link that is itself the secret voting token.",
+            "No payment card data. Payment happens entirely on Stripe's pages and no card field exists in Electius.",
+            "No precise location. We do not even derive a country from your IP address — it is stored for session security only.",
+            "No address books, contact lists or device identifiers."
+          ]
+        },
+        "basis": {
+          "title": "Why we process data, and on what basis",
+          "intro": "Each processing operation has exactly one purpose and exactly one legal basis.",
+          "colPurpose": "Purpose",
+          "colBasis": "Legal basis",
+          "rows": [
+            [
+              "Creating and running your account, and providing the service",
+              "Performance of a contract — Art. 6(1)(b) GDPR"
+            ],
+            [
+              "Transactional email: one-time code, password reset, account-deletion confirmation, password-change notice",
+              "Performance of a contract — Art. 6(1)(b)"
+            ],
+            [
+              "Payment and invoicing for the Pro plan",
+              "Performance of a contract — Art. 6(1)(b)"
+            ],
+            [
+              "Rate limiting, abuse prevention, and the IP address and browser details stored with your session",
+              "Legitimate interest — Art. 6(1)(f): security of the service"
+            ],
+            [
+              "Marketing email",
+              "We do not send any. If we ever start, we will ask for separate consent — never bundled into sign-up."
+            ]
+          ],
+          "voterNote": "We process voter data solely on the documented instructions of the organization running the election (Art. 28(3)(a) GDPR). That organization determines and states its own legal basis for the processing."
+        },
+        "ballot": {
+          "title": "Ballot secrecy",
+          "intro": "This is the product's central promise, so we state it precisely — not one word stronger than what actually holds.",
+          "colClaim": "Claim",
+          "colVerdict": "Holds?",
+          "colWhy": "Why",
+          "yes": "Yes",
+          "no": "No",
+          "claims": {
+            "how": {
+              "claim": "We cannot find out how anyone voted.",
+              "why": "A vote record in the database has no field pointing at a voter and no relation to the voter table. That link does not exist in the database, so no query, export, backup or court order can produce it."
+            },
+            "order": {
+              "claim": "The order of the records does not reveal the order of voting.",
+              "why": "Every vote is given a cryptographically random sequence number, and the leaves of the Merkle structure are sorted lexicographically. Time order disappears."
+            },
+            "whether": {
+              "claim": "We do not know whether you voted.",
+              "why": "A voter's status changes to “voted”. Your organization can see who voted — and has to, or it cannot chase the people who have not."
+            },
+            "identity": {
+              "claim": "We do not store your identity at all.",
+              "why": "Your email address is stored. It is how the ballot is delivered to you."
+            }
+          },
+          "receipt": "The confirmation code you receive after voting proves that your vote is included in the sealed record. It does not reveal — to you or to us — how you voted."
+        },
+        "cookies": {
+          "title": "Cookies",
+          "body": "Electius sets strictly necessary cookies only. There are no analytics cookies, because the application contains no analytics tool.",
+          "colName": "Cookie",
+          "colPurpose": "Purpose",
+          "colDuration": "Duration",
+          "colOptOut": "How to avoid it",
+          "rows": [
+            [
+              "Session cookie",
+              "Keeps the admin signed in and protects against CSRF attacks",
+              "7 days",
+              "Sign out, or clear your browser data. The dashboard cannot work without it."
+            ]
+          ],
+          "bullets": [
+            "No advertising cookies, no cross-site tracking, no third-party cookies.",
+            "The voting flow sets no cookie at all. A voter can complete a ballot with cookies fully blocked.",
+            "Do Not Track: we perform no tracking, so there is nothing for that signal to switch off."
+          ],
+          "banner": "That is why we show no cookie consent banner. A cookie strictly necessary for a service you explicitly requested is exempt from consent."
+        },
+        "processors": {
+          "title": "Service providers",
+          "intro": "Electius relies on the following providers, which process data on our behalf. We update this list before adding a new provider.",
+          "colName": "Provider",
+          "colPurpose": "What it does",
+          "colData": "What data reaches it",
+          "rows": [
+            [
+              "Vercel",
+              "Serving the application and content delivery",
+              "All traffic to the application and the corresponding access logs"
+            ],
+            [
+              "Neon",
+              "PostgreSQL database",
+              "Everything listed under “What we collect”"
+            ],
+            [
+              "Cloudflare R2",
+              "File storage: logos and profile pictures in a public bucket, PDF election reports in a private one",
+              "Images and generated reports"
+            ],
+            [
+              "Resend",
+              "Sending transactional email",
+              "Recipient address, election title, organization name and the voting link"
+            ],
+            [
+              "Upstash",
+              "Rate limiting and background-job scheduling",
+              "IP addresses and email addresses, as short-lived keys that expire automatically"
+            ],
+            [
+              "Stripe",
+              "Payments, Pro plan only",
+              "Email address and billing details. Card data never passes through Electius."
+            ],
+            [
+              "Google",
+              "Google sign-in, if you choose it",
+              "Email address, name and profile picture"
+            ]
+          ]
+        },
+        "retention": {
+          "title": "How long we keep data",
+          "intro": "Every period below is a real value in the code, not a phrase such as “as long as necessary”.",
+          "colData": "Data",
+          "colPeriod": "Retention",
+          "rows": [
+            [
+              "Voting link",
+              "Until the election closes; 30 days from activation if the election has no closing date. Sending a reminder issues a new link and revokes the previous one, so only the newest link works."
+            ],
+            [
+              "One-time sign-in code",
+              "10 minutes"
+            ],
+            [
+              "Password-reset link",
+              "1 hour, single use"
+            ],
+            [
+              "Account-deletion confirmation link",
+              "24 hours, single use"
+            ],
+            [
+              "Session, including IP address and browser details",
+              "7 days"
+            ],
+            [
+              "Proof payload of a sealed election record",
+              "Free plan: one calendar year from sealing, after which it is deleted. Pro plan: kept indefinitely."
+            ],
+            [
+              "Root hash, result summary and PDF report of a sealed election",
+              "Indefinitely — this is the record of an election that was held"
+            ],
+            [
+              "Admin account and all organization data",
+              "Until you request deletion; erased as soon as you confirm the emailed link"
+            ]
+          ],
+          "note": "The retention of the proof payload is re-checked at the moment of deletion, not at the moment of sealing. An organization that moves to the Pro plan in the meantime does not lose a payload that was previously marked for pruning.",
+          "deletion": "Deleting your account also deletes that organization's sealed election records. If you need a record after closing your account, download it first — the data export and the PDF reports are available in the application."
+        },
+        "security": {
+          "title": "Security",
+          "intro": "We claim only what is actually implemented.",
+          "bullets": [
+            "All traffic goes over TLS, with HSTS and security headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) on every route.",
+            "Passwords are stored as scrypt hashes only. They are never stored or logged in readable form.",
+            "Voting links are stored as SHA-256 hashes only. The link in readable form exists solely in the email received.",
+            "Every dashboard query is restricted to your organization in the query condition itself. A request for another organization's election returns the same answer as a request for one that does not exist, so not even the existence of other organizations' data can be established.",
+            "Ballot secrecy follows from the structure of the database, not from an internal rule — see “Ballot secrecy”.",
+            "Sealed election records are protected by a Merkle structure, so any later change to a result is detectable.",
+            "Sign-in attempts, exports, file uploads and voting are rate limited.",
+            "Two-factor confirmation by one-time code over email."
+          ],
+          "breach": "We report a personal data breach to the supervisory authority within 72 hours (Art. 33 GDPR), and notify affected individuals where the risk to their rights is high (Art. 34). Where a breach concerns voter data, we notify the organization running the election without undue delay, because it is the controller.",
+          "noCert": "We hold no ISO 27001 or SOC 2 certification and do not claim to."
+        },
+        "rights": {
+          "title": "Your rights",
+          "intro": "Two of these rights are already built into the application and take a few clicks, with no message to write.",
+          "colRight": "Right",
+          "colHow": "How to exercise it",
+          "rows": [
+            [
+              "Access — Art. 15",
+              "Covered by the export in the next row"
+            ],
+            [
+              "Portability — Art. 20",
+              "Settings → Data export: your whole organization in a single JSON file"
+            ],
+            [
+              "Erasure — Art. 17",
+              "Settings → Delete account. Confirmed by an emailed link, after which stored files are deleted too."
+            ],
+            [
+              "Rectification — Art. 16",
+              "Profile. Voter data is corrected by the organization, in the voter list."
+            ],
+            [
+              "Restriction — Art. 18",
+              "Send us a message"
+            ],
+            [
+              "Objection — Art. 21",
+              "Send us a message"
+            ],
+            [
+              "Automated decision-making — Art. 22",
+              "We perform none. No decision about you is made automatically."
+            ]
+          ],
+          "response": "We respond within one month. For complex requests that period may be extended by a further two months, and we will tell you within the first month if it is.",
+          "authorityTitle": "Supervisory authority",
+          "authority": "If you believe we are not handling your data lawfully, you may complain to the Croatian Personal Data Protection Agency (AZOP), Selska cesta 136, 10000 Zagreb, azop.hr.",
+          "voterTrap": "If you are a voter, send your request to the organization running the election first. It is the controller and we assist it. Deleting a voter in the middle of an open election changes the electorate and can create or destroy a quorum, so we cannot act on such a request on our own."
+        },
+        "transfers": {
+          "title": "Transfers outside the EEA",
+          "body": "We choose providers so that, wherever possible, data is processed in the European Union. Resend sends email from the eu-west-1 region (Ireland). Where a provider processes data outside the European Economic Area, the transfer relies on the European Commission's Standard Contractual Clauses (Implementing Decision (EU) 2021/914) and on the safeguards set out in that provider's data processing agreement.",
+          "pending": "We confirm the exact processing regions for every provider in the table above before this policy is published, and will list them individually here at that point."
+        },
+        "children": {
+          "title": "Children",
+          "body": [
+            "Electius is a business tool for organizations and is not directed at children. You must be at least 16 to create an admin account; if we find an account created by someone younger, we delete it.",
+            "Voters create no account and give us nothing — their data comes from the list the organization enters. In Croatia the age of consent under Art. 8 GDPR is 16, and that question belongs to the organization running the election, not to Electius.",
+            "Elections in secondary schools and at universities are a real use case, so an organization running an election among minors must assess its own legal basis and inform those voters itself."
+          ]
+        },
+        "changes": {
+          "title": "Changes to this policy",
+          "body": "When we change this policy we also change the date at the top of the page. We notify admins by email about material changes. If we ever want to process your data for a new purpose, we will tell you before that processing begins, not after.",
+          "noAcceptance": "This policy is not a contract you accept — it is a notice we owe you. We therefore do not treat continued use of the service as acceptance of a change."
+        },
+        "contact": {
+          "title": "Contact",
+          "body": "For any question about this policy, or to exercise your rights, write to us at:",
+          "note": "We have not appointed a data protection officer, because the law does not require one for our processing. Messages are answered by the person responsible for data protection at Electius.",
+          "escalation": "If you are not satisfied with our answer, you may contact AZOP — the details are under “Your rights”."
+        },
+        "voters": {
+          "title": "For voters",
+          "body": [
+            "If you received a voting link, your controller is not Electius but the organization running the election — a university, a union, a company or an association. It decided to hold the election, it entered your address, and it is answerable for that decision.",
+            "Electius is a processor: we handle your data solely on that organization's instructions. About you we hold an email address, an optional first and last name, an invitation status and a hash of your voting link — nothing else.",
+            "We do not know how you voted and cannot find out. That you voted is visible to your organization.",
+            "Send questions and requests — rectification, erasure, objection — to the organization running the election. If you contact us, we will refer you to it.",
+            "This policy is not the notice that organization owes you under Art. 14 GDPR. That notice has to come from them."
+          ]
+        }
+      }
     }
   }
 }

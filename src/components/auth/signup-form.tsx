@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
+import { privacyUrl } from "@/lib/urls";
 
 // Sign-up form (auth-phase-4 UI over the phase-3 registration wiring): posts to
 // /api/auth/register (BetterAuth signUpEmail — scrypt hash), zod-validated,
@@ -207,6 +208,14 @@ export function SignupForm() {
           />
         </div>
 
+        {/* Kvačica pristaje SAMO na Uvjete korištenja. Pravila privatnosti nisu
+            nešto na što se pristaje — to je obavijest iz čl. 13. GDPR-a, koju
+            dugujemo i koja se ispunjava time što je dostupna, a ne time što je
+            netko potvrdi. Spajanje to dvoje u jednu obveznu kvačicu obrazac je
+            koji Smjernice EDPB-a 05/2020 smatraju nevaljanom privolom: nije
+            granularna i proizvodi zapis o privoli za obradu čija je stvarna
+            osnova ugovor (čl. 6. st. 1. t. (b)). Zato je obavijest ispod
+            kvačice, izvan vrata. */}
         <label className="flex items-start gap-2 text-sm leading-normal text-neutral-950">
           <input
             type="checkbox"
@@ -215,21 +224,36 @@ export function SignupForm() {
             className="mt-0.75 size-4 shrink-0 accent-brand-700"
           />
           <span>
-            {/* ponytail: terms/privacy pages don't exist yet — links land with the legal pages. */}
+            {/* ponytail: stranica Uvjeta korištenja još ne postoji (vlastita
+                specifikacija), pa oznaka ostaje običan tekst — a kvačica NADŽIVI
+                tu prazninu: i dalje je tvrdi zod uvjet za dokument koji nije
+                objavljen.
+                ⚠ I ne ostavlja nikakav trag: `terms` se provjerava samo ovdje,
+                u pregledniku, i NE šalje se u tijelu zahtjeva prema
+                /api/auth/register (vidi poziv niže), pa se nigdje ne pohranjuje.
+                Danas je to dakle prepreka u sučelju, a ne zapis o pristanku —
+                ne tvrditi suprotno. Oboje (stranica i zapis) rješava se sa
+                specifikacijom Uvjeta korištenja, ne prije. */}
             {t.rich("terms", {
-              terms: (chunks) => (
-                <a href="#" className="text-brand-700 hover:underline">
-                  {chunks}
-                </a>
-              ),
-              privacy: (chunks) => (
-                <a href="#" className="text-brand-700 hover:underline">
-                  {chunks}
-                </a>
-              ),
+              terms: (chunks) => <span className="font-medium">{chunks}</span>,
             })}
           </span>
         </label>
+
+        <p className="-mt-2 pl-6 text-[0.8125rem] leading-normal text-neutral-600">
+          {t.rich("privacyNote", {
+            privacy: (chunks) => (
+              <a
+                href={privacyUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-700 hover:underline"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
+        </p>
 
         <Button
           type="submit"
