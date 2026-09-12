@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { GoogleIcon } from "@/components/auth/google-icon";
 import { OtpVerifyPanel } from "@/components/auth/otp-verify-panel";
-import { privacyUrl } from "@/lib/urls";
+import { privacyUrl, termsUrl } from "@/lib/urls";
 
 // Sign-up form (auth-phase-4 UI over the phase-3 registration wiring): posts to
 // /api/auth/register (BetterAuth signUpEmail — scrypt hash), zod-validated,
@@ -219,7 +219,28 @@ export function SignupForm() {
 
             Obavijest o privatnosti ostaje ovdje: dugujemo je po čl. 13. GDPR-a i
             ispunjava se time što je dostupna, ne time što je netko potvrdi. */}
-        <p className="-mt-2 pl-6 text-[0.8125rem] leading-normal text-neutral-600">
+        {/* Obavijest, ne vrata. Kaže da uvjeti postoje i vodi na njih, ali NE
+            tvrdi da je ugovor sklopljen ovdje: stranka je organizacija, koja u
+            ovom trenutku još ne postoji, pa se pristanak traži i bilježi na
+            /setup (§1 uvjeta). Tvrdnja „registracijom prihvaćate" bila bi
+            blaža inačica iste greške koju je ova grana uklonila — potvrda
+            pristanka na mjestu gdje je ništa ne zapisuje. */}
+        <p className="text-[0.8125rem] leading-normal text-neutral-600">
+          {t.rich("termsNote", {
+            terms: (chunks) => (
+              <a
+                href={termsUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="text-brand-700 hover:underline"
+              >
+                {chunks}
+              </a>
+            ),
+          })}
+        </p>
+
+        <p className="-mt-3 text-[0.8125rem] leading-normal text-neutral-600">
           {t.rich("privacyNote", {
             privacy: (chunks) => (
               <a

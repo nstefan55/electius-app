@@ -214,6 +214,7 @@
         "confirmPassword": "Confirm password",
         "confirmPasswordPlaceholder": "Repeat your password",
         "privacyNote": "We handle your data as described in our <privacy>Privacy policy</privacy>.",
+        "termsNote": "The <terms>Terms of service</terms> apply to your use of Electius. You will accept them on your organization's behalf in the next step.",
         "submit": "Create account",
         "otp": {
           "title": "Enter your verification code",
