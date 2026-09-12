@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Info } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { BillingToggle, PlanCards } from "@/components/marketing/plan-cards";
 
 type Row = { label: string; free: string; pro: string };
@@ -111,6 +112,27 @@ export function PricingPlans() {
 
       <p className="mx-auto mt-5 max-w-220 text-center text-[0.8125rem] text-neutral-600">
         {t("footnote")}
+      </p>
+
+      {/* Jedino mjesto PRIJE kupnje na kojemu uvjete povrata možemo pokazati:
+          stranicu za plaćanje piše Stripe, ne mi. Poveznica vodi na sidro u
+          uvjetima, a ne na zasebnu stranicu — ista bi tvrdnja inače stajala na
+          dva mjesta i razišla se (spec D1).
+
+          ⚠ DANAS SE NE ISCRTAVA NIGDJE: cijeli odjeljak s cijenama zakomentiran
+          je na odredišnoj stranici ((marketing)/page.tsx, „6 · Cijene"), pa ni
+          ova poveznica ni footnote iznad nje nemaju čitatelja. Namjerno ostaje:
+          ništa ne tvrdi dok se ne iscrta, a dan kad se odjeljak vrati poveznica
+          je već na mjestu. Kutija „Refund / cancellation policy" u
+          mvp-launch.md §2 zato se NE smije zatvoriti pozivom na ovu površinu. */}
+      <p className="mx-auto mt-2 max-w-220 text-center text-[0.8125rem] text-neutral-600">
+        {t("refundNote")}{" "}
+        <Link
+          href="/terms#payment"
+          className="font-medium text-brand-700 hover:underline"
+        >
+          {t("refundLink")}
+        </Link>
       </p>
     </>
   );

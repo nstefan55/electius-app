@@ -40,7 +40,14 @@ const SECTIONS = [
   { id: "use", bullets: true, after: true },
   { id: "content" },
   { id: "election" },
-  { id: "payment" },
+  // `supportMail` iscrtava adresu za povrat kao živu poveznicu odmah iza
+  // tijela: odjeljak sada opisuje POSTUPAK povrata, a postupak koji upućuje na
+  // drugi odjeljak je jedan skok previše. Adresa i dalje dolazi iz urls.ts, ne
+  // iz kataloga — dvije bi se surface inače razišle.
+  // `after` nosi potrošačku klauzulu, koja mora stajati ISPOD adrese: ona je
+  // nadređena odredba („imaju prednost pred svime navedenim"), pa bi usred
+  // odjeljka čitala kao još jedan odlomak, a ne kao iznimka od svih ostalih.
+  { id: "payment", supportMail: true, after: true },
   { id: "availability" },
   { id: "thirdparty" },
   { id: "termination" },
@@ -366,6 +373,12 @@ export default async function TermsOfService({
                       </p>
                       <P>{s(`${id}.note`)}</P>
                     </>
+                  )}
+
+                  {"supportMail" in section && (
+                    <p className="text-base font-medium">
+                      {mailLink(SUPPORT_EMAIL)}
+                    </p>
                   )}
 
                   {"after" in section &&

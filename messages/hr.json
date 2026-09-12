@@ -1802,7 +1802,9 @@
       },
       "footnote": "Naplata je po organizaciji.",
       "betaNotice": "Beta — trenutačno su sve značajke otvorene svim organizacijama. Cijene u nastavku planirane su za službeno pokretanje.",
-      "footnoteVat": "Naplata je po organizaciji. Cijene ne uključuju PDV gdje je primjenjiv."
+      "footnoteVat": "Naplata je po organizaciji. Cijene ne uključuju PDV gdje je primjenjiv.",
+      "refundNote": "Otkazujete sami, u svakom trenutku.",
+      "refundLink": "Uvjeti otkaza i povrata"
     },
     "faq": {
       "kicker": "Pitanja o cijenama",
@@ -2555,7 +2557,11 @@
             "Naplate preko plana nema. Kad dosegnete ograničenje broja birača, upis se odbija — ništa se ne naplaćuje tiho.",
             "Izvoz svih podataka organizacije samouslužan je, besplatan i dostupan u svakom trenutku.",
             "Naknadu za započeto razdoblje ne vraćamo: otkaz zaustavlja sljedeću obnovu, a pristup traje do kraja plaćenog razdoblja.",
-            "Ako uslugu ugovarate kao potrošač, izvan svoje gospodarske ili profesionalne djelatnosti, imate prava koja se ovim uvjetima ne mogu isključiti — uključujući pravo na jednostrani raskid ugovora sklopljenog na daljinu u zakonskom roku. Ta prava imaju prednost pred prethodnim odlomkom."
+            "Od toga postoje tri iznimke i navodimo ih izrijekom: isti iznos naplaćen dvaput, naplata provedena nakon što ste pretplatu otkazali, i tehnička greška na našoj strani zbog koje uslugu niste mogli koristiti. U tim slučajevima povrat je pun.",
+            "Povrat ide na isto sredstvo plaćanja kojim je naplata provedena, preko Stripea. Koliko će proći do knjiženja ovisi o vašoj banci i izdavatelju kartice, pa taj rok ne obećavamo. Zahtjev pošaljite e-poštom na:"
+          ],
+          "after": [
+            "Ako uslugu ugovarate kao potrošač, izvan svoje gospodarske ili profesionalne djelatnosti, imate prava koja se ovim uvjetima ne mogu isključiti. Među njima je pravo na jednostrani raskid ugovora sklopljenog na daljinu u roku od četrnaest dana od sklapanja, bez navođenja razloga. Raskid nam javite na istu adresu; po primitku zaustavljamo daljnju naplatu i vraćamo primljeno. Ta prava imaju prednost pred svime što je u ovom odjeljku navedeno."
           ]
         },
         "availability": {
