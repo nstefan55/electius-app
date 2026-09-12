@@ -227,9 +227,13 @@ export function SignupForm() {
             {/* ponytail: stranica Uvjeta korištenja još ne postoji (vlastita
                 specifikacija), pa oznaka ostaje običan tekst — a kvačica NADŽIVI
                 tu prazninu: i dalje je tvrdi zod uvjet za dokument koji nije
-                objavljen. Namjerno: to je pristanak na ugovorni odnos i želimo
-                zapis o njemu od prvog dana. Preispitati zajedno sa specifikacijom
-                Uvjeta korištenja, ne prije. */}
+                objavljen.
+                ⚠ I ne ostavlja nikakav trag: `terms` se provjerava samo ovdje,
+                u pregledniku, i NE šalje se u tijelu zahtjeva prema
+                /api/auth/register (vidi poziv niže), pa se nigdje ne pohranjuje.
+                Danas je to dakle prepreka u sučelju, a ne zapis o pristanku —
+                ne tvrditi suprotno. Oboje (stranica i zapis) rješava se sa
+                specifikacijom Uvjeta korištenja, ne prije. */}
             {t.rich("terms", {
               terms: (chunks) => <span className="font-medium">{chunks}</span>,
             })}

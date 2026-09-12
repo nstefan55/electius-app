@@ -220,14 +220,27 @@ export default async function PrivacyPolicy({
   // tvrdnja dodana samo u katalog ne bi se iscrtala NIGDJE, tiho. Zato se
   // uspoređuju oba skupa ključeva, a stranica se prerenderira statički, pa
   // razilaženje ruši BUILD.
-  const catalogClaims = Object.keys(
-    t.raw("s.ballot.claims") as Record<string, unknown>,
-  ).sort();
+  const rawClaims = t.raw("s.ballot.claims") as Record<
+    string,
+    Record<string, unknown>
+  >;
+  const catalogClaims = Object.keys(rawClaims).sort();
   const codeClaims = Object.keys(BALLOT_CLAIMS).sort();
   if (catalogClaims.join() !== codeClaims.join()) {
     throw new Error(
       `legal.privacy.s.ballot.claims [${catalogClaims}] ne odgovara BALLOT_CLAIMS [${codeClaims}]`,
     );
+  }
+  // I razina niže: preimenovan ili izgubljen `claim`/`why` inače prođe gornju
+  // provjeru, a next-intl ga iscrta kao golu putanju ključa usred pravnog teksta.
+  for (const [key, fields] of Object.entries(rawClaims)) {
+    for (const field of ["claim", "why"]) {
+      if (typeof fields?.[field] !== "string") {
+        throw new Error(
+          `legal.privacy.s.ballot.claims.${key} nema tekstualno polje "${field}"`,
+        );
+      }
+    }
   }
   const ballotClaims = Object.entries(BALLOT_CLAIMS) as [
     keyof typeof BALLOT_CLAIMS,
@@ -299,7 +312,10 @@ export default async function PrivacyPolicy({
                     href={`#${id}`}
                     className="text-neutral-600 hover:text-brand-700 hover:underline"
                   >
-                    <span className="text-neutral-400">{i + 1}.</span>{" "}
+                    {/* neutral-400 je 2,5:1 na bijelom i pada AA — redni broj
+                        je stvarni sadržaj, ne rezervirani tekst. Hijerarhiju
+                        nosi položaj, ne tinta. */}
+                    <span className="text-neutral-600">{i + 1}.</span>{" "}
                     {s(`${id}.title`)}
                   </a>
                 </li>

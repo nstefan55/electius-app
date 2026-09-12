@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
-import { marketingHomeUrl, privacyUrl } from "@/lib/urls";
+import { CONTACT_EMAIL, marketingHomeUrl, privacyUrl } from "@/lib/urls";
 
 // Split-screen auth chrome (auth-phase-4), ported from the design prototypes
 // (context/design/electius-app-auth-pages-design): form panel left, navy
@@ -34,10 +34,14 @@ interface AuthSplitLayoutProps {
 
 function FooterLinks({ variant }: { variant: "light" | "dark" }) {
   const t = useTranslations("auth.footer");
+  // Podcrtane su i U MIROVANJU, ne tek na hover: otkad `muted` ima istu tintu
+  // (zbog kontrasta, niže), boja više ne razlikuje poveznicu od običnog teksta,
+  // a hover na dodirnom zaslonu ne postoji. Podcrtavanje je jedini signal koji
+  // radi bez boje i bez pokazivača.
   const link =
     variant === "dark"
-      ? "text-white/65 hover:text-white hover:underline"
-      : "text-neutral-600 hover:underline";
+      ? "text-white/65 underline underline-offset-2 hover:text-white"
+      : "text-neutral-600 underline underline-offset-2 hover:text-brand-700";
   // Ista tinta kao poveznice, samo bez podcrtavanja na hover. Da NIJE poveznica
   // već govore izostanak tog affordancea i izostanak pokazivača — boja tu nije
   // nosila ništa osim pada kontrasta. `neutral-400` na bijelom je 2,5:1, a
@@ -52,8 +56,8 @@ function FooterLinks({ variant }: { variant: "light" | "dark" }) {
         {t("privacy")}
       </a>
       <span className={muted}>{t("terms")}</span>
-      <a href="mailto:contact@electius.com" className={link}>
-        contact@electius.com
+      <a href={`mailto:${CONTACT_EMAIL}`} className={link}>
+        {CONTACT_EMAIL}
       </a>
     </>
   );

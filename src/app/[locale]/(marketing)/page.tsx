@@ -546,18 +546,26 @@ export default async function Home({
               <div className="mb-4 font-heading text-sm font-semibold text-white">
                 {t("footer.trust")}
               </div>
+              {/* Redoslijed je izvorni (sigurnost · provjerljivost ·
+                  privatnost · usklađenost) — „Privatnost" je poveznica, ali
+                  ostaje na svom trećem mjestu. */}
               <div className="flex flex-col gap-3">
-                {["security", "verifiability", "compliance"].map((k) => (
-                  <span key={k} className="text-sm text-neutral-400">
-                    {t(`footer.${k}`)}
-                  </span>
-                ))}
-                <Link
-                  href="/privacy"
-                  className="text-sm text-neutral-400 hover:text-white"
-                >
-                  {t("footer.privacy")}
-                </Link>
+                {["security", "verifiability", "privacy", "compliance"].map(
+                  (k) =>
+                    k === "privacy" ? (
+                      <Link
+                        key={k}
+                        href="/privacy"
+                        className="text-sm text-neutral-400 hover:text-white"
+                      >
+                        {t("footer.privacy")}
+                      </Link>
+                    ) : (
+                      <span key={k} className="text-sm text-neutral-400">
+                        {t(`footer.${k}`)}
+                      </span>
+                    ),
+                )}
               </div>
             </div>
 

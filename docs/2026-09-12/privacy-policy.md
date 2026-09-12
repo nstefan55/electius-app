@@ -311,6 +311,46 @@ unreachable `= {}` props default went with it.
 
 ---
 
+## PR review round 3 — five small findings, all taken
+
+Round 2's two fixes verified closed. Five new, none blocking, all 1–3 lines.
+
+**7 · The TOC ordinal shipped `text-neutral-400` on white (2.5:1)** — the *same*
+contrast failure fixed two files over in the same commit, in new code on this
+page. Now `neutral-600`; the hierarchy comes from position, not tint. Measured
+**7.56:1**, and the page has **zero** `neutral-400` text elements left.
+
+**8 · The sharpest one: my own comment overstated a consent claim, on a PR about
+overstated consent claims.** Round 2's justification for keeping the Terms gate
+said the acceptance record is "worth having from day one" — but `terms` is
+validated **client-side only** and is never sent: the register body is
+`{ name, email, password, confirmPassword, locale }`, and the string appears
+nowhere in the route. There is no record. The comment now says what is true —
+today it is a UI obstacle, not an acceptance record — and hands both halves to
+the Terms spec.
+
+**9 · The contrast fix made `muted` and `link` the same ink**, and `link` only
+underlined on hover, so *Terms* became indistinguishable from a real link until
+hover — which does not exist on touch. Links are now underlined **at rest**;
+absence of the underline is the signal, working without colour and without a
+pointer. Verified at rest in both variants.
+
+**10 · Pulling `privacy` out of the trust-column `.map()` silently moved it from
+third to last.** Unintended, and not something the diff announced. Order
+restored (sigurnost · provjerljivost · **privatnost** · usklađenost) with the
+link still rendering as a link.
+
+**11 · The keyed guard checked only the top-level claim keys.** A renamed
+`claims.how.why` passes it and renders the literal key path in the middle of a
+legal sentence. The guard now also asserts each claim carries string `claim` and
+`why`. Mutation-checked: renaming `why` → `reason` fails the build with
+`legal.privacy.s.ballot.claims.how nema tekstualno polje "why"`.
+
+Also folded in: `auth-split-layout` now uses the shared `CONTACT_EMAIL` constant
+instead of hardcoding the address, which is what that constant exists for.
+
+---
+
 ## Notes for whoever touches this next
 
 - **Croatian is the operative text.** If the two versions drift, the Croatian one
