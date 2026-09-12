@@ -1802,7 +1802,9 @@
       },
       "footnote": "Billing is per organization.",
       "betaNotice": "Beta — every feature is currently open to all organizations. The pricing below is planned for our official launch.",
-      "footnoteVat": "Billing is per organization. Prices exclude VAT where applicable."
+      "footnoteVat": "Billing is per organization. Prices exclude VAT where applicable.",
+      "refundNote": "You cancel yourself, at any time.",
+      "refundLink": "Cancellation and refund terms"
     },
     "faq": {
       "kicker": "Pricing FAQ",
@@ -2555,7 +2557,11 @@
             "There is no overage billing. When you reach the voter cap the write is refused — nothing is charged quietly.",
             "The whole-organization data export is self-serve, free and available at any time.",
             "We do not refund a part-used period: cancelling stops the next renewal, and access runs to the end of the period you paid for.",
-            "If you are contracting as a consumer rather than in the course of a business, you have rights that these terms cannot exclude — including the right to withdraw from a distance contract within the statutory period. Those rights take precedence over the preceding paragraph."
+            "There are three exceptions and we name them plainly: the same amount charged twice, a charge taken after you cancelled, and a technical failure on our side that stopped you using the service. In those cases the refund is full.",
+            "A refund goes back to the payment method it was taken from, through Stripe. How long it takes to appear depends on your bank and card issuer, so we do not promise that timing. Send the request by email to:"
+          ],
+          "after": [
+            "If you are contracting as a consumer rather than in the course of a business, you have rights that these terms cannot exclude. Among them is the right to withdraw from a distance contract within fourteen days of entering into it, without giving a reason. Tell us at the same address; on receipt we stop further charges and return what was paid. Those rights take precedence over everything stated in this section."
           ]
         },
         "availability": {

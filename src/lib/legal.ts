@@ -9,4 +9,10 @@
 //
 // Datum je i vidljiv na stranici (legal.terms.updated), ali izvor istine je
 // ovdje: katalog je prevodiv, a inačica ne smije ovisiti o jeziku.
-export const TERMS_VERSION = "2026-09-12";
+// Sufiks `.1` nije tipfeler. Odredbe o povratu dodane su ISTI dan kad su
+// uvjeti objavljeni, pa sam datum ne razlikuje dva teksta — a upravo to je
+// jedino čemu ova konstanta služi. Bez sufiksa bi „2026-09-12" značilo dvije
+// različite verzije i zapis o pristanku ne bi odgovarao ni na jedno pitanje.
+// Datiranje sutrašnjim danom bilo bi laž na stranici (legal.terms.updated).
+// Sljedeća izmjena pomiče DATUM i sufiks otpada.
+export const TERMS_VERSION = "2026-09-12.1";
