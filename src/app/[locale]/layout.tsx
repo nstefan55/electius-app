@@ -5,6 +5,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { WebAnalytics } from "@/components/web-analytics";
 
 // latin-ext covers Croatian diacritics (č ć š ž đ) — required for the hr MVP locale.
 const poppins = Poppins({
@@ -50,6 +51,7 @@ export default async function LocaleLayout({
     >
       <body>
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <WebAnalytics />
       </body>
     </html>
   );

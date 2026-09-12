@@ -1994,7 +1994,8 @@
         "sentTitle": "Check your email",
         "sentSub": "If {email} is on the voter list, we sent it a voting link. Check your spam folder too.",
         "sentBack": "Use a different address",
-        "failed": "Sending failed. Please try again."
+        "failed": "Sending failed. Please try again.",
+        "privacyNote": "We use your address only to send the voting link. More in our <privacy>Privacy Policy</privacy>."
       },
       "fail": {
         "title": "Your vote was not submitted",
@@ -2130,7 +2131,7 @@
           ],
           "notTitle": "What we deliberately do not collect",
           "not": [
-            "No analytics of any kind. No Google Analytics, no Plausible, no Vercel Analytics, no Sentry — the application contains no analytics package at all.",
+            "No analytics that profiles you. Page views are counted by Vercel Web Analytics: it sets no cookie, stores nothing on your device, and recognises a visit through a temporary hash that is discarded after 24 hours. No Google Analytics, no Plausible, no Sentry.",
             "No advertising, no cross-site tracking, no third-party cookies.",
             "No email open or click tracking. Both are off and must stay off: click tracking would rewrite the link that is itself the secret voting token.",
             "No payment card data. Payment happens entirely on Stripe's pages and no card field exists in Electius.",
@@ -2197,7 +2198,7 @@
         },
         "cookies": {
           "title": "Cookies",
-          "body": "Electius sets two cookies. Both are strictly necessary for the dashboard to work, and both appear only once an administrator signs in. Public pages and the entire voting flow set none. There are no analytics or advertising cookies, because the application contains no analytics or advertising tool.",
+          "body": "Electius sets two cookies. Both are strictly necessary for the dashboard to work, and both appear only once an administrator signs in. Public pages and the entire voting flow set none. There are no analytics or advertising cookies: the analytics we use sets none, and we use no advertising tool.",
           "colName": "Cookie",
           "colPurpose": "Purpose",
           "colDuration": "Duration",
@@ -2221,7 +2222,7 @@
             "No analytics or advertising cookies, no cross-site tracking, no third-party cookies — none of the providers listed under “Service providers” sets a cookie on an Electius domain.",
             "We do not use browser local storage either: accessibility settings are tied to your account, not to your device.",
             "Both cookies are sent with HttpOnly, Secure and SameSite=Lax, and every request is additionally checked against a fixed list of permitted origins; together those two mechanisms are what prevent CSRF attacks.",
-            "Do Not Track: we perform no tracking, so there is nothing for that signal to switch off."
+            "Do Not Track: we do not track you across sites, and our analytics stores nothing on your device, so there is nothing for that signal to switch off."
           ],
           "banner": "That is why we show no cookie consent banner. A cookie strictly necessary for a service you explicitly requested is exempt from consent, and there are no other cookies."
         },
@@ -2234,8 +2235,8 @@
           "rows": [
             [
               "Vercel",
-              "Serving the application and content delivery",
-              "All traffic to the application and the corresponding access logs"
+              "Serving the application, content delivery and page-view measurement",
+              "All traffic to the application and the corresponding access logs. Analytics additionally receives the page address, with voting links and all tokens removed before it is sent."
             ],
             [
               "Neon",

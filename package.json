@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.70",
+  "version": "0.9.71",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -29,6 +29,7 @@
     "@sparticuz/chromium": "^149.0.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.3",
+    "@vercel/analytics": "^2.0.1",
     "aws4fetch": "^1.0.20",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.7.2",
