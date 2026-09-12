@@ -42,14 +42,26 @@ const SECTIONS = [
   "voters",
 ] as const;
 
-// Vrijedi li pojedina tvrdnja iz §E, poredano uz `s.ballot.rows`. ŽIVI U KODU,
-// a ne u katalogu, i to je nosivo: vrijednost `"yes"` u messages/*.json sjedila
-// bi dva retka do `"yes": "Da"`, u datoteci čiji je cijeli ugovor „prevedi
-// nizove". Prevoditelj koji `"yes"` prevede u `"da"` obori usporedbu, pa se
-// PRVA tvrdnja o tajnosti glasovanja objavi s oznakom „Ne" — stranica tada
-// tvrdi da MOŽEMO saznati kako je netko glasao. Bez greške u tipovima, bez pada
-// testa, bez pada builda. Ovdje je takvo stanje neizrazivo.
-const BALLOT_HOLDS = [true, true, false, false] as const;
+// Vrijedi li pojedina tvrdnja iz §E. ŽIVI U KODU, a ne u katalogu, i to je
+// nosivo: vrijednost `"yes"` u messages/*.json sjedila bi dva retka do
+// `"yes": "Da"`, u datoteci čiji je cijeli ugovor „prevedi nizove". Prevoditelj
+// koji `"yes"` prevede u `"da"` obori usporedbu, pa se PRVA tvrdnja o tajnosti
+// glasovanja objavi s oznakom „Ne" — stranica tada tvrdi da MOŽEMO saznati kako
+// je netko glasao. Bez greške u tipovima, bez pada testa, bez pada builda.
+//
+// KLJUČEVI, a ne redoslijed. Prva inačica je parove vezala po indeksu, pa je
+// zatvarala samo prijevod sentinela: tko UMETNE tvrdnju na prvo mjesto i doda
+// `true` na kraj, dobije jednake duljine i točno onu istu objavljenu rečenicu,
+// samo kroz druga vrata. Katalog je jedino mjesto gdje tekst tvrdnje živi, pa
+// redoslijed zna samo katalog — a sada ga nitko i ne mora znati. Isti obrazac
+// kao `SECTIONS` iznad: popis ključeva u kodu vodi dohvat iz kataloga, i ključ
+// koji nedostaje pukne pri prerenderiranju, dakle u buildu.
+const BALLOT_CLAIMS = {
+  how: true, // ne možemo saznati KAKO je netko glasao
+  order: true, // redoslijed zapisa ≠ redoslijed glasovanja
+  whether: false, // znamo DA je netko glasao — organizacija to vidi
+  identity: false, // adresa e-pošte JEST spremljena
+} as const;
 
 export async function generateMetadata({
   params,
@@ -198,14 +210,29 @@ export default async function PrivacyPolicy({
   const pairs = (key: string) => t.raw(key) as [string, string][];
   const list = (key: string) => t.raw(key) as string[];
 
-  // Stranica se prerenderira statički, pa razilaženje ovdje ruši BUILD umjesto
-  // da tiho iscrta krivu presudu uz pogrešnu tvrdnju.
-  const ballotRows = pairs("s.ballot.rows");
-  if (ballotRows.length !== BALLOT_HOLDS.length) {
+  // Ključ nosi i presudu i dohvat teksta, pa se par ne može razići — katalog se
+  // smije preurediti, a tvrdnje i presude ostaju spojene.
+  //
+  // Provjera je OBOSTRANA i nije ukras. next-intl na nepoznat ključ NE puca:
+  // zabilježi MISSING_MESSAGE i iscrta samu putanju ključa, pa build prođe
+  // (izmjereno, izlaz 0) i objavi se tablica u kojoj tvrdnja glasi
+  // „legal.privacy.s.ballot.claims.how.claim". U drugom smjeru je gore: peta
+  // tvrdnja dodana samo u katalog ne bi se iscrtala NIGDJE, tiho. Zato se
+  // uspoređuju oba skupa ključeva, a stranica se prerenderira statički, pa
+  // razilaženje ruši BUILD.
+  const catalogClaims = Object.keys(
+    t.raw("s.ballot.claims") as Record<string, unknown>,
+  ).sort();
+  const codeClaims = Object.keys(BALLOT_CLAIMS).sort();
+  if (catalogClaims.join() !== codeClaims.join()) {
     throw new Error(
-      `legal.privacy.s.ballot.rows ima ${ballotRows.length} redaka, a BALLOT_HOLDS ${BALLOT_HOLDS.length}`,
+      `legal.privacy.s.ballot.claims [${catalogClaims}] ne odgovara BALLOT_CLAIMS [${codeClaims}]`,
     );
   }
+  const ballotClaims = Object.entries(BALLOT_CLAIMS) as [
+    keyof typeof BALLOT_CLAIMS,
+    boolean,
+  ][];
 
   const mail = (
     <a
@@ -218,10 +245,10 @@ export default async function PrivacyPolicy({
 
   return (
     <>
-      {/* sectionsOnHome: #how i #contact žive na odredišnoj stranici, ne ovdje.
+      {/* sectionsElsewhere: #how i #contact žive na odredišnoj stranici, ne ovdje.
           Bez toga bi „Kako funkcionira" ovdje bilo mrtvo sidro, a „Kontakt" bi
           vodio na ovdašnji odjeljak M umjesto na onaj koji naziv obećava. */}
-      <LandingNav sectionsOnHome />
+      <LandingNav sectionsElsewhere />
 
       <main className="bg-white pt-14 pb-20">
         <div className={CONTAINER}>
@@ -361,16 +388,16 @@ export default async function PrivacyPolicy({
                   s("ballot.colVerdict"),
                   s("ballot.colWhy"),
                 ]}
-                rows={ballotRows.map(([claim, why], i) => [
+                rows={ballotClaims.map(([key, holds]) => [
                   <span key="c" className="font-medium text-neutral-800">
-                    {claim}
+                    {s(`ballot.claims.${key}.claim`)}
                   </span>,
                   <Verdict
                     key="v"
-                    holds={BALLOT_HOLDS[i]}
-                    label={BALLOT_HOLDS[i] ? s("ballot.yes") : s("ballot.no")}
+                    holds={holds}
+                    label={holds ? s("ballot.yes") : s("ballot.no")}
                   />,
-                  why,
+                  s(`ballot.claims.${key}.why`),
                 ])}
               />
               <P>{s("ballot.receipt")}</P>

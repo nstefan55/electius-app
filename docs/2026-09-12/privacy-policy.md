@@ -269,6 +269,48 @@ is to be revisited with the Terms spec, not before.
 
 ---
 
+## PR review round 2 — three more, all taken
+
+**4 · De-linking Terms dropped it below WCAG AA — a regression I introduced.**
+`muted` used `text-neutral-400` (2.5:1 on white) and `text-white/45` (3.7:1 on
+`brand-900`); at 13px the bar is 4.5:1. Both variants ship on `/login` and
+`/signup`, and `globals.css` only repairs `neutral-400` under the high-contrast
+preference, which a signed-out visitor never has. The codebase's own token
+comment calls it *"rezervirani tekst: pao je AA"* — and the name of a legal
+document you are asking someone to tick a box about is not placeholder text.
+
+`muted` now points at the same inks as `link`; non-interactivity is carried by
+the absent underline and cursor, which is where it belonged. **Measured in the
+browser after the fix: 7.56:1 light, 5.86:1 dark** — identical to the links
+beside them.
+
+**5 · The round-1 guard checked arity, but the pairing was by index.** Inserting
+a claim at position 1 and appending `true` keeps the lengths equal and publishes
+the round-1 sentence through a different door. Verdicts are now **keyed**
+(`BALLOT_CLAIMS` as `{how, order, whether, identity}`) and the catalog's `rows`
+array became a `claims` object, so the catalog can be reordered freely — the
+same shape `SECTIONS` above already uses.
+
+⚠ Worth knowing: the natural claim here — *"a missing key fails the build"* — is
+**false**, and I nearly wrote it. Measured: next-intl logs `MISSING_MESSAGE` and
+renders the key path, and the build **exits 0**, so the page would ship a table
+cell reading `legal.privacy.s.ballot.claims.how.claim`. So the guard compares
+**both key sets** explicitly. Mutation-checked in both directions:
+
+| Mutation | Before | Now |
+|---|---|---|
+| Reorder the catalog | wrong verdict, silent | no-op ✅ |
+| Remove a key | build exit 0, key path rendered | **build fails by name** |
+| Add a fifth claim to the catalog only | never rendered, silent | **build fails by name** |
+
+**6 · `sectionsOnHome` was named backwards.** Both call sites agree the sections
+live on home, yet passed opposite values — on a nav whose whole fix was that a
+link should not say one thing and do another. Renamed `sectionsElsewhere`, which
+is true exactly when the current page is not the one holding the sections. The
+unreachable `= {}` props default went with it.
+
+---
+
 ## Notes for whoever touches this next
 
 - **Croatian is the operative text.** If the two versions drift, the Croatian one

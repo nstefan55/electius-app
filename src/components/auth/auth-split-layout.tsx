@@ -38,7 +38,14 @@ function FooterLinks({ variant }: { variant: "light" | "dark" }) {
     variant === "dark"
       ? "text-white/65 hover:text-white hover:underline"
       : "text-neutral-600 hover:underline";
-  const muted = variant === "dark" ? "text-white/45" : "text-neutral-400";
+  // Ista tinta kao poveznice, samo bez podcrtavanja na hover. Da NIJE poveznica
+  // već govore izostanak tog affordancea i izostanak pokazivača — boja tu nije
+  // nosila ništa osim pada kontrasta. `neutral-400` na bijelom je 2,5:1, a
+  // `white/45` na brand-900 3,7:1; oba padaju AA za tekst od 13 px (prag 4,5:1),
+  // a `globals.css` popravlja `neutral-400` samo pod postavkom visokog
+  // kontrasta, koju odjavljeni posjetitelj na /signup nikad nema. Naziv pravnog
+  // dokumenta na koji tražimo kvačicu ne smije biti ispisan rezerviranom tintom.
+  const muted = variant === "dark" ? "text-white/65" : "text-neutral-600";
   return (
     <>
       <a href={privacyUrl()} className={link}>

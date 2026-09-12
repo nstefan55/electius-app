@@ -2167,24 +2167,24 @@
           "colWhy": "Zašto",
           "yes": "Da",
           "no": "Ne",
-          "rows": [
-            [
-              "Ne možemo saznati kako je netko glasao.",
-              "Zapis o glasu u bazi nema polje koje upućuje na birača i nema vezu s tablicom birača. Ta veza u bazi ne postoji, pa je ne može proizvesti nijedan upit, izvoz, sigurnosna kopija ni sudski nalog."
-            ],
-            [
-              "Redoslijed zapisa ne otkriva redoslijed glasovanja.",
-              "Svaki glas dobiva kriptografski slučajan redni broj, a listovi Merkleove strukture sortiraju se abecedno. Vremenski redoslijed time nestaje."
-            ],
-            [
-              "Ne znamo jeste li glasali.",
-              "Status birača mijenja se u „glas predan”. Vaša organizacija vidi tko je glasao — i mora vidjeti, jer inače ne može podsjetiti one koji nisu."
-            ],
-            [
-              "Vaš identitet uopće ne spremamo.",
-              "Vaša adresa e-pošte je spremljena. Njome vam se isporučuje listić."
-            ]
-          ],
+          "claims": {
+            "how": {
+              "claim": "Ne možemo saznati kako je netko glasao.",
+              "why": "Zapis o glasu u bazi nema polje koje upućuje na birača i nema vezu s tablicom birača. Ta veza u bazi ne postoji, pa je ne može proizvesti nijedan upit, izvoz, sigurnosna kopija ni sudski nalog."
+            },
+            "order": {
+              "claim": "Redoslijed zapisa ne otkriva redoslijed glasovanja.",
+              "why": "Svaki glas dobiva kriptografski slučajan redni broj, a listovi Merkleove strukture sortiraju se abecedno. Vremenski redoslijed time nestaje."
+            },
+            "whether": {
+              "claim": "Ne znamo jeste li glasali.",
+              "why": "Status birača mijenja se u „glas predan”. Vaša organizacija vidi tko je glasao — i mora vidjeti, jer inače ne može podsjetiti one koji nisu."
+            },
+            "identity": {
+              "claim": "Vaš identitet uopće ne spremamo.",
+              "why": "Vaša adresa e-pošte je spremljena. Njome vam se isporučuje listić."
+            }
+          },
           "receipt": "Kod potvrde koji dobijete nakon glasovanja dokazuje da je vaš glas uključen u zapečaćeni zapis. On ne otkriva — ni vama ni nama — kako ste glasali."
         },
         "cookies": {

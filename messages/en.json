@@ -2167,24 +2167,24 @@
           "colWhy": "Why",
           "yes": "Yes",
           "no": "No",
-          "rows": [
-            [
-              "We cannot find out how anyone voted.",
-              "A vote record in the database has no field pointing at a voter and no relation to the voter table. That link does not exist in the database, so no query, export, backup or court order can produce it."
-            ],
-            [
-              "The order of the records does not reveal the order of voting.",
-              "Every vote is given a cryptographically random sequence number, and the leaves of the Merkle structure are sorted lexicographically. Time order disappears."
-            ],
-            [
-              "We do not know whether you voted.",
-              "A voter's status changes to “voted”. Your organization can see who voted — and has to, or it cannot chase the people who have not."
-            ],
-            [
-              "We do not store your identity at all.",
-              "Your email address is stored. It is how the ballot is delivered to you."
-            ]
-          ],
+          "claims": {
+            "how": {
+              "claim": "We cannot find out how anyone voted.",
+              "why": "A vote record in the database has no field pointing at a voter and no relation to the voter table. That link does not exist in the database, so no query, export, backup or court order can produce it."
+            },
+            "order": {
+              "claim": "The order of the records does not reveal the order of voting.",
+              "why": "Every vote is given a cryptographically random sequence number, and the leaves of the Merkle structure are sorted lexicographically. Time order disappears."
+            },
+            "whether": {
+              "claim": "We do not know whether you voted.",
+              "why": "A voter's status changes to “voted”. Your organization can see who voted — and has to, or it cannot chase the people who have not."
+            },
+            "identity": {
+              "claim": "We do not store your identity at all.",
+              "why": "Your email address is stored. It is how the ballot is delivered to you."
+            }
+          },
           "receipt": "The confirmation code you receive after voting proves that your vote is included in the sealed record. It does not reveal — to you or to us — how you voted."
         },
         "cookies": {

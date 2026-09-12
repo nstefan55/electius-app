@@ -17,24 +17,28 @@ const LINKS = [
 // drugoj stranici u (marketing) grupi golo sidro `#how` ne vodi nikamo — a
 // poveznica koja ne vodi nikamo je poveznica koja laže, isto pravilo zbog kojeg
 // stupac povjerenja u podnožju i Uvjeti korištenja ostaju običan tekst. Zato
-// takve stranice (npr. /privacy) postavljaju `sectionsOnHome`, pa poveznice
+// takve stranice (npr. /privacy) postavljaju `sectionsElsewhere`, pa poveznice
 // postaju `/{locale}/#how` i vode natrag na odredišnu stranicu, na pravo mjesto.
+// Zastavica je imenovana po tome ŠTO RADI, a ne po tome gdje odsjeci žive: i
+// odredišna stranica i /privacy slažu se da odsjeci žive na početnoj, pa bi ih
+// `sectionsOnHome` natjerao da predaju suprotne vrijednosti. `elsewhere` je
+// istinito točno kad tekuća stranica NIJE ona koja te odsjeke drži.
 function SectionLink({
   href,
-  sectionsOnHome,
+  sectionsElsewhere,
   className,
   onClick,
   children,
 }: {
   href: string;
-  sectionsOnHome: boolean;
+  sectionsElsewhere: boolean;
   className: string;
   onClick?: () => void;
   children: React.ReactNode;
 }) {
   // Na samoj odredišnoj stranici ostaje goli <a>: obično skakanje unutar
   // stranice, bez usmjeravanja kroz router.
-  return sectionsOnHome ? (
+  return sectionsElsewhere ? (
     <Link href={`/${href}`} onClick={onClick} className={className}>
       {children}
     </Link>
@@ -46,10 +50,10 @@ function SectionLink({
 }
 
 export function LandingNav({
-  sectionsOnHome = false,
+  sectionsElsewhere = false,
 }: {
-  sectionsOnHome?: boolean;
-} = {}) {
+  sectionsElsewhere?: boolean;
+}) {
   const t = useTranslations("marketing.nav");
   const [open, setOpen] = useState(false);
 
@@ -88,7 +92,7 @@ export function LandingNav({
             <SectionLink
               key={l.key}
               href={l.href}
-              sectionsOnHome={sectionsOnHome}
+              sectionsElsewhere={sectionsElsewhere}
               className="text-[0.9375rem] font-medium text-neutral-600 hover:text-brand-700"
             >
               {t(l.key)}
@@ -137,7 +141,7 @@ export function LandingNav({
                 <SectionLink
                   key={l.key}
                   href={l.href}
-                  sectionsOnHome={sectionsOnHome}
+                  sectionsElsewhere={sectionsElsewhere}
                   onClick={() => setOpen(false)}
                   className="flex min-h-11 items-center text-base font-medium text-neutral-600"
                 >
