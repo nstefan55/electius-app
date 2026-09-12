@@ -576,19 +576,28 @@ export default async function Home({
               {/* Dvije adrese jer su dva pretinca: CONTACT_EMAIL je pravna i
                   revizijska (uvjeti korištenja upućuju na nju za prijave
                   sadržaja), SUPPORT_EMAIL je za pitanja o korištenju. */}
-              <div className="flex flex-col gap-2">
+              <div className="flex flex-col gap-3">
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
                   className="text-sm text-neutral-400 hover:text-white"
                 >
                   {CONTACT_EMAIL}
                 </a>
-                <a
-                  href={`mailto:${SUPPORT_EMAIL}`}
-                  className="text-sm text-neutral-400 hover:text-white"
-                >
-                  {SUPPORT_EMAIL}
-                </a>
+                {/* Vlastita oznaka, jer je „Kontakt" iznad naslov cijelog
+                    stupca: bez nje dvije adrese jedna ispod druge ne govore
+                    koja je za što, a razlika je nosiva — na CONTACT_EMAIL
+                    upućuju uvjeti korištenja za prijavu nezakonitog sadržaja. */}
+                <div className="flex flex-col gap-1">
+                  <span className="font-heading text-sm font-semibold text-white">
+                    {t("footer.support")}
+                  </span>
+                  <a
+                    href={`mailto:${SUPPORT_EMAIL}`}
+                    className="text-sm text-neutral-400 hover:text-white"
+                  >
+                    {SUPPORT_EMAIL}
+                  </a>
+                </div>
               </div>
             </div>
           </div>
