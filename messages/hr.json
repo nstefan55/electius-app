@@ -2170,22 +2170,18 @@
           "rows": [
             [
               "Ne možemo saznati kako je netko glasao.",
-              "yes",
               "Zapis o glasu u bazi nema polje koje upućuje na birača i nema vezu s tablicom birača. Ta veza u bazi ne postoji, pa je ne može proizvesti nijedan upit, izvoz, sigurnosna kopija ni sudski nalog."
             ],
             [
               "Redoslijed zapisa ne otkriva redoslijed glasovanja.",
-              "yes",
               "Svaki glas dobiva kriptografski slučajan redni broj, a listovi Merkleove strukture sortiraju se abecedno. Vremenski redoslijed time nestaje."
             ],
             [
               "Ne znamo jeste li glasali.",
-              "no",
               "Status birača mijenja se u „glas predan”. Vaša organizacija vidi tko je glasao — i mora vidjeti, jer inače ne može podsjetiti one koji nisu."
             ],
             [
               "Vaš identitet uopće ne spremamo.",
-              "no",
               "Vaša adresa e-pošte je spremljena. Njome vam se isporučuje listić."
             ]
           ],

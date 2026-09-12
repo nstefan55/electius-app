@@ -42,6 +42,15 @@ const SECTIONS = [
   "voters",
 ] as const;
 
+// Vrijedi li pojedina tvrdnja iz §E, poredano uz `s.ballot.rows`. ŽIVI U KODU,
+// a ne u katalogu, i to je nosivo: vrijednost `"yes"` u messages/*.json sjedila
+// bi dva retka do `"yes": "Da"`, u datoteci čiji je cijeli ugovor „prevedi
+// nizove". Prevoditelj koji `"yes"` prevede u `"da"` obori usporedbu, pa se
+// PRVA tvrdnja o tajnosti glasovanja objavi s oznakom „Ne" — stranica tada
+// tvrdi da MOŽEMO saznati kako je netko glasao. Bez greške u tipovima, bez pada
+// testa, bez pada builda. Ovdje je takvo stanje neizrazivo.
+const BALLOT_HOLDS = [true, true, false, false] as const;
+
 export async function generateMetadata({
   params,
 }: {
@@ -189,6 +198,15 @@ export default async function PrivacyPolicy({
   const pairs = (key: string) => t.raw(key) as [string, string][];
   const list = (key: string) => t.raw(key) as string[];
 
+  // Stranica se prerenderira statički, pa razilaženje ovdje ruši BUILD umjesto
+  // da tiho iscrta krivu presudu uz pogrešnu tvrdnju.
+  const ballotRows = pairs("s.ballot.rows");
+  if (ballotRows.length !== BALLOT_HOLDS.length) {
+    throw new Error(
+      `legal.privacy.s.ballot.rows ima ${ballotRows.length} redaka, a BALLOT_HOLDS ${BALLOT_HOLDS.length}`,
+    );
+  }
+
   const mail = (
     <a
       href={`mailto:${CONTACT_EMAIL}`}
@@ -200,7 +218,10 @@ export default async function PrivacyPolicy({
 
   return (
     <>
-      <LandingNav />
+      {/* sectionsOnHome: #how i #contact žive na odredišnoj stranici, ne ovdje.
+          Bez toga bi „Kako funkcionira" ovdje bilo mrtvo sidro, a „Kontakt" bi
+          vodio na ovdašnji odjeljak M umjesto na onaj koji naziv obećava. */}
+      <LandingNav sectionsOnHome />
 
       <main className="bg-white pt-14 pb-20">
         <div className={CONTAINER}>
@@ -340,19 +361,17 @@ export default async function PrivacyPolicy({
                   s("ballot.colVerdict"),
                   s("ballot.colWhy"),
                 ]}
-                rows={(t.raw("s.ballot.rows") as [string, string, string][]).map(
-                  ([claim, verdict, why]) => [
-                    <span key="c" className="font-medium text-neutral-800">
-                      {claim}
-                    </span>,
-                    <Verdict
-                      key="v"
-                      holds={verdict === "yes"}
-                      label={verdict === "yes" ? s("ballot.yes") : s("ballot.no")}
-                    />,
-                    why,
-                  ],
-                )}
+                rows={ballotRows.map(([claim, why], i) => [
+                  <span key="c" className="font-medium text-neutral-800">
+                    {claim}
+                  </span>,
+                  <Verdict
+                    key="v"
+                    holds={BALLOT_HOLDS[i]}
+                    label={BALLOT_HOLDS[i] ? s("ballot.yes") : s("ballot.no")}
+                  />,
+                  why,
+                ])}
               />
               <P>{s("ballot.receipt")}</P>
             </Section>

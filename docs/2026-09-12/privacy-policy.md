@@ -221,6 +221,54 @@ byte for byte, CRLF included. Result: a 381-line diff per catalog instead of the
 
 ---
 
+## PR review — three findings, all taken
+
+PR #9's automated review raised three MEDIUMs. All were real; all were fixed on
+the branch.
+
+**1 · `LandingNav` carried a dead anchor onto this page.** The nav's section
+links are bare fragments (`#how`, `#contact`) that only resolve on the landing.
+On `/privacy` there is no `id="how"`, so *"Kako funkcionira"* did nothing — and
+`#contact` resolved to *this page's* §M Kontakt rather than the section its label
+promises. The same diff enforces "a link that goes nowhere is a link that lies"
+twice (the footer trust column, and the reason the full landing footer was **not**
+reused here), so the nav got the opposite treatment by accident.
+
+Fixed by making the nav cross-page aware rather than by hiding the links:
+`LandingNav` takes `sectionsOnHome` (default `false`), and when set renders the
+section links through `@/i18n/navigation`'s `Link` as `/hr#how`. Verified: the
+privacy page now has **zero bare fragments and zero dead anchors**, and the
+landing is unchanged — still `#how` / `#contact`, still resolving in-page, so
+the default is a genuine no-op there.
+
+**2 · The `"yes"` / `"no"` verdict sentinel lived in the catalogs.** It sat two
+lines from `"yes": "Da"` — the display label — in a file whose whole contract is
+*translate the strings*. A translator localizing `"yes"` → `"da"` would break
+`verdict === "yes"`, and §E's **first** claim would publish as:
+
+> Ne možemo saznati kako je netko glasao. — **Ne**
+
+The page would then state that Electius *can* find out how someone voted, in the
+one section the surrounding comments call the product's central promise. No type
+error, no test failure, no build failure — the tuple is still `[string, string,
+string]`. It ships.
+
+Fixed by moving the verdicts into code as `BALLOT_HOLDS = [true, true, false,
+false]` beside `SECTIONS`; catalog rows narrow to `[claim, why]` and
+`legal.privacy` loses its only untranslatable string. A build-time length check
+guards the pairing, and **it was mutation-checked**: dropping one element fails
+the build with `legal.privacy.s.ballot.rows ima 4 redaka, a BALLOT_HOLDS 3`. An
+assertion nobody has watched fire is not a guard.
+
+**3 · Defect #1 was half-closed, not closed.** The zod gate on the Terms
+checkbox still gates an unpublished document — what changed is that this is no
+longer *also* true of the privacy policy. Kept the gate deliberately (it is
+assent to a contractual relationship, and the acceptance record is worth having
+from day one) and marked it: the comment now says the gate outlives the page and
+is to be revisited with the Terms spec, not before.
+
+---
+
 ## Notes for whoever touches this next
 
 - **Croatian is the operative text.** If the two versions drift, the Croatian one
