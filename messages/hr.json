@@ -1994,7 +1994,8 @@
         "sentTitle": "Provjerite svoj e-mail",
         "sentSub": "Ako je {email} na popisu birača, poslali smo poveznicu za glasovanje. Provjerite i neželjenu poštu.",
         "sentBack": "Unesi drugu adresu",
-        "failed": "Slanje nije uspjelo. Pokušajte ponovno."
+        "failed": "Slanje nije uspjelo. Pokušajte ponovno.",
+        "privacyNote": "Vašu adresu koristimo samo za slanje poveznice za glasovanje. Više u <privacy>Pravilima privatnosti</privacy>."
       },
       "fail": {
         "title": "Glas nije predan",
@@ -2130,7 +2131,7 @@
           ],
           "notTitle": "Što namjerno ne prikupljamo",
           "not": [
-            "Nikakvu analitiku. Nema Google Analyticsa, Plausiblea, Vercel Analyticsa ni Sentryja — u aplikaciji nema nijednog analitičkog paketa.",
+            "Nikakvu analitiku koja vas profilira. Posjete broji Vercel Web Analytics: ne postavlja kolačić, ne sprema ništa na vaš uređaj i posjet prepoznaje privremenim sažetkom koji se odbacuje nakon 24 sata. Nema Google Analyticsa, Plausiblea ni Sentryja.",
             "Nikakvo oglašavanje, praćenje između web-mjesta ni kolačiće trećih strana.",
             "Nikakvo praćenje otvaranja ni klikova u e-pošti. Oboje je isključeno i mora ostati isključeno: praćenje klikova prepisalo bi poveznicu koja je ujedno tajni token za glasovanje.",
             "Nikakve podatke o platnim karticama. Plaćanje se u cijelosti odvija na Stripeovim stranicama i polje za karticu u Electiusu ne postoji.",
@@ -2197,7 +2198,7 @@
         },
         "cookies": {
           "title": "Kolačići",
-          "body": "Electius postavlja dva kolačića, oba nužna za rad nadzorne ploče i oba tek nakon što se administrator prijavi. Javne stranice i cijeli postupak glasovanja ne postavljaju nijedan. Analitičkih i oglašivačkih kolačića nema jer u aplikaciji nema nijednog analitičkog ni oglašivačkog alata.",
+          "body": "Electius postavlja dva kolačića, oba nužna za rad nadzorne ploče i oba tek nakon što se administrator prijavi. Javne stranice i cijeli postupak glasovanja ne postavljaju nijedan. Analitičkih i oglašivačkih kolačića nema: analitika koju koristimo ne postavlja nijedan, a oglašivačkog alata nemamo.",
           "colName": "Kolačić",
           "colPurpose": "Svrha",
           "colDuration": "Trajanje",
@@ -2221,7 +2222,7 @@
             "Nema analitičkih ni oglašivačkih kolačića, praćenja između web-mjesta ni kolačića trećih strana — nijedan pružatelj usluga naveden u odjeljku „Pružatelji usluga” ne postavlja kolačić na Electiusovoj domeni.",
             "Ne koristimo ni lokalnu pohranu preglednika: postavke pristupačnosti vezane su uz vaš račun, a ne uz uređaj.",
             "Oba kolačića šalju se s oznakama HttpOnly, Secure i SameSite=Lax, a svaki se zahtjev dodatno provjerava prema fiksnom popisu dopuštenih izvora; ta dva mehanizma sprječavaju CSRF napade.",
-            "Signal Do Not Track: nikakvo praćenje ne provodimo, pa ga taj signal nema što isključiti."
+            "Signal Do Not Track: ne pratimo vas između web-mjesta, a analitika ne sprema ništa na vaš uređaj, pa taj signal nema što isključiti."
           ],
           "banner": "Zato ne prikazujemo traku za privolu za kolačiće. Kolačić nužan za uslugu koju ste izričito zatražili izuzet je od privole, a drugih kolačića nema."
         },
@@ -2234,8 +2235,8 @@
           "rows": [
             [
               "Vercel",
-              "Posluživanje aplikacije i isporuka sadržaja",
-              "Sav promet prema aplikaciji i pripadajući zapisnici pristupa"
+              "Posluživanje aplikacije, isporuka sadržaja i mjerenje posjeta",
+              "Sav promet prema aplikaciji i pripadajući zapisnici pristupa. Analitika uz to prima adresu stranice, iz koje su prije slanja uklonjene poveznice za glasovanje i svi tokeni."
             ],
             [
               "Neon",

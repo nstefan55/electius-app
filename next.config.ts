@@ -30,7 +30,11 @@ const isDev = process.env.NODE_ENV !== "production";
 const contentSecurityPolicy = [
   "default-src 'self'",
   // Next ubacuje inline bootstrap (self.__next_f.push).
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // Analitika je u produkciji PRVOSTRANA (/_vercel/insights/script.js i
+  // /_vercel/insights/event), pa je 'self' pokriva i produkcijski CSP se ne
+  // mijenja. U razvoju paket povlači vanjsku debug skriptu — samo zbog toga je
+  // origin ovdje, i samo u dev grani.
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval' https://va.vercel-scripts.com" : ""}`,
   // ui/chart.tsx ubacuje <style> element, recharts piše inline stilove.
   "style-src 'self' 'unsafe-inline'",
   // Bez data: i blob: — provjereno da ih ništa ne emitira: QR je inline <svg>,
@@ -40,8 +44,9 @@ const contentSecurityPolicy = [
   `img-src 'self' ${R2_PUBLIC_BUCKET} ${GOOGLE_AVATARS}`,
   // next/font/google se u buildu poslužuje s našeg origina, bez CDN-a.
   "font-src 'self'",
-  // Nijedan klijentski SDK ne zove van: nema Stripe.js ni analitike, a odlazak
-  // na Checkout je navigacija, koju connect-src ne pokriva.
+  // Nijedan klijentski SDK ne zove van: nema Stripe.js, a odlazak na Checkout je
+  // navigacija, koju connect-src ne pokriva. Analitika šalje na /_vercel/insights/
+  // event — isti origin, pa 'self' i nju pokriva.
   `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
   "frame-src 'none'",
   "object-src 'none'",

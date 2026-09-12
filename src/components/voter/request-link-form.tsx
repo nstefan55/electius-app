@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CircleAlert, MailCheck, TriangleAlert } from "lucide-react";
 import { z } from "zod";
+import { privacyUrl } from "@/lib/urls";
 import {
   BTN_GHOST_MD,
   BTN_PRIMARY_XL,
@@ -158,6 +159,23 @@ export function RequestLinkForm({
         )}
       </button>
       <p className="text-center text-xs text-neutral-600">{t("qr.privacy")}</p>
+      {/* Jedina javna forma koja prikuplja adresu, a do 0.9.71 nije nigdje
+          vodila na pravila privatnosti. qr.privacy je sigurnosno upozorenje o
+          poveznici, ne obavijest o obradi. */}
+      <p className="text-center text-xs text-neutral-600">
+        {t.rich("qr.privacyNote", {
+          privacy: (chunks) => (
+            <a
+              href={privacyUrl()}
+              target="_blank"
+              rel="noreferrer"
+              className="text-brand-700 hover:underline"
+            >
+              {chunks}
+            </a>
+          ),
+        })}
+      </p>
     </form>
   );
 }
