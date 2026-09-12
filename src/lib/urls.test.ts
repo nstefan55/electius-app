@@ -31,6 +31,18 @@ describe("urls", () => {
     expect(marketingHomeUrl()).toBe("https://electius.com/");
   });
 
+  it("points the privacy policy at the APEX, never at the dashboard host", async () => {
+    const { privacyUrl } = await import("@/lib/urls");
+    // Nosivo: stranicu iscrtava (marketing) grupa na apeksu, a poveznice na nju
+    // kreću s dashboard hosta (prijava, registracija, postavke). Zamijeni li
+    // netko APEX s APP-om, poveznica iz registracije završi na /login jer
+    // /privacy nije u PUBLIC_AUTH_PATHS — a dodati je onamo ne može se, jer se
+    // ta lista prelijeva u DASHBOARD_ONLY_PATHS pa bi apeks preusmjeravao
+    // vlastitu stranicu. Test pina baš taj host.
+    expect(privacyUrl()).toBe("https://electius.com/privacy");
+    expect(privacyUrl()).not.toContain("dashboard.");
+  });
+
   it("points the delete-account link at our page, not the BetterAuth API route", async () => {
     const { confirmDeletionUrl } = await import("@/lib/urls");
     // /api/auth/delete-user/callback answers a session-less GET with JSON 404 on

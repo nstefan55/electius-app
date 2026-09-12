@@ -16,6 +16,7 @@ import {
   Send,
   ShieldCheck,
 } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import { LandingNav } from "@/components/marketing/landing-nav";
 // import { PricingPlans } from "@/components/marketing/pricing-plans"; //TODO Add back when pricing is ready
 import { FaqAccordion } from "@/components/marketing/faq-accordion";
@@ -538,19 +539,25 @@ export default async function Home({
             </div>
 
             {/* Stupac povjerenja: obični tekst, ne poveznice — te stranice još ne
-                postoje, a href="#" je poveznica koja laže. */}
+                postoje, a href="#" je poveznica koja laže. Iznimka je
+                „Privatnost”: njezina stranica od sada postoji, pa je jedina
+                stvarna poveznica u stupcu. */}
             <div>
               <div className="mb-4 font-heading text-sm font-semibold text-white">
                 {t("footer.trust")}
               </div>
               <div className="flex flex-col gap-3">
-                {["security", "verifiability", "privacy", "compliance"].map(
-                  (k) => (
-                    <span key={k} className="text-sm text-neutral-400">
-                      {t(`footer.${k}`)}
-                    </span>
-                  ),
-                )}
+                {["security", "verifiability", "compliance"].map((k) => (
+                  <span key={k} className="text-sm text-neutral-400">
+                    {t(`footer.${k}`)}
+                  </span>
+                ))}
+                <Link
+                  href="/privacy"
+                  className="text-sm text-neutral-400 hover:text-white"
+                >
+                  {t("footer.privacy")}
+                </Link>
               </div>
             </div>
 

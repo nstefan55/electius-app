@@ -1,14 +1,19 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
-import { marketingHomeUrl } from "@/lib/urls";
+import { marketingHomeUrl, privacyUrl } from "@/lib/urls";
 
 // Split-screen auth chrome (auth-phase-4), ported from the design prototypes
 // (context/design/electius-app-auth-pages-design): form panel left, navy
 // brand-900 feature panel right (hidden below lg, where the footer links move
 // into the form panel instead). Server component — pages pass localized copy.
-// ponytail: privacy/terms links are "#" until the legal pages exist; the
-// prototype's language link is skipped (switcher is gated, destined for Settings).
+// Pravila privatnosti su prava, MEĐUHOSTOVSKA poveznica: stranica živi na
+// apeksu, a ovaj je zaslon na dashboard hostu (relativni /privacy ondje završi
+// na prijavi — vidi privacyUrl()). Uvjeti korištenja ostaju običan tekst dok
+// im stranica ne postoji: poveznica koja ne vodi nikamo je poveznica koja laže,
+// isto pravilo kao u stupcu povjerenja u marketinškom podnožju.
+// ponytail: the prototype's language link is skipped (switcher is gated,
+// destined for Settings).
 
 interface BrandFeature {
   icon: LucideIcon;
@@ -33,14 +38,13 @@ function FooterLinks({ variant }: { variant: "light" | "dark" }) {
     variant === "dark"
       ? "text-white/65 hover:text-white hover:underline"
       : "text-neutral-600 hover:underline";
+  const muted = variant === "dark" ? "text-white/45" : "text-neutral-400";
   return (
     <>
-      <a href="#" className={link}>
+      <a href={privacyUrl()} className={link}>
         {t("privacy")}
       </a>
-      <a href="#" className={link}>
-        {t("terms")}
-      </a>
+      <span className={muted}>{t("terms")}</span>
       <a href="mailto:contact@electius.com" className={link}>
         contact@electius.com
       </a>
