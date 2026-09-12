@@ -112,3 +112,89 @@ describe("completeSetup — pristanak na uvjete", () => {
     expect(update.data.termsVersion).toBe(TERMS_VERSION);
   });
 });
+
+describe("completeSetup — pristanak zapisan na registraciji (v0.9.69)", () => {
+  it("ne traži kvačicu kad je korisnik već pristao, i PREPISUJE izvorni datum", async () => {
+    // E-mail put: kvačica je bila na registraciji, /api/auth/register je
+    // zapisao datum i inačicu na korisnika. Drugo pitanje ovdje bilo bi
+    // trenje bez ijednog novog podatka.
+    const accepted = new Date("2026-03-04T10:00:00Z");
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: null,
+      termsAcceptedAt: accepted,
+      termsVersion: "2026-01-01",
+      organization: null,
+    } as never);
+
+    const result = await completeSetup(input);
+
+    expect(result).toEqual({ success: true });
+    const create = vi.mocked(prisma.user.update).mock.calls[0][0] as never as {
+      data: { organization: { create: Record<string, unknown> } };
+    };
+    const org = create.data.organization.create;
+    // Nosivo: prepisuje se KADA se pristalo, ne kada je organizacija nastala.
+    // Današnji datum ovdje izgubio bi trenutak stvarnog pristanka.
+    expect(org.termsAcceptedAt).toBe(accepted);
+    expect(org.termsVersion).toBe("2026-01-01");
+  });
+
+  it("i dalje traži kvačicu kad ni korisnik ni organizacija nemaju zapis (Google)", async () => {
+    // ⚠ Googleov gumb stoji iznad obrasca za registraciju i njegovu kvačicu
+    // ne čita, pa je /setup jedina vrata koja tom putu preostaju. Bez ovoga
+    // Google račun ne bi pristao nigdje.
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: null,
+      termsAcceptedAt: null,
+      termsVersion: null,
+      organization: null,
+    } as never);
+
+    expect(await completeSetup(input)).toEqual({
+      success: false,
+      error: "terms",
+    });
+    expect(prisma.user.update).not.toHaveBeenCalled();
+  });
+
+  it("kad se pristane ovdje, zapis dobiva i korisnik, ne samo organizacija", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: null,
+      termsAcceptedAt: null,
+      termsVersion: null,
+      organization: null,
+    } as never);
+
+    await completeSetup({ ...input, terms: true });
+
+    const call = vi.mocked(prisma.user.update).mock.calls[0][0] as never as {
+      data: Record<string, unknown>;
+    };
+    // Tko je pristao mora biti odgovorivo bez čitanja organizacije.
+    expect(call.data.termsAcceptedAt).toBeInstanceOf(Date);
+    expect(call.data.termsVersion).toBe(TERMS_VERSION);
+  });
+
+  it("i na povratku (organizacija postoji, zapisa nema) korisnik dobiva zapis", async () => {
+    // Druga staza kroz istu odluku: organizacija otvorena prije v0.9.65 ima
+    // termsAcceptedAt = null. Kvačica se traži, i zapis mora dobiti i osoba,
+    // ne samo organizacija — inače je stamp pokriven testom samo u grani koja
+    // organizaciju tek stvara, a ova bi tiho ostala bez njega.
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: "org1",
+      termsAcceptedAt: null,
+      termsVersion: null,
+      organization: { termsAcceptedAt: null },
+    } as never);
+
+    expect(await completeSetup({ ...input, terms: true })).toEqual({
+      success: true,
+    });
+
+    const userCall = vi.mocked(prisma.user.update).mock.calls[0][0] as never as {
+      data: Record<string, unknown>;
+    };
+    expect(userCall.data.termsAcceptedAt).toBeInstanceOf(Date);
+    expect(userCall.data.termsVersion).toBe(TERMS_VERSION);
+  });
+});

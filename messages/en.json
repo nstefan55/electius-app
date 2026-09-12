@@ -213,8 +213,7 @@
         "passwordHelper": "Use 8 or more characters.",
         "confirmPassword": "Confirm password",
         "confirmPasswordPlaceholder": "Repeat your password",
-        "privacyNote": "We handle your data as described in our <privacy>Privacy policy</privacy>.",
-        "termsNote": "The <terms>Terms of service</terms> apply to your use of Electius. You will accept them on your organization's behalf in the next step.",
+        "privacyNote": "We process your data as described in our <privacy>Privacy policy</privacy>.",
         "submit": "Create account",
         "otp": {
           "title": "Enter your verification code",
@@ -241,8 +240,10 @@
           "exists": "An account with that email already exists.",
           "tooShort": "Password must be at least 8 characters.",
           "generic": "Sign-up failed. Check your details and try again.",
-          "rateLimited": "Too many attempts. Please try again in a few minutes."
-        }
+          "rateLimited": "Too many attempts. Please try again in a few minutes.",
+          "terms": "You must accept the Terms of Service."
+        },
+        "terms": "I confirm that I have been informed of the <terms>Terms of Service</terms> and hereby accept them."
       }
     },
     "setup": {

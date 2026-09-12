@@ -214,7 +214,6 @@
         "confirmPassword": "Potvrdite lozinku",
         "confirmPasswordPlaceholder": "Ponovite lozinku",
         "privacyNote": "Vaše podatke obrađujemo kako je opisano u <privacy>Pravilima privatnosti</privacy>.",
-        "termsNote": "<terms>Uvjeti korištenja</terms> primjenjuju se na korištenje Electiusa. Potvrdit ćete ih u ime svoje organizacije u sljedećem koraku.",
         "submit": "Otvori račun",
         "otp": {
           "title": "Unesite kod za potvrdu",
@@ -241,8 +240,10 @@
           "exists": "Račun s tom e-mail adresom već postoji.",
           "tooShort": "Lozinka mora imati najmanje 8 znakova.",
           "generic": "Registracija nije uspjela. Provjerite podatke i pokušajte ponovno.",
-          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta."
-        }
+          "rateLimited": "Previše pokušaja. Pokušajte ponovno za nekoliko minuta.",
+          "terms": "Morate prihvatiti Uvjete korištenja."
+        },
+        "terms": "Slažem se da sam ovim putem upoznat s <terms>Uvjetima korištenja</terms> te ih ovim putem prihvaćam."
       }
     },
     "setup": {

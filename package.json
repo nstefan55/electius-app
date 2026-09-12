@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.68",
+  "version": "0.9.69",
   "private": true,
   "scripts": {
     "dev": "next dev",
