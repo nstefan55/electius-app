@@ -2194,25 +2194,33 @@
         },
         "cookies": {
           "title": "Kolačići",
-          "body": "Electius postavlja isključivo kolačiće nužne za rad usluge. Analitičkih kolačića nema jer u aplikaciji nema nijednog analitičkog alata.",
+          "body": "Electius postavlja dva kolačića, oba nužna za rad nadzorne ploče i oba tek nakon što se administrator prijavi. Javne stranice i cijeli postupak glasovanja ne postavljaju nijedan. Analitičkih i oglašivačkih kolačića nema jer u aplikaciji nema nijednog analitičkog ni oglašivačkog alata.",
           "colName": "Kolačić",
           "colPurpose": "Svrha",
           "colDuration": "Trajanje",
           "colOptOut": "Kako ga izbjeći",
           "rows": [
             [
-              "Kolačić prijave",
-              "Održava administratora prijavljenim i štiti od CSRF napada",
-              "7 dana",
+              "__Secure-better-auth.session_token",
+              "Održava administratora prijavljenim.",
+              "Do zatvaranja preglednika; 7 dana ako je pri prijavi označeno „Ostani prijavljen”.",
               "Odjava ili brisanje podataka preglednika. Nadzorna ploča bez njega ne može raditi."
+            ],
+            [
+              "__Secure-better-auth.dont_remember",
+              "Pamti da trajna prijava nije zatražena, pa prijava prestaje zatvaranjem preglednika.",
+              "Do zatvaranja preglednika",
+              "Označite „Ostani prijavljen” pri prijavi — tada se ovaj kolačić ne postavlja, a prijava traje 7 dana."
             ]
           ],
           "bullets": [
-            "Nema oglašivačkih kolačića, praćenja između web-mjesta ni kolačića trećih strana.",
-            "Postupak glasovanja ne postavlja nijedan kolačić. Birač može ispuniti listić s potpuno blokiranim kolačićima.",
+            "Javne stranice, javni rezultati i cijeli postupak glasovanja ne postavljaju nijedan kolačić. Birač može ispuniti listić s potpuno blokiranim kolačićima.",
+            "Nema analitičkih ni oglašivačkih kolačića, praćenja između web-mjesta ni kolačića trećih strana — nijedan pružatelj usluga naveden u odjeljku „Pružatelji usluga” ne postavlja kolačić na Electiusovoj domeni.",
+            "Ne koristimo ni lokalnu pohranu preglednika: postavke pristupačnosti vezane su uz vaš račun, a ne uz uređaj.",
+            "Oba kolačića šalju se s oznakama HttpOnly, Secure i SameSite=Lax, a svaki se zahtjev dodatno provjerava prema fiksnom popisu dopuštenih izvora; ta dva mehanizma sprječavaju CSRF napade.",
             "Signal Do Not Track: nikakvo praćenje ne provodimo, pa ga taj signal nema što isključiti."
           ],
-          "banner": "Zato ne prikazujemo traku za privolu za kolačiće. Kolačić nužan za uslugu koju ste izričito zatražili izuzet je od privole."
+          "banner": "Zato ne prikazujemo traku za privolu za kolačiće. Kolačić nužan za uslugu koju ste izričito zatražili izuzet je od privole, a drugih kolačića nema."
         },
         "processors": {
           "title": "Pružatelji usluga",

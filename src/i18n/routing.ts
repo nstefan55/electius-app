@@ -9,4 +9,13 @@ export const routing = defineRouting({
   defaultLocale: DEFAULT_LOCALE,
   localePrefix: "always", // Prefix ALL locales, including the default hr
   localeDetection: false, //Browser Lang Detection Preference
+  // Bez ovoga next-intl PIŠE kolačić NEXT_LOCALE. `localeDetection: false`
+  // gasi samo ČITANJE (resolveLocale), ne i pisanje (syncCookie), pa je
+  // zadana vrijednost `localeCookie` uključena i kolačić se postavlja na
+  // svakoj navigaciji gdje se jezik preglednika razlikuje od jezika u URL-u
+  // — uključujući listić: engleski preglednik na /hr/vote/… ga dobije.
+  // Nitko ga ne čita (nula referenci na NEXT_LOCALE u src/; jezik se izvodi
+  // iz URL-a), a Pravila privatnosti §F obećavaju da postupak glasovanja ne
+  // postavlja nijedan kolačić. Izmjereno na produkciji 2026-09-12.
+  localeCookie: false,
 });
