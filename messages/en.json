@@ -2194,25 +2194,33 @@
         },
         "cookies": {
           "title": "Cookies",
-          "body": "Electius sets strictly necessary cookies only. There are no analytics cookies, because the application contains no analytics tool.",
+          "body": "Electius sets two cookies. Both are strictly necessary for the dashboard to work, and both appear only once an administrator signs in. Public pages and the entire voting flow set none. There are no analytics or advertising cookies, because the application contains no analytics or advertising tool.",
           "colName": "Cookie",
           "colPurpose": "Purpose",
           "colDuration": "Duration",
           "colOptOut": "How to avoid it",
           "rows": [
             [
-              "Session cookie",
-              "Keeps the admin signed in and protects against CSRF attacks",
-              "7 days",
+              "__Secure-better-auth.session_token",
+              "Keeps the administrator signed in.",
+              "Until you close your browser; 7 days if “Keep me signed in” was ticked at sign-in.",
               "Sign out, or clear your browser data. The dashboard cannot work without it."
+            ],
+            [
+              "__Secure-better-auth.dont_remember",
+              "Records that you did not ask to stay signed in, so the session ends when you close your browser.",
+              "Until you close your browser",
+              "Tick “Keep me signed in” at sign-in — this cookie is then not set, and the session lasts 7 days."
             ]
           ],
           "bullets": [
-            "No advertising cookies, no cross-site tracking, no third-party cookies.",
-            "The voting flow sets no cookie at all. A voter can complete a ballot with cookies fully blocked.",
+            "Public pages, public results and the entire voting flow set no cookie at all. A voter can complete a ballot with cookies fully blocked.",
+            "No analytics or advertising cookies, no cross-site tracking, no third-party cookies — none of the providers listed under “Service providers” sets a cookie on an Electius domain.",
+            "We do not use browser local storage either: accessibility settings are tied to your account, not to your device.",
+            "Both cookies are sent with HttpOnly, Secure and SameSite=Lax, and every request is additionally checked against a fixed list of permitted origins; together those two mechanisms are what prevent CSRF attacks.",
             "Do Not Track: we perform no tracking, so there is nothing for that signal to switch off."
           ],
-          "banner": "That is why we show no cookie consent banner. A cookie strictly necessary for a service you explicitly requested is exempt from consent."
+          "banner": "That is why we show no cookie consent banner. A cookie strictly necessary for a service you explicitly requested is exempt from consent, and there are no other cookies."
         },
         "processors": {
           "title": "Service providers",
