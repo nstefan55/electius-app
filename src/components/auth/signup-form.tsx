@@ -16,7 +16,7 @@ import { privacyUrl } from "@/lib/urls";
 // errors via toast. With requireEmailVerification a successful signup opens no
 // session — the form swaps to the OTP entry panel; typing the emailed 6-digit
 // code verifies, auto-signs-in and lands on /{locale}/setup.
-type Field = "name" | "email" | "password" | "confirmPassword" | "terms";
+type Field = "name" | "email" | "password" | "confirmPassword";
 
 type SignupError = "mismatch" | "exists" | "tooShort" | "rateLimited" | "generic";
 
@@ -40,7 +40,6 @@ export function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [terms, setTerms] = useState(false);
   const [pending, setPending] = useState(false);
   const [invalid, setInvalid] = useState<Partial<Record<Field, boolean>>>({});
   // Non-null once registration succeeded — swaps the form for the inbox panel.
@@ -52,7 +51,6 @@ export function SignupForm() {
       email: z.email({ error: t("errors.email") }),
       password: z.string().min(8, { error: t("errors.tooShort") }),
       confirmPassword: z.string(),
-      terms: z.literal(true, { error: t("errors.terms") }),
     })
     .refine((d) => d.password === d.confirmPassword, {
       error: t("errors.mismatch"),
@@ -66,7 +64,6 @@ export function SignupForm() {
       email,
       password,
       confirmPassword,
-      terms,
     });
     if (!parsed.success) {
       const bad: Partial<Record<Field, boolean>> = {};
@@ -208,38 +205,20 @@ export function SignupForm() {
           />
         </div>
 
-        {/* Kvačica pristaje SAMO na Uvjete korištenja. Pravila privatnosti nisu
-            nešto na što se pristaje — to je obavijest iz čl. 13. GDPR-a, koju
-            dugujemo i koja se ispunjava time što je dostupna, a ne time što je
-            netko potvrdi. Spajanje to dvoje u jednu obveznu kvačicu obrazac je
-            koji Smjernice EDPB-a 05/2020 smatraju nevaljanom privolom: nije
-            granularna i proizvodi zapis o privoli za obradu čija je stvarna
-            osnova ugovor (čl. 6. st. 1. t. (b)). Zato je obavijest ispod
-            kvačice, izvan vrata. */}
-        <label className="flex items-start gap-2 text-sm leading-normal text-neutral-950">
-          <input
-            type="checkbox"
-            checked={terms}
-            onChange={(e) => setTerms(e.target.checked)}
-            className="mt-0.75 size-4 shrink-0 accent-brand-700"
-          />
-          <span>
-            {/* ponytail: stranica Uvjeta korištenja još ne postoji (vlastita
-                specifikacija), pa oznaka ostaje običan tekst — a kvačica NADŽIVI
-                tu prazninu: i dalje je tvrdi zod uvjet za dokument koji nije
-                objavljen.
-                ⚠ I ne ostavlja nikakav trag: `terms` se provjerava samo ovdje,
-                u pregledniku, i NE šalje se u tijelu zahtjeva prema
-                /api/auth/register (vidi poziv niže), pa se nigdje ne pohranjuje.
-                Danas je to dakle prepreka u sučelju, a ne zapis o pristanku —
-                ne tvrditi suprotno. Oboje (stranica i zapis) rješava se sa
-                specifikacijom Uvjeta korištenja, ne prije. */}
-            {t.rich("terms", {
-              terms: (chunks) => <span className="font-medium">{chunks}</span>,
-            })}
-          </span>
-        </label>
+        {/* Kvačice o uvjetima ovdje NEMA, i to je promjena, ne propust.
+            Stajala je do 2026-09-12 i bila je prepreka u sučelju, a ne zapis o
+            pristanku: `terms` se provjeravao samo u pregledniku i nije se slao
+            u tijelu zahtjeva, pa ga nijedan stupac nije primao. Gore od toga,
+            Googleov gumb stoji IZNAD obrasca i tu kvačicu ne čita, pa je jedina
+            vrata koja je proizvod imao zaobilazio istaknutiji put.
 
+            Pristanak se sada traži na /setup, kroz koji prolaze oba načina
+            prijave i na kojem organizacija — druga strana ugovora — tek
+            nastaje, pa se ondje i zapisuje (terms-of-service-spec D2). Uvjeti i
+            pravila privatnosti ostaju dohvatljivi odavde, u podnožju zaslona.
+
+            Obavijest o privatnosti ostaje ovdje: dugujemo je po čl. 13. GDPR-a i
+            ispunjava se time što je dostupna, ne time što je netko potvrdi. */}
         <p className="-mt-2 pl-6 text-[0.8125rem] leading-normal text-neutral-600">
           {t.rich("privacyNote", {
             privacy: (chunks) => (

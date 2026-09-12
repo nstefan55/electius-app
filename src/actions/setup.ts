@@ -5,6 +5,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OrganizationType } from "@/generated/prisma/client";
+import { TERMS_VERSION } from "@/lib/legal";
 
 // Profile + organization setup (setup-page-spec). Creates the admin's org and
 // completes their name — the step that unblocks fresh accounts, since
@@ -18,12 +19,16 @@ const schema = z.object({
   lastName: z.string().trim().min(1).max(100),
   organizationName: z.string().trim().min(1).max(255),
   organizationType: z.enum(OrganizationType),
+  // Neobavezno U SHEMI, obavezno u akciji kad pristanak još nije zabilježen —
+  // vidi ispod. Obrazac kvačicu i ne iscrtava organizaciji koja je već
+  // pristala, pa bi z.literal(true) ovdje srušio svaki povratak na /setup.
+  terms: z.boolean().optional(),
 });
 
 export async function completeSetup(input: unknown): Promise<ActionResult> {
   const parsed = schema.safeParse(input);
   if (!parsed.success) return { success: false, error: "invalid" };
-  const { firstName, lastName, organizationName, organizationType } =
+  const { firstName, lastName, organizationName, organizationType, terms } =
     parsed.data;
 
   const session = await auth.api.getSession({ headers: await headers() });
@@ -33,9 +38,31 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
   try {
     const admin = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { organizationId: true },
+      select: {
+        organizationId: true,
+        organization: { select: { termsAcceptedAt: true } },
+      },
     });
     if (!admin) return { success: false, error: "unauthorized" };
+
+    // Pristanak na uvjete (terms-of-service-spec D2). OVDJE, a ne na
+    // registraciji: ovo je jedini put kojim prolaze oba načina prijave —
+    // Googleov callback slijeće ovamo, e-mail put dolazi nakon OTP-a, a
+    // requireSession() ovamo vraća svaki račun bez organizacije. Prije ovoga
+    // je jedina kvačica u proizvodu bila zaobilazna klikom na istaknutiji
+    // gumb.
+    //
+    // Traži se samo dok zapisa nema. Povratak na /setup je uređivanje profila;
+    // ponovno traženje pristanka na nepromijenjene uvjete bilo bi trenje bez
+    // zapisa, a zapis se ionako ne bi promijenio.
+    const accepted = admin.organization?.termsAcceptedAt ?? null;
+    const acceptsNow = accepted === null;
+    if (acceptsNow && terms !== true) return { success: false, error: "terms" };
+    // Inačica se zapisuje uz vrijeme, jer §Q obećava obavijest prije izmjene:
+    // bez nje je to obećanje neprovjerljivo.
+    const acceptance = acceptsNow
+      ? { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION }
+      : {};
 
     if (admin.organizationId) {
       // Revisit — refresh the profile + org in place, never create a second org.
@@ -43,7 +70,11 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
         prisma.user.update({ where: { id: session.user.id }, data: { name } }),
         prisma.organization.update({
           where: { id: admin.organizationId },
-          data: { name: organizationName, type: organizationType },
+          data: {
+            name: organizationName,
+            type: organizationType,
+            ...acceptance,
+          },
         }),
       ]);
     } else {
@@ -57,6 +88,7 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
               name: organizationName,
               type: organizationType,
               contactEmail: session.user.email,
+              ...acceptance,
             },
           },
         },

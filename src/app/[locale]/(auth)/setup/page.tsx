@@ -17,7 +17,11 @@ export default async function SetupPage() {
   // Revisit prefill — an admin who already has an org edits it in place.
   const admin = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { organization: { select: { name: true, type: true } } },
+    select: {
+      organization: {
+        select: { name: true, type: true, termsAcceptedAt: true },
+      },
+    },
   });
 
   const [firstName = "", ...rest] = session.user.name.trim().split(/\s+/);
@@ -29,6 +33,7 @@ export default async function SetupPage() {
       initialLastName={rest.join(" ")}
       initialOrganizationName={admin?.organization?.name ?? ""}
       initialOrganizationType={admin?.organization?.type ?? ""}
+      termsAccepted={admin?.organization?.termsAcceptedAt != null}
     />
   );
 }

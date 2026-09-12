@@ -1,17 +1,22 @@
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import type { LucideIcon } from "lucide-react";
-import { CONTACT_EMAIL, marketingHomeUrl, privacyUrl } from "@/lib/urls";
+import {
+  CONTACT_EMAIL,
+  marketingHomeUrl,
+  privacyUrl,
+  termsUrl,
+} from "@/lib/urls";
 
 // Split-screen auth chrome (auth-phase-4), ported from the design prototypes
 // (context/design/electius-app-auth-pages-design): form panel left, navy
 // brand-900 feature panel right (hidden below lg, where the footer links move
 // into the form panel instead). Server component — pages pass localized copy.
-// Pravila privatnosti su prava, MEĐUHOSTOVSKA poveznica: stranica živi na
-// apeksu, a ovaj je zaslon na dashboard hostu (relativni /privacy ondje završi
-// na prijavi — vidi privacyUrl()). Uvjeti korištenja ostaju običan tekst dok
-// im stranica ne postoji: poveznica koja ne vodi nikamo je poveznica koja laže,
-// isto pravilo kao u stupcu povjerenja u marketinškom podnožju.
+// Oba pravna dokumenta su prave, MEĐUHOSTOVSKE poveznice: stranice žive na
+// apeksu, a ovaj je zaslon na dashboard hostu (relativni /privacy ili /terms
+// ondje završi na prijavi — vidi privacyUrl()/termsUrl()). Uvjeti su do
+// 2026-09-12 ovdje stajali kao običan tekst jer stranica nije postojala;
+// poveznica koja ne vodi nikamo je poveznica koja laže.
 // ponytail: the prototype's language link is skipped (switcher is gated,
 // destined for Settings).
 
@@ -34,28 +39,23 @@ interface AuthSplitLayoutProps {
 
 function FooterLinks({ variant }: { variant: "light" | "dark" }) {
   const t = useTranslations("auth.footer");
-  // Podcrtane su i U MIROVANJU, ne tek na hover: otkad `muted` ima istu tintu
-  // (zbog kontrasta, niže), boja više ne razlikuje poveznicu od običnog teksta,
-  // a hover na dodirnom zaslonu ne postoji. Podcrtavanje je jedini signal koji
-  // radi bez boje i bez pokazivača.
+  // Podcrtane su i U MIROVANJU, ne tek na hover: hover na dodirnom zaslonu ne
+  // postoji, a `neutral-400` — jedina tinta koja bi ih razlikovala bojom — pada
+  // AA na 13 px (2,5:1 na bijelom, 3,7:1 za `white/45` na brand-900), i
+  // `globals.css` to popravlja samo pod postavkom visokog kontrasta, koju
+  // odjavljeni posjetitelj nikad nema.
   const link =
     variant === "dark"
       ? "text-white/65 underline underline-offset-2 hover:text-white"
       : "text-neutral-600 underline underline-offset-2 hover:text-brand-700";
-  // Ista tinta kao poveznice, samo bez podcrtavanja na hover. Da NIJE poveznica
-  // već govore izostanak tog affordancea i izostanak pokazivača — boja tu nije
-  // nosila ništa osim pada kontrasta. `neutral-400` na bijelom je 2,5:1, a
-  // `white/45` na brand-900 3,7:1; oba padaju AA za tekst od 13 px (prag 4,5:1),
-  // a `globals.css` popravlja `neutral-400` samo pod postavkom visokog
-  // kontrasta, koju odjavljeni posjetitelj na /signup nikad nema. Naziv pravnog
-  // dokumenta na koji tražimo kvačicu ne smije biti ispisan rezerviranom tintom.
-  const muted = variant === "dark" ? "text-white/65" : "text-neutral-600";
   return (
     <>
       <a href={privacyUrl()} className={link}>
         {t("privacy")}
       </a>
-      <span className={muted}>{t("terms")}</span>
+      <a href={termsUrl()} className={link}>
+        {t("terms")}
+      </a>
       <a href={`mailto:${CONTACT_EMAIL}`} className={link}>
         {CONTACT_EMAIL}
       </a>

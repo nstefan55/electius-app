@@ -9,6 +9,7 @@ import { completeSetup } from "@/actions/setup";
 import { Button } from "@/components/ui/button";
 import { InitialsAvatar } from "@/components/ui/initials-avatar";
 import { cn } from "@/lib/utils";
+import { privacyUrl, termsUrl } from "@/lib/urls";
 import type { OrganizationType } from "@/generated/prisma/client";
 
 // Account-setup screen (setup-page-spec), ported from the design prototype
@@ -36,6 +37,7 @@ interface SetupFormProps {
   initialLastName: string;
   initialOrganizationName: string;
   initialOrganizationType: OrganizationType | "";
+  termsAccepted: boolean;
 }
 
 export function SetupForm({
@@ -45,6 +47,7 @@ export function SetupForm({
   initialLastName,
   initialOrganizationName,
   initialOrganizationType,
+  termsAccepted,
 }: SetupFormProps) {
   const t = useTranslations("auth.setup");
   const tFooter = useTranslations("auth.footer");
@@ -58,12 +61,16 @@ export function SetupForm({
     OrganizationType | ""
   >(initialOrganizationType);
   const [pending, setPending] = useState(false);
+  // Pristanak na uvjete (terms-of-service-spec D2). Traži se samo kad ga još
+  // nema: povratak na /setup je uređivanje profila, a ne novi ugovor.
+  const [terms, setTerms] = useState(false);
 
   const complete =
     firstName.trim() !== "" &&
     lastName.trim() !== "" &&
     organizationName.trim() !== "" &&
-    organizationType !== "";
+    organizationType !== "" &&
+    (termsAccepted || terms);
 
   async function save(target: "onboarding" | "home") {
     // `complete` narrows organizationType to OrganizationType past this guard.
@@ -74,6 +81,7 @@ export function SetupForm({
       lastName,
       organizationName,
       organizationType,
+      terms: termsAccepted || terms,
     });
     if (!result.success) {
       toast.error(t("form.errors.generic"));
@@ -226,6 +234,59 @@ export function SetupForm({
               </select>
             </label>
 
+            {/* Ovdje se sklapa ugovor, a ne na registraciji. Ovuda prolaze OBA
+                puta prijave — Googleov callback slijeće ovamo, e-mail put dolazi
+                nakon OTP-a, a requireSession() ovamo vraća svaki račun bez
+                organizacije — i ovdje organizacija, dakle druga strana ugovora,
+                tek nastaje. Kvačica na registraciji nije ostavljala trag i Google
+                gumb ju je zaobilazio; oboje pada s ovom jednom promjenom.
+
+                Pravila privatnosti stoje ISPOD kvačice, izvan vrata: obavijest
+                iz čl. 13. GDPR-a ispunjava se time što je dostupna, a spajanje
+                s ugovorom u jednu obveznu kvačicu Smjernice EDPB-a 05/2020
+                smatraju nevaljanom privolom. */}
+            {!termsAccepted && (
+              <>
+                <label className="flex items-start gap-2 text-sm leading-normal text-neutral-950">
+                  <input
+                    type="checkbox"
+                    checked={terms}
+                    onChange={(e) => setTerms(e.target.checked)}
+                    className="mt-0.75 size-4 shrink-0 accent-brand-700"
+                  />
+                  <span>
+                    {t.rich("form.terms", {
+                      terms: (chunks) => (
+                        <a
+                          href={termsUrl()}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-medium text-brand-700 hover:underline"
+                        >
+                          {chunks}
+                        </a>
+                      ),
+                    })}
+                  </span>
+                </label>
+
+                <p className="-mt-3 pl-6 text-[0.8125rem] leading-normal text-neutral-600">
+                  {t.rich("form.privacyNote", {
+                    privacy: (chunks) => (
+                      <a
+                        href={privacyUrl()}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-brand-700 hover:underline"
+                      >
+                        {chunks}
+                      </a>
+                    ),
+                  })}
+                </p>
+              </>
+            )}
+
             <Button
               type="button"
               size="lg"
@@ -260,10 +321,10 @@ export function SetupForm({
       </main>
 
       <footer className="flex shrink-0 flex-wrap justify-center gap-x-5 gap-y-2 px-6 pt-4 pb-6 text-[0.8125rem]">
-        <a href="#" className="text-neutral-600 hover:underline">
+        <a href={privacyUrl()} className="text-neutral-600 hover:underline">
           {tFooter("privacy")}
         </a>
-        <a href="#" className="text-neutral-600 hover:underline">
+        <a href={termsUrl()} className="text-neutral-600 hover:underline">
           {tFooter("terms")}
         </a>
         <a

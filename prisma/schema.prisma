@@ -105,6 +105,17 @@ model Organization {
   // Null = nijedan događaj još nije primijenjen (i svaki prvi prolazi).
   billingEventAppliedAt DateTime?
 
+  // Zapis o pristanku na uvjete korištenja. Stranka ugovora JE organizacija, ne
+  // osoba koja je registrirala račun — zato stoji ovdje, a ne na User modelu: na
+  // /setup se organizacija tek stvara, i to je jedini trenutak u kojem druga
+  // strana ugovora uopće postoji.
+  //
+  // Prije ovoga kvačica na registraciji nije ostavljala nikakav trag (provjerena
+  // u pregledniku pa odbačena — tijelo zahtjeva je nije ni nosilo), a Google
+  // gumb ju je zaobilazio u cijelosti. Null = pristanak još nije zabilježen.
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   admins    User[]
   elections Election[]
 

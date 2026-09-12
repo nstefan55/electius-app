@@ -29,7 +29,7 @@ import {
   TrackLabel,
 } from "@/components/marketing/section";
 import { LOCALES } from "@/i18n/config";
-import { APEX_ORIGIN, CONTACT_EMAIL, signUpUrl } from "@/lib/urls";
+import { APEX_ORIGIN, CONTACT_EMAIL, SUPPORT_EMAIL, signUpUrl } from "@/lib/urls";
 
 const CONTAINER = "mx-auto max-w-350 px-6";
 const ANCHOR = "scroll-mt-20"; // ljepljiva navigacija je visoka 72px
@@ -573,19 +573,40 @@ export default async function Home({
               <div className="mb-4 font-heading text-sm font-semibold text-white">
                 {t("footer.contact")}
               </div>
-              <a
-                href={`mailto:${CONTACT_EMAIL}`}
-                className="text-sm text-neutral-400 hover:text-white"
-              >
-                {CONTACT_EMAIL}
-              </a>
+              {/* Dvije adrese jer su dva pretinca: CONTACT_EMAIL je pravna i
+                  revizijska (uvjeti korištenja upućuju na nju za prijave
+                  sadržaja), SUPPORT_EMAIL je za pitanja o korištenju. */}
+              <div className="flex flex-col gap-2">
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="text-sm text-neutral-400 hover:text-white"
+                >
+                  {CONTACT_EMAIL}
+                </a>
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}`}
+                  className="text-sm text-neutral-400 hover:text-white"
+                >
+                  {SUPPORT_EMAIL}
+                </a>
+              </div>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-7">
-            <span className="text-[0.8125rem] text-neutral-400">
-              {t("footer.copyright")}
-            </span>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <span className="text-[0.8125rem] text-neutral-400">
+                {t("footer.copyright")}
+              </span>
+              {/* Ugovor, ne signal povjerenja — zato ovdje, a ne u stupcu
+                  povjerenja u kojemu stoji „Privatnost". */}
+              <Link
+                href="/terms"
+                className="text-[0.8125rem] text-neutral-400 hover:text-white"
+              >
+                {t("footer.terms")}
+              </Link>
+            </div>
             <span className="text-[0.8125rem] text-neutral-400">
               {t("footer.motto")}
             </span>
