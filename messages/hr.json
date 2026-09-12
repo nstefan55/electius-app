@@ -214,6 +214,7 @@
         "confirmPassword": "Potvrdite lozinku",
         "confirmPasswordPlaceholder": "Ponovite lozinku",
         "privacyNote": "Vaše podatke obrađujemo kako je opisano u <privacy>Pravilima privatnosti</privacy>.",
+        "termsNote": "<terms>Uvjeti korištenja</terms> primjenjuju se na korištenje Electiusa. Potvrdit ćete ih u ime svoje organizacije u sljedećem koraku.",
         "submit": "Otvori račun",
         "otp": {
           "title": "Unesite kod za potvrdu",
