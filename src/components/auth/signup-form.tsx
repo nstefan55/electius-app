@@ -41,6 +41,7 @@ export function SignupForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pending, setPending] = useState(false);
+  const [terms, setTerms] = useState(false);
   const [invalid, setInvalid] = useState<Partial<Record<Field, boolean>>>({});
   // Non-null once registration succeeded — swaps the form for the inbox panel.
   const [sentTo, setSentTo] = useState<string | null>(null);
@@ -51,6 +52,10 @@ export function SignupForm() {
       email: z.email({ error: t("errors.email") }),
       password: z.string().min(8, { error: t("errors.tooShort") }),
       confirmPassword: z.string(),
+      // Vrata, ne obavijest: tekst kvačice izričito kaže „prihvaćam", pa mora
+      // biti i zapisano. Poslužitelj isto provjerava (api/auth/register) — ovo
+      // je samo poruka na vrijeme.
+      terms: z.literal(true, { error: t("errors.terms") }),
     })
     .refine((d) => d.password === d.confirmPassword, {
       error: t("errors.mismatch"),
@@ -64,6 +69,7 @@ export function SignupForm() {
       email,
       password,
       confirmPassword,
+      terms,
     });
     if (!parsed.success) {
       const bad: Partial<Record<Field, boolean>> = {};
@@ -80,7 +86,14 @@ export function SignupForm() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, email, password, confirmPassword, locale }),
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          confirmPassword,
+          locale,
+          terms,
+        }),
       });
       const data = (await res.json().catch(() => null)) as {
         error?: string;
@@ -205,40 +218,46 @@ export function SignupForm() {
           />
         </div>
 
-        {/* Kvačice o uvjetima ovdje NEMA, i to je promjena, ne propust.
-            Stajala je do 2026-09-12 i bila je prepreka u sučelju, a ne zapis o
-            pristanku: `terms` se provjeravao samo u pregledniku i nije se slao
-            u tijelu zahtjeva, pa ga nijedan stupac nije primao. Gore od toga,
-            Googleov gumb stoji IZNAD obrasca i tu kvačicu ne čita, pa je jedina
-            vrata koja je proizvod imao zaobilazio istaknutiji put.
+        {/* Vrata, i zapis. Kvačica je ovdje od 2026-09-12: tekst izričito
+            kaže „prihvaćam", pa se pristanak i bilježi — /api/auth/register ga
+            provjerava i upisuje u User.termsAcceptedAt + termsVersion. Do
+            v0.9.65 je ovdje stajala kvačica koja NIJE ostavljala trag (`terms`
+            se provjeravao samo u pregledniku i nije se slao u tijelu zahtjeva);
+            to je greška koja se ne smije vratiti — potvrda pristanka na mjestu
+            gdje je ništa ne zapisuje nije dokaz ni o čemu.
 
-            Pristanak se sada traži na /setup, kroz koji prolaze oba načina
-            prijave i na kojem organizacija — druga strana ugovora — tek
-            nastaje, pa se ondje i zapisuje (terms-of-service-spec D2). Uvjeti i
-            pravila privatnosti ostaju dohvatljivi odavde, u podnožju zaslona.
+            ⚠ Ovo NE pokriva Google: taj gumb stoji IZNAD obrasca i stanje
+            obrasca ne čita. Zato /setup i dalje pita svakoga tko ovdje nema
+            zapis, a za one koji ga imaju samo prepisuje datum i inačicu na
+            organizaciju. Organizacija ostaje stranka ugovora (§1 uvjeta) —
+            ovo je zapis da je osoba koja je otvorila račun uvjete potvrdila.
 
-            Obavijest o privatnosti ostaje ovdje: dugujemo je po čl. 13. GDPR-a i
-            ispunjava se time što je dostupna, ne time što je netko potvrdi. */}
-        {/* Obavijest, ne vrata. Kaže da uvjeti postoje i vodi na njih, ali NE
-            tvrdi da je ugovor sklopljen ovdje: stranka je organizacija, koja u
-            ovom trenutku još ne postoji, pa se pristanak traži i bilježi na
-            /setup (§1 uvjeta). Tvrdnja „registracijom prihvaćate" bila bi
-            blaža inačica iste greške koju je ova grana uklonila — potvrda
-            pristanka na mjestu gdje je ništa ne zapisuje. */}
-        <p className="text-[0.8125rem] leading-normal text-neutral-600">
-          {t.rich("termsNote", {
-            terms: (chunks) => (
-              <a
-                href={termsUrl()}
-                target="_blank"
-                rel="noreferrer"
-                className="text-brand-700 hover:underline"
-              >
-                {chunks}
-              </a>
-            ),
-          })}
-        </p>
+            Pravila privatnosti stoje ISPOD kvačice, izvan vrata: obavijest iz
+            čl. 13. GDPR-a ispunjava se time što je dostupna, a spajanje s
+            ugovorom u jednu obveznu kvačicu Smjernice EDPB-a 05/2020 smatraju
+            nevaljanom privolom. */}
+        <label className="flex items-start gap-2 text-sm leading-normal text-neutral-950">
+          <input
+            type="checkbox"
+            checked={terms}
+            onChange={(e) => setTerms(e.target.checked)}
+            className="mt-0.75 size-4 shrink-0 accent-brand-700"
+          />
+          <span>
+            {t.rich("terms", {
+              terms: (chunks) => (
+                <a
+                  href={termsUrl()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-brand-700 hover:underline"
+                >
+                  {chunks}
+                </a>
+              ),
+            })}
+          </span>
+        </label>
 
         <p className="-mt-3 text-[0.8125rem] leading-normal text-neutral-600">
           {t.rich("privacyNote", {

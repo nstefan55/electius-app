@@ -18,6 +18,7 @@ export default async function SetupPage() {
   const admin = await prisma.user.findUnique({
     where: { id: session.user.id },
     select: {
+      termsAcceptedAt: true,
       organization: {
         select: { name: true, type: true, termsAcceptedAt: true },
       },
@@ -33,7 +34,15 @@ export default async function SetupPage() {
       initialLastName={rest.join(" ")}
       initialOrganizationName={admin?.organization?.name ?? ""}
       initialOrganizationType={admin?.organization?.type ?? ""}
-      termsAccepted={admin?.organization?.termsAcceptedAt != null}
+      // Kvačica se skriva čim pristanak POSTOJI — na organizaciji ili na
+      // korisniku. Korisnikov zapis nastaje na registraciji (v0.9.69), pa
+      // e-mail put ovdje više ništa ne potvrđuje; completeSetup samo prepiše
+      // njegov datum na organizaciju. Ostaje vidljiva Googleovu putu, koji
+      // kvačicu na registraciji ne prolazi — vidi komentar u actions/setup.ts.
+      termsAccepted={
+        admin?.organization?.termsAcceptedAt != null ||
+        admin?.termsAcceptedAt != null
+      }
     />
   );
 }

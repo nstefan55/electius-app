@@ -151,6 +151,17 @@ model User {
   // bi tražio migraciju za svaki novi jezik. Isti oblik kao Election.reportLocale.
   locale String @default("hr")
 
+  // Pristanak na uvjete, zabilježen na REGISTRACIJI. Organizacija ostaje
+  // stranka ugovora i njezin zapis (Organization.termsAcceptedAt) je onaj koji
+  // obvezuje — ovo je zapis da je OSOBA koja je otvorila račun uvjete potvrdila,
+  // pa ga /setup prepisuje na organizaciju umjesto da pita drugi put.
+  //
+  // Ostaje nullable zato što Googleov put ovuda ne prolazi: taj gumb stoji iznad
+  // obrasca i ne čita kvačicu, pa /setup i dalje pita svakoga tko ovdje nema
+  // zapis. Prazan stupac je signal „nije pitano”, a ne kvar.
+  termsAcceptedAt DateTime?
+  termsVersion    String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

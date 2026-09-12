@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { APIError } from "better-auth/api";
 import * as z from "zod";
 import { auth, emailVerificationEnabled } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { TERMS_VERSION } from "@/lib/legal";
 import { routing } from "@/i18n/routing";
 
 // Length caps only — email format and password policy (8–128) are BetterAuth's
@@ -13,6 +15,10 @@ const registerSchema = z.object({
   password: z.string().max(128),
   confirmPassword: z.string().max(128),
   locale: z.unknown().optional(),
+  // Samo zastavica. Datum i inačicu odlučuje poslužitelj (dolje), nikad
+  // klijent — inače bi izravan POST mogao sam sebi potpisati raniji pristanak
+  // ili pristanak na stariju inačicu uvjeta.
+  terms: z.boolean().optional(),
 });
 
 // Registration endpoint (auth-phase-3-spec). A thin wrapper over BetterAuth's
@@ -45,12 +51,21 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  const { name, email, password, confirmPassword, locale } = parsed.data;
+  const { name, email, password, confirmPassword, locale, terms } = parsed.data;
   const safeLocale =
     routing.locales.find((l) => l === locale) ?? routing.defaultLocale;
   if (password !== confirmPassword) {
     return NextResponse.json(
       { success: false, error: "password_mismatch" },
+      { status: 400 },
+    );
+  }
+  // Prije stvaranja korisnika, ne poslije: račun bez pristanka ne smije nastati
+  // ovim putem. Provjera je OVDJE, a ne samo u pregledniku — do v0.9.65 je
+  // kvačica postojala samo u sučelju, nije se ni slala, i zato nije bila vrata.
+  if (terms !== true) {
+    return NextResponse.json(
+      { success: false, error: "terms_required" },
       { status: 400 },
     );
   }
@@ -75,6 +90,22 @@ export async function POST(request: NextRequest) {
       },
       returnHeaders: true,
     });
+
+    // Zapis pristanka. Namjerno NAKON signUpEmail i namjerno NE preko
+    // user.additionalFields: ono je zapisivo izravnim POST-om na
+    // /sign-up/email, pa bi klijent mogao poslati vlastiti datum i inačicu.
+    // Ovako vrijednosti dolaze s poslužitelja, a račun nastao zaobilaznim
+    // putem ostaje bez zapisa — i /setup ga tada pita, što je siguran smjer.
+    try {
+      await prisma.user.update({
+        where: { id: response.user.id },
+        data: { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION },
+      });
+    } catch (e) {
+      // Račun je stvoren; neuspjeh zapisa ne smije srušiti registraciju.
+      // /setup će pristanak zatražiti ponovno, kao i za Googleov put.
+      console.error("[register] terms acceptance not recorded", e);
+    }
 
     const res = NextResponse.json(
       {

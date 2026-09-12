@@ -40,34 +40,58 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
       where: { id: session.user.id },
       select: {
         organizationId: true,
+        termsAcceptedAt: true,
+        termsVersion: true,
         organization: { select: { termsAcceptedAt: true } },
       },
     });
     if (!admin) return { success: false, error: "unauthorized" };
 
-    // Pristanak na uvjete (terms-of-service-spec D2). OVDJE, a ne na
-    // registraciji: ovo je jedini put kojim prolaze oba načina prijave —
-    // Googleov callback slijeće ovamo, e-mail put dolazi nakon OTP-a, a
-    // requireSession() ovamo vraća svaki račun bez organizacije. Prije ovoga
-    // je jedina kvačica u proizvodu bila zaobilazna klikom na istaknutiji
-    // gumb.
+    // Pristanak na uvjete (terms-of-service-spec D2). Organizacija je stranka
+    // ugovora i ovdje tek nastaje, pa njezin zapis obvezuje — ali se pristanak
+    // od v0.9.69 traži već na registraciji, gdje ga i zapisujemo na korisnika.
     //
-    // Traži se samo dok zapisa nema. Povratak na /setup je uređivanje profila;
-    // ponovno traženje pristanka na nepromijenjene uvjete bilo bi trenje bez
-    // zapisa, a zapis se ionako ne bi promijenio.
-    const accepted = admin.organization?.termsAcceptedAt ?? null;
-    const acceptsNow = accepted === null;
+    // Zato ovdje postoje TRI slučaja, ne dva:
+    //   1. organizacija već ima zapis  → ništa; povratak na /setup je uređivanje
+    //      profila, a ponovno pitanje ne bi promijenilo zapis.
+    //   2. organizacija nema, korisnik ima → PREPIŠI korisnikov datum i inačicu.
+    //      Ovuda prolazi e-mail put: kvačica je već bila na registraciji, pa
+    //      bi drugo pitanje bilo trenje bez ijednog novog podatka. Prepisuje se
+    //      izvorni datum, ne današnji — zapis mora reći KADA se pristalo.
+    //   3. ni jedno ni drugo → pitaj. ⚠ Ovuda prolazi GOOGLE: taj gumb stoji
+    //      iznad obrasca za registraciju i njegovu kvačicu ne čita, pa je ovo
+    //      jedina vrata koja mu preostaju. Bez ovog slučaja Google put ne bi
+    //      pristao nigdje.
+    const orgAccepted = admin.organization?.termsAcceptedAt ?? null;
+    // `?? null` nije ukras: nedostajuće polje je `undefined`, a `undefined ===
+    // null` je false — bez normalizacije bi se račun bez zapisa čitao kao da
+    // zapis IMA i kvačica se ne bi tražila nikome.
+    const userAccepted = admin.termsAcceptedAt ?? null;
+    const acceptsNow = orgAccepted === null && userAccepted === null;
     if (acceptsNow && terms !== true) return { success: false, error: "terms" };
+
     // Inačica se zapisuje uz vrijeme, jer §Q obećava obavijest prije izmjene:
     // bez nje je to obećanje neprovjerljivo.
-    const acceptance = acceptsNow
+    const stampUser = acceptsNow
       ? { termsAcceptedAt: new Date(), termsVersion: TERMS_VERSION }
       : {};
+    const acceptance =
+      orgAccepted !== null
+        ? {}
+        : userAccepted !== null
+          ? { termsAcceptedAt: userAccepted, termsVersion: admin.termsVersion }
+          : stampUser;
 
     if (admin.organizationId) {
       // Revisit — refresh the profile + org in place, never create a second org.
       await prisma.$transaction([
-        prisma.user.update({ where: { id: session.user.id }, data: { name } }),
+        // stampUser je prazan osim u slučaju 3 (Google): osoba koja je ovdje
+        // kliknula kvačicu dobiva i vlastiti zapis, pa je „tko je pristao"
+        // odgovorivo bez čitanja organizacije.
+        prisma.user.update({
+          where: { id: session.user.id },
+          data: { name, ...stampUser },
+        }),
         prisma.organization.update({
           where: { id: admin.organizationId },
           data: {
@@ -83,6 +107,7 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
         where: { id: session.user.id },
         data: {
           name,
+          ...stampUser,
           organization: {
             create: {
               name: organizationName,
