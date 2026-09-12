@@ -53,6 +53,12 @@ export const confirmDeletionUrl = (token: string) =>
 // revizije u arhivi — jedna definicija, da se dvije adrese ne raziđu.
 export const CONTACT_EMAIL = "contact@electius.com";
 
+// Podrška u korištenju. Odvojena od CONTACT_EMAIL namjerno: ta je adresa
+// pravna i revizijska (ispisuju je PDF izvještaj, modal revizije i uvjeti
+// korištenja), pa prijava nezakonitog sadržaja i pitanje „kako uvezem popis"
+// ne smiju dijeliti isti pretinac.
+export const SUPPORT_EMAIL = "support@electius.com";
+
 // Pravila privatnosti. ŽIVE NA APEXU (marketing grupa), a poveznice na njih
 // najčešće kreću s dashboard hosta — prijava, registracija, postavke — pa ovo
 // mora biti apsolutna, međuhostovska adresa. Relativni /privacy s dashboard
@@ -60,3 +66,9 @@ export const CONTACT_EMAIL = "contact@electius.com";
 // ne može se, jer se ta lista prelijeva u DASHBOARD_ONLY_PATHS pa bi apeks
 // preusmjeravao vlastitu stranicu.
 export const privacyUrl = () => `${APEX}/privacy`;
+
+// Uvjeti korištenja. Isti host i isti razlog kao privacyUrl iznad: apeks,
+// apsolutno. Ugovor je, za razliku od pravila privatnosti, dokument NA KOJI SE
+// PRISTAJE — kvačicu tražimo na /setup, pa poveznica mora raditi s dashboard
+// hosta u trenutku kad sesija postoji, ali organizacija još ne.
+export const termsUrl = () => `${APEX}/terms`;

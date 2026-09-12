@@ -213,7 +213,6 @@
         "passwordHelper": "Use 8 or more characters.",
         "confirmPassword": "Confirm password",
         "confirmPasswordPlaceholder": "Repeat your password",
-        "terms": "I agree to the <terms>Terms of service</terms>.",
         "privacyNote": "We handle your data as described in our <privacy>Privacy policy</privacy>.",
         "submit": "Create account",
         "otp": {
@@ -237,7 +236,6 @@
         "errors": {
           "name": "Enter your full name.",
           "email": "Enter a valid email address.",
-          "terms": "Accept the terms to continue.",
           "mismatch": "Passwords do not match.",
           "exists": "An account with that email already exists.",
           "tooShort": "Password must be at least 8 characters.",
@@ -266,6 +264,8 @@
         "organizationHelper": "Shown to voters on every ballot and invitation.",
         "organizationType": "Organization type",
         "organizationTypePlaceholder": "Select type",
+        "terms": "I accept the <terms>Terms of service</terms> on behalf of my organization.",
+        "privacyNote": "We handle your data as described in our <privacy>Privacy policy</privacy>. That is a notice, not something you agree to.",
         "types": {
           "UNIVERSITY": "University or school",
           "COMPANY": "Company",
@@ -382,6 +382,8 @@
       "title": "Home",
       "newElection": "New election",
       "footerText": "Voters authenticate via one-time magic links. The system never associates a voter with their ballot.",
+      "legalPrivacy": "Privacy policy",
+      "legalTerms": "Terms of service",
       "stats": {
         "activeElections": "Active elections",
         "activeElectionsHint": "Currently open for voting",
@@ -1849,6 +1851,7 @@
       "security": "Security",
       "verifiability": "Verifiability",
       "privacy": "Privacy",
+      "terms": "Terms of service",
       "compliance": "Compliance",
       "contact": "Contact",
       "copyright": "© 2026 Electius. All rights reserved.",
@@ -2383,6 +2386,262 @@
             "We do not know how you voted and cannot find out. That you voted is visible to your organization.",
             "Send questions and requests — rectification, erasure, objection — to the organization running the election. If you contact us, we will refer you to it.",
             "This policy is not the notice that organization owes you under Art. 14 GDPR. That notice has to come from them."
+          ]
+        }
+      }
+    },
+    "terms": {
+      "meta": {
+        "title": "Terms of service",
+        "description": "The agreement between Electius and the organization running elections through it: what the service is and is not, usage limits, payment and cancellation, who is responsible for an election's validity, and governing law."
+      },
+      "eyebrow": "Legal",
+      "title": "Terms of service",
+      "updated": "Last updated: 12 September 2026.",
+      "version": "Document version: {version}",
+      "draft": {
+        "title": "Document in preparation for publication",
+        "body": "Electius has not launched yet and the legal entity that will be the other contracting party is not yet registered — and a contract with an unnamed party is not a contract. Everything else describes how the application actually works today: every limit, period and billing behaviour was read off the code. The provider details in the first section will be completed before publication, and a lawyer reviews the document before then."
+      },
+      "intro": "This is an agreement between Electius and the organization running elections through it. It is written for the admin — the person who creates the account and runs elections on their organization's behalf. If you are a voter who received a voting link, you are not a party to this agreement; what that means is set out in “For voters” at the bottom of this page.",
+      "tocTitle": "Contents",
+      "s": {
+        "agreement": {
+          "title": "The agreement and the parties",
+          "body": [
+            "These terms govern the use of Electius. They are made between the provider and the organization on whose behalf you create the account — a university, a union, a company, an association or another organization. The party is the organization, not you personally.",
+            "By accepting these terms you confirm that you are authorised to bind that organization. If you are not, do not continue.",
+            "Acceptance is given on the account setup screen, at the moment the organization comes into existence, and is recorded together with the date and the version of these terms."
+          ],
+          "entityLabel": "Provider",
+          "entity": "[legal entity name — to be completed before publication]",
+          "addressLabel": "Address",
+          "address": "[registered address — to be completed before publication]",
+          "note": "Today an organization has exactly one admin: elections can only be deleted by the account that created them, and account deletion is refused outright if an organization has more than one admin. Additional admin seats are planned but do not exist yet — do not rely on being able to hand the account to someone else."
+        },
+        "service": {
+          "title": "What the service is",
+          "body": [
+            "Electius lets an organization run an internal election end to end: build a ballot, import a voter roster, send each voter a single-use link, collect anonymous ballots, publish a tally and seal a tamper-evident archive. Voters need no account.",
+            "Electius is a tool the organization operates. It is not an election authority and it does not certify elections — see “The election is yours”."
+          ],
+          "limitsCaption": "Usage limits",
+          "limitsHead": [
+            "Limit",
+            "Value"
+          ],
+          "limits": [
+            [
+              "Voters per election — Free plan",
+              "50"
+            ],
+            [
+              "Voters per election — Pro",
+              "500"
+            ],
+            [
+              "Number of elections",
+              "Unlimited on every plan"
+            ],
+            [
+              "Sign-in attempts",
+              "5 per 15 minutes"
+            ],
+            [
+              "Registration",
+              "3 per hour per IP address"
+            ],
+            [
+              "Casting a ballot",
+              "30 per 15 minutes per IP address"
+            ],
+            [
+              "Roster and results export",
+              "10 per 15 minutes per account"
+            ],
+            [
+              "PDF report generation",
+              "10 per 15 minutes"
+            ],
+            [
+              "Whole-organization data export",
+              "3 per hour"
+            ],
+            [
+              "Image upload (logo and avatar share one window)",
+              "20 per 15 minutes"
+            ]
+          ],
+          "after": [
+            "The voter cap is per election, not per organization, and the number of elections is unlimited on every plan.",
+            "The rate limits protect the service and other customers from overload; they are not a penalty. If you reach one, wait out the stated period. The ballot limit is counted per IP address and is deliberately generous, because an entire university may well vote from one network."
+          ]
+        },
+        "eligibility": {
+          "title": "Who may use the service",
+          "body": [
+            "To create an account you must be at least 16 and be creating it for a real organization you are authorised to represent.",
+            "Who is eligible to vote in a given election is decided by your organization, not by us. Voters may be under 16 — in a student-council election that is the rule rather than the exception — because a voter holds no account, accepts no terms and contracts for nothing."
+          ]
+        },
+        "accounts": {
+          "title": "Accounts",
+          "body": [
+            "The details you enter when creating an account must be accurate. Keeping your password safe, and everything done through your account, is your responsibility.",
+            "If you suspect someone else has reached your account, tell us immediately at the address in “Contact”.",
+            "Voters never hold an account. They vote through a single-use link sent by email, and there is no screen on which a voter signs in."
+          ]
+        },
+        "use": {
+          "title": "Acceptable use",
+          "body": [
+            "You confirm that every address on a voter roster belongs to a person your organization is entitled to contact about this election, that you obtained it lawfully, and that the person is eligible to take part in that election.",
+            "This is not a formality, which is why it comes first. Electius sends from its own verified domain, so one purchased or scraped list damages not only your election but the sending reputation every other organization depends on — and in this product that means voters whose voting link lands in spam and who therefore cannot vote.",
+            "You may not:"
+          ],
+          "bullets": [
+            "use a voter roster for any mail other than mail about that election;",
+            "access the service in an automated way beyond normal use, or work around the limits in “What the service is”;",
+            "attempt to break ballot secrecy — correlating votes with voters, or reconstructing a roster from published results;",
+            "submit a roster you have no authority over, or otherwise impersonate another organization or its electorate;",
+            "publish unlawful content, content that infringes someone's rights, harasses or misleads;",
+            "undermine the security or availability of the service, for yourself or for anyone else."
+          ],
+          "after": [
+            "We reserve the right to restrict or end access for a breach of this section. We do not promise a response time or an appeals process: enforcement is manual and carried out by one person, so any commitment to a deadline would be one we could not keep."
+          ]
+        },
+        "content": {
+          "title": "Your content and ours",
+          "body": [
+            "Election titles and descriptions, candidate names and roles, voter rosters and logos you upload remain yours. You give us only what the service needs in order to work: the right to store, process and display them within your elections.",
+            "We do not publish your content, do not sell it and do not use it to train artificial-intelligence models. Electius has no AI feature and no AI subprocessor.",
+            "A cast ballot is nobody's content. There is no link in the database between a vote and a voter — that is a property of the schema, not a setting — so once a ballot is cast there is no operation that would return it to a person: not at your request, and not at the voter's.",
+            "The software, the Electius name, the mark, the interface, the report template and the implementation of the sealing algorithm are ours. These terms grant no right to copy or redistribute them.",
+            "If you publish results, the results page is reachable by anyone who knows its address. We do not index it and we keep the election title out of its metadata, but the address contains the same election identifier printed on the voting QR code, so it cannot be revoked without revoking the voting link too. Publication is off until you turn it on, and is only possible once the election has closed."
+          ]
+        },
+        "election": {
+          "title": "The election is yours",
+          "body": [
+            "Electius runs a process. It does not certify that the process satisfies your organization's own rules.",
+            "You decide who is eligible and you assemble the roster.",
+            "You decide whether the outcome is valid under your statutes or other internal rules — including notice and convocation periods, any secret-ballot requirement, and whether electronic voting is permitted at all.",
+            "The quorum threshold is a number you enter. Electius computes against it and reports whether it was met; it does not judge whether that number is the right one.",
+            "The cryptographic seal evidences that the recorded result has not been altered since sealing. It does not evidence that the election was properly convened, that the electorate was correct, or that the outcome is legally binding. Integrity of the record and legitimacy of the election are two different things, and we guarantee only the first."
+          ]
+        },
+        "payment": {
+          "title": "Plans, payment and cancellation",
+          "body": [
+            "Billing is not switched on yet: every account is on the free plan today and nothing is charged. This section describes the terms that will apply once billing is available.",
+            "Pro costs €9 per month or €86 per year, which is €7.20 per month billed annually.",
+            "The trial lasts 14 days and asks for no card.",
+            "If you do not add a payment method before the trial ends, the subscription is cancelled — not charged. The first payment is always a deliberate act on your part.",
+            "After that the subscription renews automatically for the same term until you cancel.",
+            "Cancellation is self-serve, in the Stripe billing portal, and takes effect at the end of the paid period. Access continues until then.",
+            "If a payment fails, access is kept while Stripe retries. A card that has expired must not cut an election short mid-vote.",
+            "There is no overage billing. When you reach the voter cap the write is refused — nothing is charged quietly.",
+            "The whole-organization data export is self-serve, free and available at any time.",
+            "We do not refund a part-used period: cancelling stops the next renewal, and access runs to the end of the period you paid for.",
+            "If you are contracting as a consumer rather than in the course of a business, you have rights that these terms cannot exclude — including the right to withdraw from a distance contract within the statutory period. Those rights take precedence over the preceding paragraph."
+          ]
+        },
+        "availability": {
+          "title": "Availability",
+          "body": [
+            "The service is provided without an availability commitment. There is no uptime guarantee, no service credits and no announced maintenance window, on either the free or the Pro plan.",
+            "For this product that matters more than for most. An election closes at its scheduled time whether or not the page was reachable, and a voter who could not open it has no second chance. If your election is one where a few hours of downtime would put the result in question, keep the voting window wide enough to absorb an interruption, and check that your own rules allow the vote to be extended or re-run."
+          ]
+        },
+        "thirdparty": {
+          "title": "Third-party services",
+          "body": [
+            "Electius relies on external providers for the database, server infrastructure, email delivery, file storage and billing. The list is set out in the privacy policy and maintained there — one list, so that two cannot drift apart.",
+            "Those providers' own terms apply to them as well. We give advance notice of a change of subprocessor, as stated in the privacy policy."
+          ]
+        },
+        "termination": {
+          "title": "Termination",
+          "body": [
+            "You may cancel the subscription at any time, effective at the end of the paid period, or delete the account, effective immediately.",
+            "We may restrict or end access for a breach of “Acceptable use”, for non-payment once Stripe has exhausted its retries, or where the law requires it.",
+            "Deleting the account permanently destroys every election, voter roster, ballot and sealed archive belonging to your organization. There is no grace period, no post-termination access and no way back. Export first — the export is free and takes seconds.",
+            "The disclaimers, the limitation of liability, the indemnity, the roster warranty and the governing-law clause survive termination."
+          ]
+        },
+        "disclaimers": {
+          "title": "Disclaimers",
+          "body": [
+            "The service is provided as it is, to the extent the applicable law allows. Specifically, we do not warrant:"
+          ],
+          "bullets": [
+            "that it will run uninterrupted or free of errors;",
+            "that it meets the requirements of your organization's statutes or other rules — that is your assessment, as set out in “The election is yours”;",
+            "that every email will be delivered."
+          ],
+          "after": [
+            "The last one deserves an explanation, because it is the likeliest cause of trouble in an election. We hand the message to our sending provider; the recipient's mail server may still reject it, delay it or file it as spam, and that is not within our control. What we can do, and do, is show you which address was refused, flagged on the voter roster. We promise sending, not delivery."
+          ]
+        },
+        "liability": {
+          "title": "Limitation of liability",
+          "body": [
+            "We are not liable for indirect or consequential loss, including lost profits, loss of reputation, and loss of data arising outside our control.",
+            "For direct loss, our total liability is limited to the fees actually paid to Electius in the twelve months preceding the event giving rise to the claim.",
+            "The limit does not apply to death or personal injury, to fraud or wilful misconduct, or to anything else that cannot be limited under the applicable law.",
+            "If you are on the free plan that amount is zero, so liability comes down to the exceptions listed above. We say so plainly, because it is not visible from the formula itself.",
+            "If the law that applies to you does not allow one of these exclusions, it applies only to the extent permitted."
+          ]
+        },
+        "indemnity": {
+          "title": "Indemnity",
+          "body": [
+            "You will indemnify Electius against third-party claims arising from a voter roster you submitted or from the validity of an election you ran. Those are the two things you control completely and we do not control at all."
+          ]
+        },
+        "notice": {
+          "title": "Reporting unlawful content",
+          "body": [
+            "If you believe content published through Electius is unlawful or infringes your rights — a results page naming you, say, or a logo uploaded without permission — tell us at the address in “Contact”. Describe the content, give its address, and explain why you consider it unlawful.",
+            "We will confirm that we received the report and tell you what we decided. What we can do is take down a public results page, disable an election, or close an account.",
+            "Reports are handled manually by one person, so we do not promise a response time."
+          ]
+        },
+        "law": {
+          "title": "Governing law and jurisdiction",
+          "body": [
+            "These terms are governed by the law of the Republic of Croatia, and the competent court in Zagreb has jurisdiction over disputes.",
+            "If you are contracting as a consumer, this does not affect your right to bring proceedings before the court of your own domicile, nor the protection given to you by the mandatory rules of the country where you live.",
+            "We do not agree to arbitration."
+          ]
+        },
+        "changes": {
+          "title": "Changes to these terms",
+          "body": [
+            "We will tell organization admins by email about any material change before it takes effect. A change comes with a new version identifier and a new date at the top of this page.",
+            "Continuing to use the service after a change takes effect means you accept the changed terms.",
+            "If you do not accept a change, you may cancel before it takes effect and it will not bind you. Cancellation is self-serve and does not require talking to us.",
+            "The same applies to a price change and to withdrawing a feature: we give at least 30 days' notice before a renewal at a new price, or before withdrawal.",
+            "Alongside your acceptance we record which version of the terms you accepted, so it is always possible to establish which terms bound your organization. Without that, everything above would be unverifiable."
+          ]
+        },
+        "contact": {
+          "title": "Contact",
+          "body": [
+            "For legal questions, reports of unlawful content and anything concerning these terms, write to:"
+          ],
+          "supportLabel": "For questions about using the service:",
+          "note": "One person answers, so we do not promise a response time."
+        },
+        "voters": {
+          "title": "For voters",
+          "body": [
+            "You are not a party to this agreement. You accept nothing and owe us nothing — no account, no password and no agreement to these terms is asked of you. This is notice, not terms.",
+            "The link you received is good for one election and one ballot, it expires, and it stops working once you have voted. If you get a reminder, it carries a new link and the previous one stops working — the most recent one you received is always the live one.",
+            "How you voted cannot be recovered: the record of a ballot carries no link back to you. That you voted is visible, because your organization has to know who has taken up their vote.",
+            "The election is run by your organization, not by Electius. It decides who is eligible, when voting happens and what the result means. Questions about the election itself go to them.",
+            "How we handle your data is explained in the privacy policy."
           ]
         }
       }

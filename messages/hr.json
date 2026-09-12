@@ -213,7 +213,6 @@
         "passwordHelper": "Koristite 8 ili više znakova.",
         "confirmPassword": "Potvrdite lozinku",
         "confirmPasswordPlaceholder": "Ponovite lozinku",
-        "terms": "Slažem se s <terms>Uvjetima korištenja</terms>.",
         "privacyNote": "Vaše podatke obrađujemo kako je opisano u <privacy>Pravilima privatnosti</privacy>.",
         "submit": "Otvori račun",
         "otp": {
@@ -237,7 +236,6 @@
         "errors": {
           "name": "Unesite ime i prezime.",
           "email": "Unesite ispravnu e-mail adresu.",
-          "terms": "Za nastavak prihvatite uvjete korištenja.",
           "mismatch": "Lozinke se ne podudaraju.",
           "exists": "Račun s tom e-mail adresom već postoji.",
           "tooShort": "Lozinka mora imati najmanje 8 znakova.",
@@ -266,6 +264,8 @@
         "organizationHelper": "Prikazuje se biračima na svakom listiću i pozivnici.",
         "organizationType": "Vrsta organizacije",
         "organizationTypePlaceholder": "Odaberite vrstu",
+        "terms": "Prihvaćam <terms>Uvjete korištenja</terms> u ime svoje organizacije.",
+        "privacyNote": "Vaše podatke obrađujemo kako je opisano u <privacy>Pravilima privatnosti</privacy>. To je obavijest, ne nešto na što pristajete.",
         "types": {
           "UNIVERSITY": "Sveučilište ili škola",
           "COMPANY": "Tvrtka",
@@ -382,6 +382,8 @@
       "title": "Početna",
       "newElection": "Novi izbor",
       "footerText": "Glasači se autentificiraju putem jednokratnih magičnih veza. Sustav nikada ne povezuje glasača s njihovim glasom.",
+      "legalPrivacy": "Pravila privatnosti",
+      "legalTerms": "Uvjeti korištenja",
       "stats": {
         "activeElections": "Aktivni izbori",
         "activeElectionsHint": "Trenutno otvoreni za glasovanje",
@@ -1849,6 +1851,7 @@
       "security": "Sigurnost",
       "verifiability": "Provjerljivost",
       "privacy": "Privatnost",
+      "terms": "Uvjeti korištenja",
       "compliance": "Usklađenost",
       "contact": "Kontakt",
       "copyright": "© 2026 Electius. Sva prava pridržana.",
@@ -2383,6 +2386,262 @@
             "Kako ste glasali ne znamo i ne možemo saznati. Da ste glasali vidi vaša organizacija.",
             "Pitanja i zahtjeve — ispravak, brisanje, prigovor — uputite organizaciji koja provodi izbore. Ako se obratite nama, proslijedit ćemo vas njoj.",
             "Ova pravila nisu obavijest koju vam ta organizacija duguje po čl. 14. GDPR-a. Nju vam mora dati ona."
+          ]
+        }
+      }
+    },
+    "terms": {
+      "meta": {
+        "title": "Uvjeti korištenja",
+        "description": "Ugovor između Electiusa i organizacije koja njime provodi izbore: što usluga jest i što nije, ograničenja korištenja, plaćanje i otkaz, tko odgovara za valjanost izbora i mjerodavno pravo."
+      },
+      "eyebrow": "Pravni dokumenti",
+      "title": "Uvjeti korištenja",
+      "updated": "Zadnja izmjena: 12. rujna 2026.",
+      "version": "Inačica dokumenta: {version}",
+      "draft": {
+        "title": "Dokument u pripremi za objavu",
+        "body": "Electius još nije pokrenut i pravna osoba koja će biti druga ugovorna strana još nije registrirana — a ugovor bez imenovane stranke nije ugovor. Sve ostalo opisuje kako aplikacija stvarno radi danas: svako ograničenje, rok i ponašanje naplate očitani su iz koda. Podaci o pružatelju u prvom odjeljku dopunit će se prije objave, a dokument prije toga pregledava odvjetnik."
+      },
+      "intro": "Ovo je ugovor između Electiusa i organizacije koja putem njega provodi izbore. Pisan je za administratora — osobu koja otvara račun i vodi izbore u ime svoje organizacije. Ako ste birač koji je dobio poveznicu za glasovanje, vi niste stranka ovog ugovora; što to znači piše u odjeljku „Za birače” na dnu stranice.",
+      "tocTitle": "Sadržaj",
+      "s": {
+        "agreement": {
+          "title": "Ugovor i stranke",
+          "body": [
+            "Ovi uvjeti uređuju korištenje Electiusa. Sklapaju se između pružatelja usluge i organizacije u čije ime otvarate račun — sveučilišta, sindikata, trgovačkog društva, udruge ili druge organizacije. Stranka ugovora je organizacija, a ne vi osobno.",
+            "Prihvaćanjem uvjeta potvrđujete da ste ovlašteni obvezati tu organizaciju. Ako niste, nemojte nastaviti.",
+            "Pristanak se daje na zaslonu za postavljanje računa, u trenutku u kojem organizacija nastaje, i bilježi se zajedno s datumom i inačicom ovih uvjeta."
+          ],
+          "entityLabel": "Pružatelj usluge",
+          "entity": "[naziv pravne osobe — dopunjuje se prije objave]",
+          "addressLabel": "Adresa",
+          "address": "[adresa sjedišta — dopunjuje se prije objave]",
+          "note": "Danas organizacija ima točno jednog administratora: izbore može brisati samo račun koji ih je stvorio, a brisanje računa odbija se ako organizacija ima više administratora. Dodatna administratorska mjesta planirana su, ali ih još nema — ne oslanjajte se na predaju računa drugoj osobi."
+        },
+        "service": {
+          "title": "Što je usluga",
+          "body": [
+            "Electius omogućuje organizaciji da provede interne izbore od početka do kraja: složi glasački listić, uveze popis birača, svakom biraču pošalje jednokratnu poveznicu, prikupi anonimne glasove, objavi rezultat i zapečati arhivu otpornu na neopaženu izmjenu. Biračima nije potreban račun.",
+            "Electius je alat kojim upravlja organizacija. Nije izborno povjerenstvo ni tijelo koje potvrđuje izbore — vidi odjeljak „Izbori su vaši”."
+          ],
+          "limitsCaption": "Ograničenja korištenja",
+          "limitsHead": [
+            "Ograničenje",
+            "Vrijednost"
+          ],
+          "limits": [
+            [
+              "Birači po izborima — Besplatni plan",
+              "50"
+            ],
+            [
+              "Birači po izborima — Pro",
+              "500"
+            ],
+            [
+              "Broj izbora",
+              "Neograničen na svim planovima"
+            ],
+            [
+              "Pokušaji prijave",
+              "5 u 15 minuta"
+            ],
+            [
+              "Registracija",
+              "3 na sat po IP adresi"
+            ],
+            [
+              "Predaja glasa",
+              "30 u 15 minuta po IP adresi"
+            ],
+            [
+              "Izvoz popisa birača i izvoz rezultata",
+              "10 u 15 minuta po računu"
+            ],
+            [
+              "Izrada PDF izvještaja",
+              "10 u 15 minuta"
+            ],
+            [
+              "Izvoz svih podataka organizacije",
+              "3 na sat"
+            ],
+            [
+              "Slanje slika (logotip i avatar dijele isti prozor)",
+              "20 u 15 minuta"
+            ]
+          ],
+          "after": [
+            "Broj birača ograničen je po izborima, a ne po organizaciji, a broj izbora nije ograničen ni na jednom planu.",
+            "Ograničenja učestalosti štite uslugu i ostale korisnike od preopterećenja; ona nisu kazna. Ako ih dosegnete, pričekajte navedeno razdoblje. Ograničenje predaje glasa računa se po IP adresi i namjerno je široko, jer cijelo sveučilište zna glasovati s iste mreže."
+          ]
+        },
+        "eligibility": {
+          "title": "Tko se smije koristiti uslugom",
+          "body": [
+            "Za otvaranje računa morate imati navršenih 16 godina i otvarati ga za stvarnu organizaciju koju ste ovlašteni predstavljati.",
+            "Tko ima pravo glasa na pojedinim izborima određuje vaša organizacija, ne mi. Birači mogu biti i mlađi od 16 godina — u izboru predstavnika učenika to je i pravilo, a ne iznimka — jer birač nema račun, ne prihvaća ove uvjete i ne ugovara ništa."
+          ]
+        },
+        "accounts": {
+          "title": "Račun",
+          "body": [
+            "Podaci koje unesete pri otvaranju računa moraju biti točni. Za čuvanje lozinke i za sve što se dogodi preko vašeg računa odgovarate vi.",
+            "Ako posumnjate da je netko drugi pristupio vašem računu, javite nam se odmah na adresu iz odjeljka „Kontakt”.",
+            "Birači nikada nemaju račun. Glasuju putem jednokratne poveznice koja im se šalje e-poštom i ne postoji zaslon na kojem bi se birač prijavio."
+          ]
+        },
+        "use": {
+          "title": "Dopušteno korištenje",
+          "body": [
+            "Jamčite da svaka adresa na popisu birača pripada osobi koju vaša organizacija ima pravo kontaktirati o tim izborima, da ste je pribavili zakonito i da ta osoba ima pravo sudjelovati u tim izborima.",
+            "To nije formalnost i zato stoji prva. Electius šalje s vlastite, verificirane domene, pa jedan kupljeni ili prikupljeni popis ne šteti samo vašim izborima nego ugledu pošiljatelja za sve ostale organizacije — a u ovom proizvodu to znači birače kojima poveznica za glasovanje završi u neželjenoj pošti i koji zbog toga ne mogu glasovati.",
+            "Nije dopušteno:"
+          ],
+          "bullets": [
+            "koristiti popis birača za bilo kakvu poštu osim one koja se odnosi na te izbore;",
+            "pristupati usluzi automatizirano izvan uobičajenog korištenja ili zaobilaziti ograničenja iz odjeljka „Što je usluga”;",
+            "pokušavati razotkriti tajnost glasovanja — povezivati glasove s biračima ili rekonstruirati popis birača iz objavljenih rezultata;",
+            "predati popis birača nad kojim nemate ovlast, odnosno predstavljati tuđu organizaciju ili njezino biračko tijelo;",
+            "objavljivati nezakonit sadržaj, sadržaj koji povređuje tuđa prava, uznemirava ili zavarava;",
+            "narušavati sigurnost ili dostupnost usluge, za sebe ili za druge."
+          ],
+          "after": [
+            "Pridržavamo pravo ograničiti ili ukinuti pristup zbog kršenja ovog odjeljka. Ne obećavamo rok postupanja ni postupak žalbe: provodi se ručno i provodi ga jedna osoba, pa bi svako obećanje o rokovima bilo obećanje koje ne možemo održati."
+          ]
+        },
+        "content": {
+          "title": "Vaš sadržaj i naš",
+          "body": [
+            "Nazivi i opisi izbora, imena i uloge kandidata, popisi birača i logotipi koje učitate ostaju vaši. Dajete nam samo ono što je potrebno da usluga radi: pravo da ih pohranimo, obradimo i prikažemo u okviru vaših izbora.",
+            "Vaš sadržaj ne objavljujemo, ne prodajemo i ne koristimo za treniranje modela umjetne inteligencije. Electius nema značajku umjetne inteligencije ni podizvršitelja obrade koji bi je pružao.",
+            "Predani glas nije ničiji sadržaj. U bazi ne postoji veza između glasa i birača — to je svojstvo same sheme, a ne postavka — pa nakon predaje ne postoji radnja kojom bi se glas vratio osobi: ni na vaš zahtjev, ni na biračev.",
+            "Softver, naziv Electius, znak, sučelje, predložak izvještaja i implementacija algoritma pečaćenja naši su. Ovi uvjeti ne daju pravo na njihovo umnožavanje ni distribuciju.",
+            "Ako objavite rezultate, stranica s rezultatima dostupna je svakome tko zna njezinu adresu. Ne indeksiramo je i naziv izbora ne stavljamo u njezine metapodatke, ali adresa sadrži istu oznaku izbora koja je otisnuta na QR kodu za glasovanje, pa je nije moguće poništiti a da se ne poništi i poveznica za glasovanje. Objava je isključena dok je sami ne uključite i moguća je tek nakon zatvaranja izbora."
+          ]
+        },
+        "election": {
+          "title": "Izbori su vaši",
+          "body": [
+            "Electius provodi postupak. Ne potvrđuje da taj postupak zadovoljava pravila vaše organizacije.",
+            "Vi određujete tko ima pravo glasa i sastavljate popis birača.",
+            "Vi ocjenjujete je li ishod valjan po vašem statutu ili drugim internim pravilima — uključujući rokove sazivanja i obavješćivanja, zahtjev tajnosti glasovanja i pitanje je li elektroničko glasovanje uopće dopušteno.",
+            "Prag kvoruma broj je koji vi unosite. Electius računa u odnosu na njega i javlja je li dosegnut; ne ocjenjuje je li taj broj ispravan.",
+            "Kriptografski pečat dokazuje da zabilježeni rezultat nije izmijenjen nakon pečaćenja. Ne dokazuje da su izbori uredno sazvani, da je biračko tijelo bilo ispravno ni da je ishod pravno obvezujuć. Integritet zapisa i legitimnost izbora dvije su različite stvari i mi jamčimo samo prvu."
+          ]
+        },
+        "payment": {
+          "title": "Planovi, plaćanje i otkaz",
+          "body": [
+            "Naplata još nije uključena: danas su svi računi na besplatnom planu i ništa se ne naplaćuje. Ovaj odjeljak opisuje uvjete koji će vrijediti kad naplata bude dostupna.",
+            "Pro plan stoji 9 € mjesečno ili 86 € godišnje, što je 7,20 € mjesečno uz godišnje plaćanje.",
+            "Probno razdoblje traje 14 dana i ne traži karticu.",
+            "Ako do isteka probnog razdoblja ne unesete način plaćanja, pretplata se otkazuje — ne naplaćuje. Prvo plaćanje uvijek je vaša namjerna radnja.",
+            "Pretplata se nakon toga automatski obnavlja za isto razdoblje dok je ne otkažete.",
+            "Otkaz je samouslužan, u Stripeovu portalu za naplatu, i djeluje na kraju plaćenog razdoblja. Pristup traje do tada.",
+            "Ako plaćanje ne uspije, pristup se zadržava dok Stripe ponavlja pokušaje naplate. Neispravna kartica ne smije prekinuti izbore usred glasovanja.",
+            "Naplate preko plana nema. Kad dosegnete ograničenje broja birača, upis se odbija — ništa se ne naplaćuje tiho.",
+            "Izvoz svih podataka organizacije samouslužan je, besplatan i dostupan u svakom trenutku.",
+            "Naknadu za započeto razdoblje ne vraćamo: otkaz zaustavlja sljedeću obnovu, a pristup traje do kraja plaćenog razdoblja.",
+            "Ako uslugu ugovarate kao potrošač, izvan svoje gospodarske ili profesionalne djelatnosti, imate prava koja se ovim uvjetima ne mogu isključiti — uključujući pravo na jednostrani raskid ugovora sklopljenog na daljinu u zakonskom roku. Ta prava imaju prednost pred prethodnim odlomkom."
+          ]
+        },
+        "availability": {
+          "title": "Dostupnost",
+          "body": [
+            "Usluga se pruža bez jamstva dostupnosti. Nema zajamčenog vremena rada, nema naknade za prekid i nema najavljenog termina održavanja, ni na besplatnom ni na Pro planu.",
+            "Za ovaj je proizvod to važnije nego za većinu. Izbori se zatvaraju u zakazano vrijeme bez obzira na to je li stranica bila dostupna, a birač koji je nije mogao otvoriti nema drugu priliku. Ako su vaši izbori takvi da bi nekoliko sati nedostupnosti dovelo rezultat u pitanje, ostavite razdoblje glasovanja dovoljno široko da apsorbira prekid i provjerite dopuštaju li vaša pravila produljenje ili ponavljanje glasovanja."
+          ]
+        },
+        "thirdparty": {
+          "title": "Usluge trećih strana",
+          "body": [
+            "Electius se oslanja na vanjske pružatelje za bazu podataka, poslužiteljsku infrastrukturu, slanje e-pošte, pohranu datoteka i naplatu. Popis je naveden u pravilima privatnosti i ondje se održava — jedan popis, da se dva ne raziđu.",
+            "Na te se pružatelje primjenjuju i njihovi vlastiti uvjeti. O promjeni podizvršitelja obrade obavještavamo unaprijed, kako je navedeno u pravilima privatnosti."
+          ]
+        },
+        "termination": {
+          "title": "Prestanak",
+          "body": [
+            "Vi u svakom trenutku možete otkazati pretplatu, s učinkom na kraju plaćenog razdoblja, ili obrisati račun, s trenutnim učinkom.",
+            "Mi možemo ograničiti ili ukinuti pristup zbog kršenja odjeljka „Dopušteno korištenje”, zbog neplaćanja nakon što Stripe iscrpi pokušaje naplate ili kada to nalaže propis.",
+            "Brisanje računa trajno uništava sve izbore, popise birača, glasove i zapečaćene arhive vaše organizacije. Nema razdoblja čekanja, nema pristupa nakon prestanka i nema povrata. Izvezite podatke prije brisanja — izvoz je besplatan i traje nekoliko sekundi.",
+            "Nakon prestanka i dalje vrijede odredbe o isključenju jamstava, ograničenju odgovornosti, naknadi štete, jamstvu o popisu birača i mjerodavnom pravu."
+          ]
+        },
+        "disclaimers": {
+          "title": "Isključenje jamstava",
+          "body": [
+            "Uslugu pružamo onakvu kakva jest, u granicama koje dopušta mjerodavno pravo. Konkretno, ne jamčimo:"
+          ],
+          "bullets": [
+            "da će raditi bez prekida i bez pogrešaka;",
+            "da zadovoljava zahtjeve statuta ili drugih pravila vaše organizacije — to je vaša ocjena, kako piše u odjeljku „Izbori su vaši”;",
+            "da će svaka poruka e-pošte biti isporučena."
+          ],
+          "after": [
+            "Posljednje zaslužuje objašnjenje jer je najvjerojatniji uzrok problema na izborima. Poruku predajemo pružatelju usluge slanja; poslužitelj primatelja je i dalje može odbiti, odgoditi ili označiti kao neželjenu, i to nije u našoj kontroli. Ono što možemo i radimo jest pokazati vam koja je adresa odbijena, označenu na popisu birača. Obećavamo slanje, ne isporuku."
+          ]
+        },
+        "liability": {
+          "title": "Ograničenje odgovornosti",
+          "body": [
+            "Ne odgovaramo za neizravnu i posljedičnu štetu, uključujući izmaklu dobit, gubitak ugleda i gubitak podataka nastao izvan naše kontrole.",
+            "Za izravnu štetu naša je ukupna odgovornost ograničena na iznos naknada koje ste Electiusu stvarno platili u dvanaest mjeseci koji prethode događaju iz kojega šteta proizlazi.",
+            "Ograničenje ne vrijedi za štetu zbog smrti ili tjelesne ozljede, za namjeru i prijevaru te za sve drugo što se prema mjerodavnom pravu ne može ograničiti.",
+            "Ako ste na besplatnom planu, taj je iznos nula, pa se odgovornost svodi na navedene iznimke. Kažemo to otvoreno jer se to ne vidi iz same formule.",
+            "Ako pravo koje se na vas primjenjuje ne dopušta neko od ovih isključenja, ono vrijedi samo u mjeri u kojoj je dopušteno."
+          ]
+        },
+        "indemnity": {
+          "title": "Naknada štete",
+          "body": [
+            "Obeštetit ćete Electius za zahtjeve trećih osoba koji proizlaze iz popisa birača koji ste predali ili iz valjanosti izbora koje ste proveli. To su dvije stvari nad kojima vi imate potpunu kontrolu, a mi nikakvu."
+          ]
+        },
+        "notice": {
+          "title": "Prijava nezakonitog sadržaja",
+          "body": [
+            "Ako smatrate da je sadržaj objavljen putem Electiusa nezakonit ili povređuje vaša prava — primjerice stranica s rezultatima koja vas imenuje ili logotip učitan bez prava — javite nam na adresu iz odjeljka „Kontakt”. Opišite sadržaj, navedite njegovu adresu i objasnite zašto smatrate da je sporan.",
+            "Potvrdit ćemo primitak prijave i obavijestiti vas o odluci. Ono što možemo učiniti jest ukloniti javnu stranicu s rezultatima, onemogućiti izbore ili zatvoriti račun.",
+            "Prijavu obrađuje jedna osoba ručno, pa rok postupanja ne obećavamo."
+          ]
+        },
+        "law": {
+          "title": "Mjerodavno pravo i nadležnost",
+          "body": [
+            "Na ove se uvjete primjenjuje pravo Republike Hrvatske, a za sporove je nadležan stvarno nadležni sud u Zagrebu.",
+            "Ako ugovarate kao potrošač, to ne dira u vaše pravo da postupak pokrenete pred sudom svojeg prebivališta ni u zaštitu koju vam daju prisilni propisi države u kojoj imate prebivalište.",
+            "Arbitražu ne ugovaramo."
+          ]
+        },
+        "changes": {
+          "title": "Izmjene uvjeta",
+          "body": [
+            "O svakoj bitnoj izmjeni obavijestit ćemo administratore organizacije e-poštom prije nego što izmjena stupi na snagu. Uz izmjenu idu nova oznaka inačice i novi datum na vrhu ove stranice.",
+            "Nastavak korištenja usluge nakon što izmjena stupi na snagu znači prihvaćanje izmijenjenih uvjeta.",
+            "Ako izmjenu ne prihvaćate, možete otkazati prije nego što stupi na snagu i tada vas ne obvezuje. Otkaz je samouslužan i ne traži razgovor s nama.",
+            "Isto vrijedi za promjenu cijene i za ukidanje značajke: najavljujemo ih najmanje 30 dana prije obnove po novoj cijeni, odnosno prije ukidanja.",
+            "Uz pristanak bilježimo i inačicu uvjeta koju ste prihvatili, pa je u svakom trenutku moguće utvrditi koji su uvjeti obvezivali vašu organizaciju. Bez toga bi sve gore navedeno bilo neprovjerljivo."
+          ]
+        },
+        "contact": {
+          "title": "Kontakt",
+          "body": [
+            "Za pravna pitanja, prijave nezakonitog sadržaja i sve što se tiče ovih uvjeta pišite nam na:"
+          ],
+          "supportLabel": "Za pitanja o korištenju usluge:",
+          "note": "Odgovara jedna osoba, pa rok odgovora ne obećavamo."
+        },
+        "voters": {
+          "title": "Za birače",
+          "body": [
+            "Vi niste stranka ovog ugovora. Ništa ne prihvaćate i ništa nam ne dugujete — od vas se ne traži račun, lozinka ni pristanak na ove uvjete. Ovo je obavijest, ne uvjeti.",
+            "Poveznica koju ste dobili vrijedi za jedne izbore i za jedan glas, ima rok i prestaje vrijediti nakon što glasujete. Ako dobijete podsjetnik, on nosi novu poveznicu, a prethodna prestaje vrijediti — radi uvijek ona posljednja koju ste primili.",
+            "Kako ste glasali nije moguće saznati: zapis o glasu ne sadrži vezu prema vama. Da ste glasali vidi se, jer vaša organizacija mora znati tko je preuzeo pravo glasa.",
+            "Izbore provodi vaša organizacija, ne Electius. Ona određuje tko ima pravo glasa, kada se glasuje i što rezultat znači. Pitanja o samim izborima uputite njoj.",
+            "Kako postupamo s vašim podacima objašnjeno je u pravilima privatnosti."
           ]
         }
       }

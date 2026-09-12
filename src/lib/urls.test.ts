@@ -43,6 +43,16 @@ describe("urls", () => {
     expect(privacyUrl()).not.toContain("dashboard.");
   });
 
+  it("points the terms at the APEX too, for the same coupling reason", async () => {
+    const { termsUrl } = await import("@/lib/urls");
+    // Ista jedna linija spregnutosti kao gore, ali s oštrijom posljedicom:
+    // kvačicu na uvjete tražimo na /setup, dakle NA DASHBOARD HOSTU. Relativna
+    // ili APP-ova adresa ondje 307-a na /login, pa bi korisnik s otvorenom
+    // sesijom kliknuo dokument na koji upravo pristaje i završio na prijavi.
+    expect(termsUrl()).toBe("https://electius.com/terms");
+    expect(termsUrl()).not.toContain("dashboard.");
+  });
+
   it("points the delete-account link at our page, not the BetterAuth API route", async () => {
     const { confirmDeletionUrl } = await import("@/lib/urls");
     // /api/auth/delete-user/callback answers a session-less GET with JSON 404 on
