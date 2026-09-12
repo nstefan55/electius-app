@@ -1545,46 +1545,6 @@
       "chip2": "Dokaziv integritet",
       "chip3": "Sve arhivirano"
     },
-    "placeholder": {
-      "stats": [
-        {
-          "num": "2,4 mil.+",
-          "label": "Sigurno predanih glasova"
-        },
-        {
-          "num": "850+",
-          "label": "Organizacija koristi"
-        },
-        {
-          "num": "99,99 %",
-          "label": "Dostupnost na dan izbora"
-        },
-        {
-          "num": "100 %",
-          "label": "Listića neovisno provjerljivo"
-        }
-      ],
-      "quotes": [
-        {
-          "quote": "Naše godišnje izbore za upravu odbor je brojao tri dana. Uz Electius rezultati su ovjereni čim je glasovanje zatvoreno — i nitko ih nije doveo u pitanje.",
-          "name": "Renata Kovač",
-          "initials": "RK",
-          "role": "Tajnica, Nacionalni sindikat"
-        },
-        {
-          "quote": "Izlaznost studenata skočila je jer je glasovanje trajalo dvije minute na mobitelu. Provjerljiva potvrda preko noći je okončala svaki e-mail „je li moj glas izbrojan?”.",
-          "name": "Daniel Mendez",
-          "initials": "DM",
-          "role": "Predsjednik, Studentski zbor"
-        },
-        {
-          "quote": "Potpun revizijski trag zadovoljio je našu pravnu provjeru iz prvog pokušaja. Svaka odluka koju smo otad donijeli živi u jednoj pretraživoj arhivi.",
-          "name": "Sofia Oduya",
-          "initials": "SO",
-          "role": "Predsjednica uprave, Stambena zadruga"
-        }
-      ]
-    },
     "features": {
       "kicker": "Što je unutra",
       "title": "Sve što izbori trebaju, ništa što ne trebaju.",
@@ -1895,6 +1855,7 @@
     }
   },
   "voter": {
+    "noticeLink": "Kako postupamo s vašim podacima",
     "flow": {
       "stepLabel": "Korak {step} od 5",
       "back": "Natrag",
@@ -2399,8 +2360,131 @@
             "Electius je izvršitelj obrade: vaše podatke obrađujemo isključivo prema njezinim uputama. O vama čuvamo adresu e-pošte, neobavezno ime i prezime, status pozivnice i sažetak poveznice za glasovanje — ništa više.",
             "Kako ste glasali ne znamo i ne možemo saznati. Da ste glasali vidi vaša organizacija.",
             "Pitanja i zahtjeve — ispravak, brisanje, prigovor — uputite organizaciji koja provodi izbore. Ako se obratite nama, proslijedit ćemo vas njoj.",
-            "Ova pravila nisu obavijest koju vam ta organizacija duguje po čl. 14. GDPR-a. Nju vam mora dati ona."
+            "Obavijest koja vam po čl. 14. GDPR-a pripada objavljena je zasebno, u ime vaše organizacije — kratka je i pisana za vas. Ona ostaje odgovorna za njezinu točnost za svoje izbore."
+          ],
+          "noticeLabel": "Obavijest biračima o obradi podataka"
+        }
+      }
+    },
+    "voterNotice": {
+      "meta": {
+        "title": "Obavijest biračima o obradi podataka — Electius",
+        "description": "Što se događa s vašim podacima kad vas organizacija pozove na glasovanje: odakle nam adresa, tko je odgovoran, koliko se dugo čuva i kako ostvarujete svoja prava."
+      },
+      "eyebrow": "Za birače",
+      "title": "Obavijest o obradi vaših podataka",
+      "updated": "Zadnja izmjena: 12. rujna 2026.",
+      "intro": "Dobili ste poveznicu za glasovanje, a svoju adresu nama niste dali — dala ju je organizacija koja provodi izbore. Upravo zato vam ova obavijest pripada, po članku 14. Opće uredbe o zaštiti podataka. Kratka je namjerno: sve što u njoj piše odnosi se na vas.",
+      "behalf": {
+        "title": "Tko vam ovu obavijest daje",
+        "body": "Obavijest objavljuje Electius, u ime organizacije koja provodi izbore. Ona je voditelj obrade, a Electius izvršitelj koji postupa isključivo po njezinim uputama. Za to da je ovdje napisano točno i za njezine izbore odgovara ona."
+      },
+      "tocTitle": "Sadržaj",
+      "s": {
+        "source": {
+          "title": "Odakle nam vaša adresa",
+          "body": [
+            "Vašu adresu e-pošte unijela je organizacija koja provodi izbore — ručno ili uvozom datoteke. Uzela ju je iz evidencije kojom već raspolaže: upisa, članstva, zaposlenja ili sličnog popisa.",
+            "Electius vašu adresu nije prikupio, nije je nigdje potražio i ne koristi je ni za što osim za ove izbore."
           ]
+        },
+        "who": {
+          "title": "Tko je odgovoran",
+          "body": [
+            "Voditelj obrade je organizacija koja vas je pozvala — sveučilište, sindikat, tvrtka ili udruga. Njezin naziv i adresa e-pošte stoje u pozivnici koju ste primili. Ona je odlučila provesti izbore, ona je sastavila popis birača i ona odgovara za obradu vaših podataka.",
+            "Electius je izvršitelj obrade: vodimo tehnički dio i postupamo isključivo po njezinim uputama. Vaše podatke ne smijemo koristiti za vlastite svrhe i ne koristimo ih.",
+            "Ako kontakt organizacije ne možete pronaći, javite se nama i proslijedit ćemo joj vaš upit."
+          ]
+        },
+        "what": {
+          "title": "Što o vama čuvamo",
+          "body": [
+            "Popis je potpun — ovo je sve što o vama postoji u sustavu:"
+          ],
+          "bullets": [
+            "Adresu e-pošte, na koju je isporučen listić.",
+            "Ime i prezime, ako ih je organizacija unijela. Izbori se mogu provesti i samo s adresama.",
+            "Status: pozivnica na čekanju, pozivnica poslana, glas predan.",
+            "Sažetak vaše poveznice za glasovanje. Sama poveznica u čitljivom obliku nije spremljena nigdje — postoji samo u poruci koju ste primili.",
+            "Oznaku da isporuka poruke nije uspjela, ako je pružatelj e-pošte javio da adresa ne prima poštu.",
+            "IP adresu — kratkotrajno, radi ograničavanja broja pokušaja, i u zapisnicima pristupa našeg pružatelja posluživanja."
+          ],
+          "after": [
+            "Lozinku ne čuvamo jer je nemate: račun se od vas ne traži. Dok glasujete ne postavljamo nijedan kolačić, a stranica s listićem izuzeta je iz mjerenja posjeta."
+          ]
+        },
+        "why": {
+          "title": "Zašto, i po kojoj osnovi",
+          "body": [
+            "Svrha je jedna: isporučiti vam listić, omogućiti vam da glasujete jednom i zabilježiti da ste pravo glasa iskoristili. Za nešto drugo ti se podaci ne koriste — nema oglašavanja, profiliranja ni ustupanja trećima.",
+            "Pravnu osnovu određuje organizacija koja provodi izbore, jer su to njezini izbori. U pravilu je to njezina zakonska obveza ili legitimni interes da provede izbore propisane vlastitim statutom. Točnu osnovu za ove izbore može vam reći samo ona.",
+            "O vama se ne donosi nijedna automatizirana odluka i ne provodimo profiliranje."
+          ]
+        },
+        "secrecy": {
+          "title": "Kako ste glasali",
+          "body": [
+            "Kako ste glasali ne zna nitko — ni organizacija, ni Electius. Zapis o glasu u bazi nema polje koje upućuje na birača i nema vezu s popisom birača. Ta veza ne postoji, pa je ne može proizvesti nijedan upit, izvoz, sigurnosna kopija ni sudski nalog.",
+            "Ni redoslijed zapisa ništa ne otkriva: svaki glas dobiva kriptografski slučajan redni broj, a pri pečaćenju se zapisi sortiraju abecedno po sažetku.",
+            "Da ste glasali vidi se, i mora se vidjeti — bez toga organizacija ne bi mogla podsjetiti one koji nisu, ni utvrditi je li postignut kvorum. Vidljivo je dakle da jeste, ali ne i za koga.",
+            "Kod potvrde koji dobijete nakon glasovanja dokazuje da je vaš glas uključen u zapečaćeni zapis. Ne otkriva kako ste glasali — ni vama, ni nama."
+          ]
+        },
+        "recipients": {
+          "title": "Tko sve to vidi",
+          "body": [
+            "Popis birača vide administratori organizacije koja provodi izbore. Osim njih, podaci prolaze kroz pružatelje usluga kojima se Electius koristi:"
+          ],
+          "bullets": [
+            "Neon — baza podataka u kojoj popis stoji.",
+            "Resend — slanje pozivnice i podsjetnika; prima vašu adresu, naziv izbora, naziv organizacije i poveznicu za glasovanje.",
+            "Vercel — posluživanje aplikacije; prima promet i zapisnike pristupa.",
+            "Upstash — ograničavanje broja pokušaja; prima IP adresu i, ako sami zatražite novu poveznicu, adresu e-pošte, kao ključeve koji sami istječu."
+          ],
+          "after": [
+            "Vaše podatke ne prodajemo i ne dajemo nikome izvan ovog popisa. Potpuni popis pružatelja, s regijama obrade i pravnim temeljem za prijenos izvan Europskoga gospodarskog prostora, nalazi se u pravilima privatnosti."
+          ]
+        },
+        "retention": {
+          "title": "Koliko se dugo čuva",
+          "body": [
+            "Rokovi nisu opisne formulacije poput „koliko je potrebno” nego stvarne vrijednosti u sustavu:"
+          ],
+          "bullets": [
+            "Poveznica za glasovanje: do zatvaranja izbora, a ako izbori nemaju zadani kraj, 30 dana od pokretanja. Svaki podsjetnik izdaje novu poveznicu i time poništava prethodnu.",
+            "Vaš redak na popisu birača: dok ga organizacija ne obriše ili dok ne zatvori svoj račun. Taj rok određuje ona, ne mi.",
+            "Sam glas: trajno — to je zapis o provedenim izborima — ali bez ikakve veze s vama.",
+            "IP adresa u ograničavanju pokušaja: do 15 minuta."
+          ]
+        },
+        "rights": {
+          "title": "Vaša prava",
+          "body": [
+            "Možete zatražiti pristup svojim podacima, njihov ispravak ili brisanje, ograničenje obrade i prijenos podataka te uložiti prigovor na obradu."
+          ],
+          "bullets": [
+            "Zahtjev uputite organizaciji koja provodi izbore — ona je voditelj obrade i ona o njemu odlučuje. Ako se obratite nama, proslijedit ćemo joj ga.",
+            "Ispravak imena ili adrese organizacija može napraviti odmah, u popisu birača.",
+            "Brisanje usred otvorenih izbora mijenja biračko tijelo i može stvoriti ili poništiti kvorum, pa takav zahtjev organizacija razmatra prema propisima po kojima izbore provodi.",
+            "Predani glas ne može obrisati nitko, pa ni mi: nije povezan s vama, pa ga nije moguće pronaći."
+          ],
+          "after": [
+            "Ako smatrate da se s vašim podacima ne postupa u skladu s propisima, možete se obratiti Agenciji za zaštitu osobnih podataka (AZOP), Selska cesta 136, 10000 Zagreb, azop.hr. Prigovor podnosite protiv voditelja obrade, dakle protiv organizacije koja provodi izbore."
+          ]
+        },
+        "contact": {
+          "title": "Kome se obratiti",
+          "body": [
+            "Najprije organizaciji koja vas je pozvala; njezina adresa stoji u pozivnici. Ako je ne možete dobiti ili ne znate kome se obratiti, pišite nama i proslijedit ćemo vaš upit:"
+          ],
+          "note": "Na upite birača odgovaramo u ime organizacije i u dogovoru s njom. O vašem zahtjevu ne možemo odlučiti sami jer nismo voditelj obrade."
+        },
+        "more": {
+          "title": "Više pojedinosti",
+          "body": [
+            "Potpuna pravila privatnosti — pružatelji usluga s regijama obrade, rokovi čuvanja za sve vrste podataka i naši kontakti — objavljena su zasebno."
+          ],
+          "linkLabel": "Pravila privatnosti"
         }
       }
     },

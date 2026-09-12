@@ -72,3 +72,14 @@ export const privacyUrl = () => `${APEX}/privacy`;
 // PRISTAJE — kvačicu tražimo na /setup, pa poveznica mora raditi s dashboard
 // hosta u trenutku kad sesija postoji, ali organizacija još ne.
 export const termsUrl = () => `${APEX}/terms`;
+
+// Obavijest biračima o obradi podataka (čl. 14. GDPR-a). Apeks, kao i njezine
+// dvije sestre iznad — ali JEDINA je od njih s prefiksom jezika, i to nije
+// nedosljednost: nju u ruke dobiva birač iz pozivnice, a pozivnicu šalje
+// predložak čiji je jezik već odabran. Neprefiksirana adresa 307-a na zadani
+// jezik, pa bi engleski birač dobio hrvatski pravni tekst. Poveznice unutar
+// apeksa (pravila privatnosti, glasačko zaglavlje) koriste relativni Link iz
+// i18n/navigation — ondje je host dokazano isti, pa apsolutna adresa ništa ne
+// rješava, a odvela bi čitatelja na drugi origin.
+export const voterNoticeUrl = (locale: string) =>
+  `${APEX}/${locale}/privacy/voters`;

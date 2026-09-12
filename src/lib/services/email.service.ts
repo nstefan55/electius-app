@@ -7,7 +7,7 @@ import {
   formatVotingDateTime,
   quorumRequiredVoters,
 } from "@/lib/elections-view";
-import { electionOverviewUrl, voteUrl } from "@/lib/urls";
+import { electionOverviewUrl, voteUrl, voterNoticeUrl } from "@/lib/urls";
 import { hashToken } from "./token.service";
 
 // Email transport (project-overview §Service Layer): verification OTP, password
@@ -310,6 +310,12 @@ export interface InvitationElection {
   id: string;
   title: string;
   organizationName: string;
+  // Kontakt organizacije koja provodi izbore. Ne dodajemo ga zbog ljubaznosti:
+  // ona je VODITELJ OBRADE nad popisom birača, a čl. 14. st. 1. t. (a)
+  // GDPR-a traži identitet I kontakt voditelja. Naziv sam zadovoljava tek pola
+  // toga, pa je birač bez ove adrese ostajao bez kanala prema jedinoj strani
+  // koja mu doista može ispraviti ili obrisati podatke.
+  organizationEmail: string;
 }
 
 // Batched send — ≤100 recipients per call (Resend batch limit, chunking is the
@@ -334,6 +340,16 @@ async function sendBallotLinkEmails(
     TITLE_HTML: escapeHtml(election.title),
     ORG: election.organizationName,
     ORG_HTML: escapeHtml(election.organizationName),
+    // Par kao i gore, i to nije opreznost bez pokrića: adresa se u HTML-u
+    // pojavljuje i kao href="mailto:…", dakle u kontekstu atributa, gdje
+    // navodnik zatvara atribut. Zod je provjerava kao e-mail, ali provjera
+    // oblika nije izlazno bježanje.
+    ORG_EMAIL: election.organizationEmail,
+    ORG_EMAIL_HTML: escapeHtml(election.organizationEmail),
+    // Obavijest o obradi podataka (čl. 14.). Mora biti u PRVOJ poruci koju
+    // birač primi — čl. 14. st. 3. t. (b) veže rok upravo na nju — a to je
+    // ova. Adresa nosi jezik, jer ga nosi i predložak koji je ispisuje.
+    NOTICE_URL: voterNoticeUrl(locale),
     ...extra,
   };
 

@@ -227,7 +227,7 @@ export async function resendVoterInvite(
             title: true,
             startsAt: true,
             endsAt: true,
-            organization: { select: { name: true } },
+            organization: { select: { name: true, contactEmail: true } },
             createdBy: { select: { locale: true } },
           },
         },
@@ -239,6 +239,7 @@ export async function resendVoterInvite(
       id: voter.election.id,
       title: voter.election.title,
       organizationName: voter.election.organization.name,
+      organizationEmail: voter.election.organization.contactEmail,
       startsAt: voter.election.startsAt,
       endsAt: voter.election.endsAt,
       // ponytail: jezik stvaratelja izbora, isto kao skupno slanje — birač

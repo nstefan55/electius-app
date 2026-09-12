@@ -146,7 +146,7 @@ export async function publishElection(
       title: true,
       startsAt: true,
       endsAt: true,
-      organization: { select: { name: true } },
+      organization: { select: { name: true, contactEmail: true } },
       createdBy: { select: { locale: true } },
     },
   });
@@ -164,6 +164,7 @@ export async function publishElection(
     id: electionId,
     title: election.title,
     organizationName: election.organization.name,
+    organizationEmail: election.organization.contactEmail,
   };
   // ponytail: birač nema svoj redak ni jezik, pa cijeli listić ide na jeziku
   // onoga tko je izbore stvorio. Danas je to točno jer je shema 1 organizacija ↔
@@ -230,7 +231,7 @@ export async function resendVoterLink(
       title: true,
       startsAt: true,
       endsAt: true,
-      organization: { select: { name: true } },
+      organization: { select: { name: true, contactEmail: true } },
       createdBy: { select: { locale: true } },
     },
   });
@@ -253,6 +254,7 @@ export async function resendVoterLink(
     id: electionId,
     title: election.title,
     organizationName: election.organization.name,
+    organizationEmail: election.organization.contactEmail,
     startsAt: election.startsAt,
     endsAt: election.endsAt,
     // ponytail: i ovdje jezik stvaratelja — birač koji sam traži novu poveznicu
@@ -389,7 +391,7 @@ export async function sendReminders(
     select: {
       title: true,
       endsAt: true,
-      organization: { select: { name: true } },
+      organization: { select: { name: true, contactEmail: true } },
       createdBy: { select: { locale: true } },
     },
   });
@@ -403,6 +405,7 @@ export async function sendReminders(
     id: electionId,
     title: election.title,
     organizationName: election.organization.name,
+    organizationEmail: election.organization.contactEmail,
     endsAt: election.endsAt,
   };
   // ponytail: isti dug kao kod pozivnice — jezik izbora je jezik njihova
@@ -448,6 +451,7 @@ export async function sendAdminTurnout(
       organization: {
         select: {
           name: true,
+          contactEmail: true,
           admins: { select: { email: true, locale: true } },
         },
       },
@@ -483,6 +487,7 @@ export async function sendAdminTurnout(
       id: electionId,
       title: election.title,
       organizationName: election.organization.name,
+      organizationEmail: election.organization.contactEmail,
       endsAt: election.endsAt,
       quorumThreshold: election.quorumThreshold,
     },

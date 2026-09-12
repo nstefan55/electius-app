@@ -52,6 +52,16 @@ describe("urls", () => {
     expect(termsUrl()).toBe("https://electius.com/terms");
     expect(termsUrl()).not.toContain("dashboard.");
   });
+  it("prefixes the voter notice with a locale, unlike its two siblings", async () => {
+    const { voterNoticeUrl } = await import("@/lib/urls");
+    // Ovu adresu ispisuje predložak pozivnice, a predložak je već odabrao jezik
+    // (alias ga nosi). Neprefiksirana adresa 307-a na zadani jezik, pa bi
+    // engleski birač otvorio hrvatski pravni tekst — i to tiho, jer
+    // preusmjeravanje izgleda kao da je sve u redu.
+    expect(voterNoticeUrl("en")).toBe("https://electius.com/en/privacy/voters");
+    expect(voterNoticeUrl("hr")).toBe("https://electius.com/hr/privacy/voters");
+    expect(voterNoticeUrl("hr")).not.toContain("dashboard.");
+  });
 
   it("points the delete-account link at our page, not the BetterAuth API route", async () => {
     const { confirmDeletionUrl } = await import("@/lib/urls");

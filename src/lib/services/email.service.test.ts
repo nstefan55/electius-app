@@ -29,6 +29,7 @@ const election = {
   id: "el_1",
   title: "Studentski izbori",
   organizationName: "VVG",
+  organizationEmail: "izbori@vvg.hr",
 };
 
 const reminderElection = { ...election, endsAt: new Date("2026-08-20T12:00:00Z") };
@@ -450,6 +451,7 @@ describe("sendInvitationEmails", () => {
       ...election,
       title: 'Izbori <b>2026</b> & "co"',
       organizationName: "Ivan & Co",
+      organizationEmail: 'iz"bori@vvg.hr',
     },
       "hr",
     );
@@ -465,6 +467,40 @@ describe("sendInvitationEmails", () => {
     );
     expect(vars.ORG).toBe("Ivan & Co");
     expect(vars.ORG_HTML).toBe("Ivan &amp; Co");
+
+    // Adresa voditelja obrade ide u isti par, i to nije opreznost bez pokrića:
+    // u HTML-u stoji kao href="mailto:…", dakle u atributu, gdje bi navodnik
+    // zatvorio atribut i pustio ostatak u oznaku.
+    expect(vars.ORG_EMAIL).toBe('iz"bori@vvg.hr');
+    expect(vars.ORG_EMAIL_HTML).toBe("iz&quot;bori@vvg.hr");
+  });
+
+  it("puts the Art. 14 notice in the first message a voter ever receives", async () => {
+    // Čl. 14. st. 3. t. (b) GDPR-a veže rok obavještavanja upravo na prvu
+    // komunikaciju s ispitanikom, a to je pozivnica. Ako varijabla ispadne iz
+    // skupa, predložak je iscrta kao prazan href i obavijest tiho nestane —
+    // stranica i dalje postoji, ali nitko je ne dobije.
+    await sendInvitationEmails(
+      [{ email: "a@example.com", rawToken: "raw" }],
+      election,
+      "hr",
+    );
+    const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
+    expect(String(vars.NOTICE_URL)).toMatch(/\/hr\/privacy\/voters$/);
+    expect(vars.ORG_EMAIL).toBe("izbori@vvg.hr");
+  });
+
+  it("sends the reminder's notice in the locale that chose the template", async () => {
+    // Jezik bira predložak (alias nosi jezik), pa mora birati i adresu
+    // obavijesti — inače engleski birač dobije hrvatski pravni tekst.
+    await sendReminderEmails(
+      [{ email: "a@example.com", rawToken: "raw" }],
+      reminderElection,
+      "en",
+    );
+    const vars = templateOf(batchSend.mock.calls[0][0][0]).variables;
+    expect(String(vars.NOTICE_URL)).toMatch(/\/en\/privacy\/voters$/);
+    expect(String(vars.NOTICE_URL)).not.toContain("/hr/");
   });
 
   it("throws on a Resend batch error so the chunk stays retryable", async () => {

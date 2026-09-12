@@ -306,67 +306,6 @@ export default async function Home({
         </div>
       </section>
 
-      {/* ───────── 4 · Dokaz — ZAKOMENTIRANO ─────────
-          NOTE: BLOKADA ZA LANSIRANJE (homepage-spec D1). Brojke (2,4 mil.+ glasova,
-          850+ organizacija, 99,99 % dostupnost) i tri potpisane izjave bile su
-          izmišljene — proizvod nema kupce. Odsjek je zakomentiran umjesto obrisan
-          jer je raspored složen oko 4 brojke i 3 kartice; kad postoje prave brojke
-          i pristanak za citate, vraća se odkomentiranjem ovog bloka I varijabli
-          `stats` / `quotes` / `quoteTints` gore. Tekstovi ostaju u katalozima pod
-          `marketing.placeholder.*`. Zabilježeno u future-updates-spec.md § Marketing.
-
-      <section className="bg-neutral-50 py-24">
-        <div className={CONTAINER}>
-          <div className="grid grid-cols-2 gap-6 border-b border-neutral-200 pb-16 lg:grid-cols-4">
-            {stats.map((s) => (
-              <div key={s.label}>
-                <div className="font-heading text-[2.625rem] leading-none font-bold text-brand-900">
-                  {s.num}
-                </div>
-                <div className="mt-2 text-[0.9375rem] text-neutral-600">
-                  {s.label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-3">
-            {quotes.map((q, i) => (
-              <figure
-                key={q.name}
-                className="flex flex-col rounded-lg border border-neutral-200 bg-white p-7 shadow-sm"
-              >
-                <div
-                  aria-hidden="true"
-                  className="font-heading text-[2.375rem] leading-none text-brand-100"
-                >
-                  &ldquo;
-                </div>
-                <blockquote className="mt-1 mb-5 flex-1 text-base leading-relaxed text-neutral-800">
-                  {q.quote}
-                </blockquote>
-                <figcaption className="flex items-center gap-3">
-                  <span
-                    className={`inline-flex size-10 items-center justify-center rounded-full font-heading text-[0.9375rem] font-semibold text-white ${quoteTints[i]}`}
-                  >
-                    {q.initials}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold text-neutral-800">
-                      {q.name}
-                    </span>
-                    <span className="block text-[0.8125rem] text-neutral-600">
-                      {q.role}
-                    </span>
-                  </span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-      ───────── kraj zakomentiranog odsjeka ───────── */}
-
       {/* ───────── 5 · Značajke ───────── */}
       <section id="features" className={`bg-white py-20 ${ANCHOR}`}>
         <div className={CONTAINER}>
