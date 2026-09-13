@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import toast from "react-hot-toast";
 import { Link } from "@/i18n/navigation";
 import { authClient } from "@/lib/auth/client";

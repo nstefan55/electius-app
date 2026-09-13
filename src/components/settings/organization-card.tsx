@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import toast from "react-hot-toast";
 import { useRouter } from "@/i18n/navigation";
 import { updateOrganization } from "@/actions/settings";
