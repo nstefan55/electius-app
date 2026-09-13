@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CircleAlert, MailCheck, TriangleAlert } from "lucide-react";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { privacyUrl } from "@/lib/urls";
 import {
   BTN_GHOST_MD,

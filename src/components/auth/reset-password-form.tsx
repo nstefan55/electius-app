@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { TriangleAlert } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "@/i18n/navigation";

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod";
 import { readCsv } from "./csv";
 
 // CSV import for the election creation wizard (steps 2 + 3). Pure text-in /
