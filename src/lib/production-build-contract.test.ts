@@ -45,6 +45,13 @@ function walk(dir: string): string[] {
   });
 }
 
+// walk() gore filtrira na .ts/.tsx; za .next/static treba sve.
+function walkAll(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = join(dir, entry);
+    return statSync(full).isDirectory() ? walkAll(full) : [full];
+  });
+}
 describe("produkcijski paket ne nosi izvorne mape u preglednik", () => {
   const config = readFileSync(CONFIG, "utf8");
 
@@ -60,8 +67,29 @@ describe("produkcijski paket ne nosi izvorne mape u preglednik", () => {
     },
   );
 
-  it("next.config.ts nije omotan Sentryjem", () => {
-    expect(config).not.toMatch(/withSentryConfig/);
+  // Sentry je stigao (D9, 2026-09-13), pa zabrana omotaca vise ne stoji — on
+  // je i bio samo ZAMJENIK za pravo svojstvo: da .map datoteke ne zavrse
+  // javno posluzene. Sada se provjerava to svojstvo izravno, i to na DVA
+  // mjesta, jer nijedno samo za sebe ne bi bilo dovoljno:
+  //
+  //   1. konfiguracija — Sentryjev dodatak MORA imati
+  //      sourcemaps.deleteSourcemapsAfterUpload, inace mape ostaju u
+  //      .next/static kao nuspojava koju nitko nije upisao;
+  //   2. sam build — ako .next/static postoji, u njemu ne smije biti nijedne
+  //      .map datoteke. To je mjerenje, ne citanje namjere.
+  //
+  // Provjera (2) se PRESKACE bez builda umjesto da lazno prode, pa lokalni
+  // `npm run test` bez builda ne tvrdi nista, a CI s buildom tvrdi sve.
+  it("Sentryjev dodatak brise izvorne mape nakon uploada", () => {
+    expect(config).toMatch(/withSentryConfig/); // inace ovaj test nema smisla
+    expect(config).toMatch(/deleteSourcemapsAfterUpload:\s*true/);
+  });
+
+  it("build ne ostavlja .map datoteke u .next/static", () => {
+    const dir = join(ROOT, ".next", "static");
+    if (!existsSync(dir)) return; // bez builda nema sto mjeriti
+    const maps = walkAll(dir).filter((f) => f.endsWith(".map"));
+    expect(maps).toEqual([]);
   });
 });
 
