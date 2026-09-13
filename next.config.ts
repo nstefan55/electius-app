@@ -1,3 +1,4 @@
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -135,4 +136,47 @@ const nextConfig: NextConfig = {
 };
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+  // For all available options, see:
+  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
+
+  org: "electius",
+
+  project: "javascript-nextjs",
+
+  // Only print logs for uploading source maps in CI
+  silent: !process.env.CI,
+
+  // For all available options, see:
+  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
+
+  // Upload a larger set of source maps for prettier stack traces (increases build time)
+  widenClientFileUpload: true,
+
+  sourcemaps: {
+    // Sentry dobije čitljiv stack trace, ali .map datoteke NE ostaju javno
+    // poslužene. Bez ovoga Sentryjev dodatak pali klijentske izvorne mape kao
+    // nuspojavu — točno ono što production-build-contract.test.ts brani.
+    deleteSourcemapsAfterUpload: true,
+  },
+
+  // Preglednik šalje na NAŠ origin, mi prosljeđujemo. Time CSP ostaje
+  // `connect-src 'self'` — svojstvo koje je gore izričito zapisano ("nema kuda
+  // poslati plijen"). Nuspojava: blokatori oglasa ovo ne ruše.
+  // ⚠ proxy.ts mora preskočiti /monitoring, inače mu next-intl doda prefiks.
+  tunnelRoute: "/monitoring",
+
+  webpack: {
+    // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
+    // See the following for more information:
+    // https://docs.sentry.io/product/crons/
+    // https://vercel.com/docs/cron-jobs
+    automaticVercelMonitors: true,
+
+    // Tree-shaking options for reducing bundle size
+    treeshake: {
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      removeDebugLogging: true,
+    },
+  },
+});

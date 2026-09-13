@@ -296,14 +296,19 @@ export async function POST(request: Request) {
     console.error("[cron] sweep gate store failed", { error });
   }
 
+  // Detalj po izboru ide u zapisnik izvođenja, ne u odgovor: odgovor završava u
+  // zapisniku pingera (treća strana), a nosio bi id-eve izbora SVIH organizacija.
+  if (elections.length || reminded.length || turnout.length) {
+    console.info("[cron] sweep", { elections, reminders: reminded, turnout });
+  }
+
+  // Samo brojevi. Bez njih se ne vidi je li metla išta učinila; s id-evima bi
+  // svaki ping ostavio popis tuđih izbora u tuđem zapisniku.
   return NextResponse.json({
     activated: elections.length,
     closed,
     reminded: reminded.length,
     notified: turnout.length,
-    elections,
-    reminders: reminded,
-    turnout,
     archives: archives ?? { pruned: 0, kept: 0 },
     nextDue,
   });

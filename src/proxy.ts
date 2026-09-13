@@ -88,5 +88,7 @@ export default function proxy(request: NextRequest) {
 
 export const config = {
   // Skip API routes, Next internals, and any path with a file extension.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  // monitoring = Sentryjev tunnelRoute. Mora proći kao /api: bez njega mu
+  // next-intl doda prefiks (/hr/monitoring) i tunel tiho prestane raditi.
+  matcher: "/((?!api|monitoring|_next|_vercel|.*\\..*).*)",
 };

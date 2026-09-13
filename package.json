@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.74",
+  "version": "0.9.75",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -26,6 +26,7 @@
     "@neondatabase/serverless": "^1.1.0",
     "@prisma/adapter-neon": "^7.10.0",
     "@prisma/client": "^7.10.0",
+    "@sentry/nextjs": "^10.74.0",
     "@sparticuz/chromium": "^149.0.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.3",
