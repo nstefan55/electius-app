@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomInt } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { hashToken, mutationsFrozen } from "./token.service";
 
@@ -152,16 +152,27 @@ export class VoteError extends Error {
   }
 }
 
-export function computeVoteHash(
-  electionId: string,
-  optionIds: string[],
-  timestampIso: string,
-): string {
-  // Sorted → multi-choice hashes are selection-order-independent.
-  const sorted = [...optionIds].sort();
-  return createHash("sha256")
-    .update(electionId + sorted.join(",") + timestampIso)
-    .digest("hex");
+/**
+ * Potvrda glasovanja koju birač vidi: 32 slučajna bajta, 64 hex znaka.
+ *
+ * Do v0.9.77 bio je IZVEDEN — SHA-256(electionId + sortirani optionIds +
+ * toISOString()). To je palo na dva načina, a oba rješava isto slučajno polje:
+ *
+ * 1. SUDARI. Stupac je @unique, a jedini promjenjivi ulaz za dva birača istih
+ *    izbora i istog odabira bila je MILISEKUNDA. Dva istovremena jednaka
+ *    listića davala su isti hash i drugi je odbijen s 500. Izmjereno pod
+ *    opterećenjem (D11): 13,5 % listića pri 40 istovremenih.
+ * 2. VREMENSKI TRAG. Ista milisekunda bila je i zapisana. Uz poznat izborni
+ *    prozor skup listića je probojan grubom silom, što vraća upravo ono što
+ *    slučajni batchOrder i leksikografski poredak listova brišu.
+ *
+ * Sigurno je jer se hash NIGDJE ne preračunava: merkle.service list tretira kao
+ * neproziran 64-hex niz, a potvrda se samo prikazuje i preuzima. Ista duljina,
+ * bez migracije. Stupac se i dalje zove `voteHash` — preimenovanje bi tražilo
+ * migraciju, novi oblik arhivske snimke i podizanje EXPORT_VERSION.
+ */
+export function newVoteReceipt(): string {
+  return randomBytes(32).toString("hex");
 }
 
 export async function castVote(
@@ -220,11 +231,7 @@ export async function castVote(
     throw new VoteError("selection");
   }
 
-  const voteHash = computeVoteHash(
-    token.electionId,
-    picked,
-    new Date().toISOString(),
-  );
+  const voteHash = newVoteReceipt();
 
   // Atomic: the WHERE-guarded flip decides everything after it, so this is an
   // interactive transaction. A concurrent submit finds used=false already gone
