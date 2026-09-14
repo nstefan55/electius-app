@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "crypto";
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
@@ -38,6 +39,24 @@ import { turnoutMilestoneDue, turnoutPct } from "@/lib/elections-view";
 
 // Bearer CRON_SECRET, timing-safe compare. Length check first — timingSafeEqual
 // throws on unequal lengths, and leaking the length alone is harmless.
+// Svaki prolaz metle hvata svoju grešku i ruta svejedno vraća 200, pa bez ovoga
+// djelomičan pad ne vidi NI pinger NI Sentry: nema captureConsoleIntegration, a
+// sama ruta ne zove Sentry. Otuda izričita prijava na svakom hvatanju.
+//
+// ⚠ Ruta NAMJERNO ne postaje 5xx po stavci: to bi izjednačilo "host je pao" s
+// "jedan primatelj je pao" — crta o kojoj ovisi uptime nadzor (D10) — i ponovilo
+// bi posao koji je već uspio.
+//
+// electionId je cuid, ne PII, i jedino čini prijavu upotrebljivom. Adrese birača
+// ovdje ne smiju doći (mvp-launch §1).
+function reportSweepFailure(pass: string, error: unknown, electionId?: string) {
+  console.error(`[cron] ${pass} failed`, { id: electionId, error });
+  Sentry.captureException(error, {
+    tags: { route: "cron/activate-elections", pass },
+    extra: { electionId },
+  });
+}
+
 function authorized(header: string | null): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret || !header?.startsWith("Bearer ")) return false;
@@ -108,12 +127,20 @@ export async function POST(request: Request) {
     // A publish failure never un-activates: voters stay PENDING → Retry.
     // On a pipeline throw, report the still-PENDING count as failed so the
     // response never reads "0 failed" for an unpublished election.
-    const result = await publishElection(id).catch(() => null);
+    const result = await publishElection(id).catch((error) => {
+      // Najtiši od svih padova: izbori su OD SADA otvoreni, a pozivnice nisu
+      // otišle. Prije ovoga jedini trag bio je broj u odgovoru pingera.
+      reportSweepFailure("activation publish", error, id);
+      return null;
+    });
     const failed =
       result?.failed ??
       (await prisma.voter
         .count({ where: { electionId: id, status: "PENDING" } })
-        .catch(() => 0));
+        .catch((error) => {
+          reportSweepFailure("pending count", error, id);
+          return 0;
+        }));
     elections.push({ id, sent: result?.sent ?? 0, failed });
   }
 
@@ -200,7 +227,7 @@ export async function POST(request: Request) {
     const result = await sendReminders(e.id).catch((error) => {
       // Biljeg se NE briše: brisanje bi vratilo utrku koju upravo sprječava, a
       // ponovno kovanje na svaki otkucaj ostavlja niz mrtvih poveznica.
-      console.error("[cron] reminder send failed", { id: e.id, error });
+      reportSweepFailure("reminder send", error, e.id);
       return null;
     });
     reminded.push({
@@ -261,7 +288,7 @@ export async function POST(request: Request) {
     const result = await sendAdminTurnout(e.id, milestone).catch((error) => {
       // Biljeg se NE briše: brisanje bi vratilo utrku koju sprječava, a metla se
       // pinga svake minute. Propuštena obavijest o izlaznosti nije događaj.
-      console.error("[cron] turnout send failed", { id: e.id, error });
+      reportSweepFailure("turnout send", error, e.id);
       return null;
     });
     turnout.push({ id: e.id, milestone, sent: result?.sent ?? 0 });
@@ -280,7 +307,7 @@ export async function POST(request: Request) {
   const archives = await pruneExpiredArchives().catch((error) => {
     // Obrezivanje ne smije srušiti otvaranje i zatvaranje izbora — to su
     // radnje s rokom, a arhiva može pričekati sljedeći ping.
-    console.error("[cron] archive prune failed", { error });
+    reportSweepFailure("archive prune", error);
     return null;
   });
 
@@ -293,7 +320,7 @@ export async function POST(request: Request) {
     nextDue = computeSweepNextDue(await gatherSchedule(gateNow), gateNow);
     await storeSweepNextDue(nextDue);
   } catch (error) {
-    console.error("[cron] sweep gate store failed", { error });
+    reportSweepFailure("sweep gate store", error);
   }
 
   // Detalj po izboru ide u zapisnik izvođenja, ne u odgovor: odgovor završava u
