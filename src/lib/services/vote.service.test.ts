@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const tx = vi.hoisted(() => ({
@@ -18,7 +17,7 @@ vi.mock("@/lib/prisma", () => ({
 
 const { prisma } = await import("@/lib/prisma");
 const { hashToken } = await import("@/lib/services/token.service");
-const { getBallotState, castVote, computeVoteHash, VoteError } = await import(
+const { getBallotState, castVote, newVoteReceipt, VoteError } = await import(
   "@/lib/services/vote.service"
 );
 
@@ -54,20 +53,28 @@ beforeEach(() => {
   tx.voterToken.updateMany.mockResolvedValue({ count: 1 });
 });
 
-describe("computeVoteHash", () => {
-  it("matches SHA-256(electionId + sortedOptionIds + timestamp)", () => {
-    const ts = "2026-07-25T10:00:00.000Z";
-    const expected = createHash("sha256")
-      .update("el_1" + "a,b" + ts)
-      .digest("hex");
-    expect(computeVoteHash("el_1", ["b", "a"], ts)).toBe(expected);
+describe("newVoteReceipt", () => {
+  it("is 64 hex characters — the shape the Merkle leaf and the receipt expect", () => {
+    expect(newVoteReceipt()).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it("is selection-order-independent", () => {
-    const ts = "2026-07-25T10:00:00.000Z";
-    expect(computeVoteHash("el_1", ["x", "y", "z"], ts)).toBe(
-      computeVoteHash("el_1", ["z", "x", "y"], ts),
-    );
+  // THE regression. Until v0.9.77 the receipt was derived, and the only input
+  // that varied between two voters in one election picking the same options was
+  // the millisecond — so simultaneous identical ballots collided on the @unique
+  // column and the second was refused with a 500 (13.5% under load, D11).
+  // Generating in one tight loop is exactly that worst case.
+  it("never repeats across a burst in the same millisecond", () => {
+    const n = 10_000;
+    const seen = new Set<string>();
+    for (let i = 0; i < n; i++) seen.add(newVoteReceipt());
+    expect(seen.size).toBe(n);
+  });
+
+  // It must not be a function of the ballot: that is what leaked the timestamp.
+  it("does not depend on election, options or clock", () => {
+    const a = newVoteReceipt();
+    const b = newVoteReceipt();
+    expect(a).not.toBe(b);
   });
 });
 
@@ -341,6 +348,23 @@ describe("castVote", () => {
     expect(voteArgs.data.batchOrder).toBeGreaterThanOrEqual(0);
     expect(voteArgs.data.batchOrder).toBeLessThan(2147483647);
     expect(voteArgs.data.election).toEqual({ connect: { id: "el_1" } });
+  });
+
+  // Two identical ballots in the same election must not write the same receipt.
+  // That is the D11 failure exactly: the column is @unique, so a repeat is a
+  // P2002 and the second voter gets a 500. Asserting the PROPERTY here, rather
+  // than trusting newVoteReceipt's own tests, is what stops the receipt being
+  // hardcoded or re-derived at this call site.
+  it("writes a FRESH receipt per ballot, even for an identical selection", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(castTokenRow());
+
+    const first = await castVote("raw", ["o1"]);
+    const second = await castVote("raw", ["o1"]);
+
+    expect(first.voteHash).not.toBe(second.voteHash);
+    expect(tx.vote.create.mock.calls[0][0].data.voteHash).not.toBe(
+      tx.vote.create.mock.calls[1][0].data.voteHash,
+    );
   });
 
   it("aborts on the double-submit race without writing a vote", async () => {
