@@ -9,3 +9,7 @@ useDefault = true
 [[allowlists]]
 description = "Wizard option keys in step-settings.tsx — camelCase identifiers, not credentials (generic-api-key entropy false positive; fired on 0ec4aa0c, ae349285, a214b0f9)"
 regexes = ['''^(?:voterReminder24h|adminTurnoutReminder|liveResults|publicResults|quorum)$''']
+
+[[allowlists]]
+description = "Sentry-scrub canaries in sentry-scrub.test.ts — RAWT0KEN_* fixtures asserting a raw voting token never reaches Sentry (generic-api-key entropy false positive; fired on 2fb7acd1 lines 103-104). The zero in RAWT0KEN is deliberate — the string is unmistakably a fixture, never a credential."
+regexes = ['''^RAWT0KEN[\w.=-]*$''']
