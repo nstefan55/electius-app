@@ -1,11 +1,16 @@
 import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { AccessibilityMenu } from "@/components/voter/accessibility-menu";
 
-// (voter) chrome — mobile-first, apex host (design-system §8.2). White 56px logo-only header
+// (voter) chrome — mobile-first, apex host (design-system §8.2). White 56px header (logo + Accessibility)
 // with a neutral-200 bottom border; neutral-50 page background; a 390px (var(--max-width-voter))
 // centered content container. ZERO admin chrome, no auth, no session read. The per-screen
 // progress dots (§7.16) belong to the ballot flow content, not this layout.
+//
+// Zaglavlje nosi i gumb Pristupačnost (desno, logotip lijevo) — također
+// namjerno odstupanje od §8.2: postavka pristupačnosti skrivena ispod
+// listića nije "pristupačnost na prvom mjestu".
 //
 // Podnožje s poveznicom na obavijest o obradi podataka odstupa od §8.2, koji
 // podnožje ne crta. Odstupanje je namjerno i traženo: čl. 12. st. 1. GDPR-a
@@ -29,19 +34,24 @@ export default async function VoterLayout({
   const t = await getTranslations({ locale, namespace: "voter" });
 
   return (
-    <div className="flex min-h-screen flex-col bg-neutral-50">
-      <header className="flex h-14 shrink-0 items-center justify-center gap-2 border-b border-neutral-200 bg-white">
-        <Image
-          src="/logo/logo-mark-light.png"
-          alt="Electius"
-          width={26}
-          height={26}
-          className="object-contain"
-          priority
-        />
-        <span className="font-heading text-[1.1875rem] font-bold tracking-tight text-brand-900">
-          Electius
-        </span>
+    <div data-voter-chrome className="flex min-h-screen flex-col bg-neutral-50">
+      <header className="shrink-0 border-b border-neutral-200 bg-white">
+        <div className="mx-auto flex w-full max-w-voter flex-wrap items-center justify-between px-6">
+          <div className="flex h-14 items-center gap-2">
+            <Image
+              src="/logo/logo-mark-light.png"
+              alt="Electius"
+              width={26}
+              height={26}
+              className="object-contain"
+              priority
+            />
+            <span className="font-heading text-[1.1875rem] font-bold tracking-tight text-brand-900">
+              Electius
+            </span>
+          </div>
+          <AccessibilityMenu />
+        </div>
       </header>
       <main className="mx-auto w-full max-w-voter grow px-6 py-8">
         {children}

@@ -1860,6 +1860,12 @@
   },
   "voter": {
     "noticeLink": "Kako postupamo s vašim podacima",
+    "a11y": {
+      "label": "Pristupačnost",
+      "largerText": "Veći tekst",
+      "highContrast": "Jači kontrast",
+      "note": "Ništa se ne sprema — postavke vrijede dok je ova stranica otvorena."
+    },
     "flow": {
       "stepLabel": "Korak {step} od 5",
       "back": "Natrag",

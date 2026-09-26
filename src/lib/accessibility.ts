@@ -41,3 +41,21 @@ export function accessibilityAttributes(
   }
   return attrs;
 }
+
+// Birač bira samo ove dvije — pokret već pokriva `prefers-reduced-motion`,
+// a fokus se na glasačkom listiću vidi pri tabulatoru. Nikad ne smije
+// naslijediti adminov zadani `focusOutlines: true`.
+export const VOTER_ACCESSIBILITY_KEYS = ["largerText", "highContrast"] as const;
+
+export type VoterAccessibilityPrefs = Record<
+  (typeof VOTER_ACCESSIBILITY_KEYS)[number],
+  boolean
+>;
+
+export function voterAccessibilityAttributes(prefs: VoterAccessibilityPrefs) {
+  return accessibilityAttributes({
+    reduceMotion: false,
+    focusOutlines: false,
+    ...prefs,
+  });
+}

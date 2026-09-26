@@ -3,6 +3,7 @@ import {
   ACCESSIBILITY_DEFAULTS,
   ACCESSIBILITY_KEYS,
   accessibilityAttributes,
+  voterAccessibilityAttributes,
 } from "@/lib/accessibility";
 
 describe("accessibilityAttributes", () => {
@@ -52,5 +53,32 @@ describe("accessibilityAttributes", () => {
       largerText: false,
       focusOutlines: true,
     });
+  });
+});
+
+describe("voterAccessibilityAttributes", () => {
+  // Birač ima samo dvije postavke. Da se na listiću pojavi adminov
+  // data-focus-outlines ili data-reduce-motion, stranica bi se promijenila
+  // bez ijednog klika — ovo to zabranjuje.
+  it("never emits the two admin-only attributes, even with both on", () => {
+    const attrs = voterAccessibilityAttributes({
+      largerText: true,
+      highContrast: true,
+    });
+
+    expect(attrs).toEqual({
+      "data-reduce-motion": undefined,
+      "data-high-contrast": "",
+      "data-larger-text": "",
+      "data-focus-outlines": undefined,
+    });
+  });
+
+  it("emits nothing when both are off", () => {
+    const attrs = voterAccessibilityAttributes({
+      largerText: false,
+      highContrast: false,
+    });
+    expect(Object.values(attrs).every((v) => v === undefined)).toBe(true);
   });
 });
