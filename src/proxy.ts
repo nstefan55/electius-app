@@ -32,8 +32,13 @@ export default function proxy(request: NextRequest) {
     // /vote/* off the admin host BEFORE the auth gate so a stray dashboard-host
     // magic link reaches the ballot, never the admin login — the admin surface
     // must not serve voter routes (anonymity boundary). Fail-open if env unset.
+    // /verify is the same voter surface: without it the cookie gate below sends
+    // a voter checking their code to the admin login.
     const marketingUrl = process.env.NEXT_PUBLIC_MARKETING_URL;
-    if (marketingUrl && (rest === "/vote" || rest.startsWith("/vote/"))) {
+    const voterPath = ["/vote", "/verify"].some(
+      (p) => rest === p || rest.startsWith(`${p}/`),
+    );
+    if (marketingUrl && voterPath) {
       return NextResponse.redirect(
         new URL(`/${prefix ?? routing.defaultLocale}${rest}${search}`, marketingUrl),
       );

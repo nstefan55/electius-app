@@ -1902,7 +1902,7 @@
       },
       "confirmed": {
         "title": "Your vote has been recorded",
-        "sub": "Thank you for voting. Keep this code to verify your vote was counted.",
+        "sub": "Thank you for voting. Keep this code so you can check that your vote was recorded.",
         "hashLabel": "Your verification code",
         "copyHash": "Copy code",
         "download": "Download confirmation",
@@ -1914,7 +1914,8 @@
         "org": "Organization: {org}",
         "time": "Time: {time}",
         "hash": "Verification code: {hash}",
-        "note": "This code confirms your vote was recorded. Your vote is anonymous and cannot be linked back to you."
+        "note": "This code confirms your vote was recorded. Your vote is anonymous and cannot be linked back to you.",
+        "verify": "Verify: {url}"
       },
       "invalid": {
         "title": "This link isn't valid",
@@ -1992,6 +1993,32 @@
       "anon": "Only aggregate results are shown — individual votes are anonymous.",
       "hiddenTitle": "Results are not published",
       "hiddenSub": "Results for this election are published by the organizer. If you believe they should be available, contact the organizer."
+    },
+    "verify": {
+      "title": "Verify your vote",
+      "sub": "Enter the verification code from your confirmation.",
+      "codeLabel": "Verification code",
+      "codeError": "The code is 64 characters (0–9, a–f).",
+      "cta": "Verify",
+      "privacy": "Verification runs in your browser and does not reveal how you voted.",
+      "electionLine": "{title} · {org}",
+      "verifiedTitle": "Your vote is in the sealed set",
+      "verifiedSub": "Verified in your browser. Sealed {date}.",
+      "rootLabel": "Root (Merkle root)",
+      "rootCompare": "Compare it with the root in the organization's report.",
+      "failedTitle": "Verification failed",
+      "failedSub": "Keep your confirmation and contact the organization running the election.",
+      "recordedTitle": "Your vote has been recorded",
+      "recordedSub": "Verification will be available once the organization seals the election.",
+      "sealedTitle": "Your vote is recorded and sealed",
+      "noProofSub": "An independent proof is not available for this election.",
+      "notFoundTitle": "Code not found",
+      "notFoundSub": "Check the code and that you opened the link from your confirmation.",
+      "rateTitle": "Too many attempts",
+      "rateBody": "Try again in a few minutes.",
+      "failed": "Could not connect. Please try again.",
+      "again": "Verify another code",
+      "link": "Verify your vote"
     }
   },
   "legal": {

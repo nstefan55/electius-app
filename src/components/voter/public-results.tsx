@@ -22,6 +22,7 @@ export async function PublicResults({
   election: PublicResultsElection;
 }) {
   const t = await getTranslations("voter.results");
+  const tv = await getTranslations("voter.verify");
   const locale = await getLocale();
 
   const voters = election._count.voters;
@@ -121,6 +122,14 @@ export async function PublicResults({
         ))}
       </div>
 
+      {/* Obični <a> s već poznatim lokalom: ova je ruta jedina ISR ruta, pa
+          ovdje ne uvodimo ni jedan novi next-intl poslužiteljski API. */}
+      <a
+        href={`/${locale}/verify/${election.id}`}
+        className="text-center text-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-600"
+      >
+        {tv("link")}
+      </a>
       <p className="text-center text-xs leading-relaxed text-neutral-600">
         {t("anon")}
       </p>

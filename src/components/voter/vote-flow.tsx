@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Copy, Mail, TriangleAlert } from "lucide-react";
+import { Link } from "@/i18n/navigation";
 import {
   BTN_GHOST_MD,
   BTN_PRIMARY_XL,
@@ -41,6 +42,7 @@ type Phase =
 
 export function VoteFlow({ token, election, options }: VoteFlowProps) {
   const t = useTranslations("voter.flow");
+  const tv = useTranslations("voter.verify");
   const locale = useLocale();
   const [step, setStep] = useState(1);
   const [picks, setPicks] = useState<string[]>([]);
@@ -99,6 +101,11 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
       t("receipt.org", { org: election.organizationName }),
       t("receipt.time", { time: new Date().toLocaleString(locale) }),
       t("receipt.hash", { hash: voteHash }),
+      // Kôd u FRAGMENTU: poveznica iz datoteke otvara već popunjenu provjeru, a
+      // fragment nikad ne ide poslužitelju. Birač je na apexu, pa je origin točan.
+      t("receipt.verify", {
+        url: `${window.location.origin}/${locale}/verify/${election.id}#${voteHash}`,
+      }),
       "",
       t("receipt.note"),
     ].join("\n");
@@ -207,6 +214,15 @@ export function VoteFlow({ token, election, options }: VoteFlowProps) {
           >
             {t("confirmed.download")}
           </button>
+          {/* Nova kartica: ovaj zaslon ostaje otvoren, a kôd je u fragmentu. */}
+          <Link
+            href={`/verify/${election.id}#${phase.voteHash}`}
+            target="_blank"
+            rel="noopener"
+            className={BTN_GHOST_MD}
+          >
+            {tv("link")}
+          </Link>
           <p className="text-center text-xs text-neutral-600">
             {t("confirmed.close")}
           </p>

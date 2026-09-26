@@ -10,6 +10,7 @@ import {
 import { Link } from "@/i18n/navigation";
 import type { BallotState } from "@/lib/services/vote.service";
 import {
+  BTN_GHOST_MD,
   BTN_PRIMARY_XL,
   BTN_SECONDARY_LG,
   formatVoterDateTime,
@@ -30,6 +31,7 @@ type StateScreen = Exclude<
 
 export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
   const t = await getTranslations("voter.flow");
+  const tv = await getTranslations("voter.verify");
   const locale = await getLocale();
 
   if (ballot.state === "invalid") {
@@ -88,6 +90,9 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
         >
           {t("used.alertBody")}
         </VoterAlert>
+        <Link href={`/verify/${election.id}`} className={BTN_SECONDARY_LG}>
+          {tv("link")}
+        </Link>
       </VoterCard>
     );
   }
@@ -158,6 +163,13 @@ export async function VoterStateScreen({ ballot }: { ballot: StateScreen }) {
           {t("closed.noResults")}
         </p>
       )}
+      {/* false = birač s poveznicom koji nije glasovao; null = QR posjetitelj,
+          koji je možda glasovao preko vlastite poveznice. */}
+      {ballot.voted !== false ? (
+        <Link href={`/verify/${election.id}`} className={BTN_GHOST_MD}>
+          {tv("link")}
+        </Link>
+      ) : null}
       <p className="text-center text-xs text-neutral-600">{t("closed.anon")}</p>
     </VoterCard>
   );

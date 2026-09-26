@@ -1902,7 +1902,7 @@
       },
       "confirmed": {
         "title": "Vaš glas je zabilježen",
-        "sub": "Hvala na glasovanju. Sačuvajte ovaj kôd kako biste mogli potvrditi da je vaš glas prebrojen.",
+        "sub": "Hvala na glasovanju. Sačuvajte ovaj kôd kako biste mogli provjeriti da je vaš glas zabilježen.",
         "hashLabel": "Vaš verifikacijski kôd",
         "copyHash": "Kopiraj kôd",
         "download": "Preuzmi potvrdu",
@@ -1914,7 +1914,8 @@
         "org": "Organizacija: {org}",
         "time": "Vrijeme: {time}",
         "hash": "Verifikacijski kôd: {hash}",
-        "note": "Ovaj kôd potvrđuje da je vaš glas zabilježen. Glas je anoniman i ne može se povezati s vama."
+        "note": "Ovaj kôd potvrđuje da je vaš glas zabilježen. Glas je anoniman i ne može se povezati s vama.",
+        "verify": "Provjera: {url}"
       },
       "invalid": {
         "title": "Ova poveznica ne vrijedi",
@@ -1992,6 +1993,32 @@
       "anon": "Prikazani su samo zbirni rezultati — pojedinačni glasovi su anonimni.",
       "hiddenTitle": "Rezultati nisu objavljeni",
       "hiddenSub": "Rezultate ovih izbora objavljuje organizator. Ako mislite da bi trebali biti dostupni, obratite se organizatoru."
+    },
+    "verify": {
+      "title": "Provjerite svoj glas",
+      "sub": "Unesite verifikacijski kôd s potvrde.",
+      "codeLabel": "Verifikacijski kôd",
+      "codeError": "Kôd ima 64 znaka (0–9, a–f).",
+      "cta": "Provjeri",
+      "privacy": "Provjera se izvodi u vašem pregledniku i ne otkriva za koga ste glasovali.",
+      "electionLine": "{title} · {org}",
+      "verifiedTitle": "Vaš glas je u zapečaćenom skupu",
+      "verifiedSub": "Provjereno u vašem pregledniku. Zapečaćeno {date}.",
+      "rootLabel": "Korijen (Merkle root)",
+      "rootCompare": "Usporedite ga s korijenom u izvještaju organizacije.",
+      "failedTitle": "Provjera nije uspjela",
+      "failedSub": "Sačuvajte potvrdu i obratite se organizaciji izbora.",
+      "recordedTitle": "Vaš glas je zabilježen",
+      "recordedSub": "Provjera će biti dostupna nakon što organizacija zapečati izbore.",
+      "sealedTitle": "Vaš glas je zabilježen i zapečaćen",
+      "noProofSub": "Neovisni dokaz za ove izbore nije dostupan.",
+      "notFoundTitle": "Kôd nije pronađen",
+      "notFoundSub": "Provjerite kôd i jeste li otvorili poveznicu s potvrde.",
+      "rateTitle": "Previše pokušaja",
+      "rateBody": "Pokušajte ponovno za nekoliko minuta.",
+      "failed": "Povezivanje nije uspjelo. Pokušajte ponovno.",
+      "again": "Provjeri drugi kôd",
+      "link": "Provjerite svoj glas"
     }
   },
   "legal": {
