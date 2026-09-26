@@ -49,6 +49,10 @@ const limiters = (() => {
     // 30 not 10; resend is keyed IP+email so it stays tight.
     vote: make(redis, "vote", 30, "15 m"),
     resendVoteLink: make(redis, "resend-vote-link", 3, "15 m"),
+    // Javna provjera koda: 256-bitni kôd se ne pogađa, pa ovo tjera smeće, a
+    // stari (razbijljivi) kodovi trebaju ~10⁸ upita po listiću. Široko jer se
+    // nakon zatvaranja cijela kohorta provjerava iza istog kampusnog IP-a.
+    verifyReceipt: make(redis, "verify-receipt", 60, "15 m"),
     // PDF izvještaj (election-report-storage-spec §10): svaki render pokreće
     // preglednik, pa je petlja po 20 izbora pravi novac. Ključ je IP+korisnik.
     // I brzi put (posluživanje spremljenog objekta) troši kvotu — jednostavnije,
