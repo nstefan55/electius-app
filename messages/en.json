@@ -1860,6 +1860,12 @@
   },
   "voter": {
     "noticeLink": "How we handle your data",
+    "a11y": {
+      "label": "Accessibility",
+      "largerText": "Larger text",
+      "highContrast": "High contrast",
+      "note": "Nothing is saved — these apply while this page is open."
+    },
     "flow": {
       "stepLabel": "Step {step} of 5",
       "back": "Go back",

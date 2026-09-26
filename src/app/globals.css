@@ -242,6 +242,24 @@
   }
 }
 
+/* Isto za kontrast, ali SAMO na biračkim stranicama (`data-voter-chrome` na
+   rasporedu (voter)). Birač nema račun ni postavke, pa ga ovo dočeka prije
+   ijednog klika. Namjerno ne na :root: tamna podnožja marketinga i pravnih
+   stranica (#142844) nose text-neutral-400, a ova zamjena ga spušta s 5.8:1
+   na 1.96:1 — izmjereno. Tokeni su preslika bloka `data-high-contrast`
+   niže — mijenjaš jedan, mijenjaš oba. */
+@media screen and (prefers-contrast: more) {
+  [data-voter-chrome] {
+    --color-neutral-100: #d1d5db;
+    --color-neutral-200: #6b7280;
+    --color-neutral-400: #4b5563;
+    --color-neutral-600: #1f2937;
+    --border: #6b7280;
+    --input: #6b7280;
+    --muted-foreground: #1f2937;
+  }
+}
+
 @media screen {
   /* Manje animacija */
   html:has([data-reduce-motion]) *,
