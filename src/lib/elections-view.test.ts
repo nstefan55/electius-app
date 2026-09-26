@@ -13,6 +13,8 @@ import {
   timeLeftParts,
   turnoutPct,
   zonedWallClockToInstant,
+  instantToZonedWallClock,
+  isEditable,
   turnoutMilestoneDue,
   matchesTurnout,
   matchesWindow,
@@ -591,6 +593,45 @@ describe("zonedWallClockToInstant", () => {
   it("ELECTION_TIME_ZONE je imenovana zona, ne pomak", () => {
     // Pomak (+02:00) bio bi pogrešan pola godine; ime nosi i DST pravila.
     expect(ELECTION_TIME_ZONE).toBe("Europe/Zagreb");
+  });
+});
+
+// Gumb Uredi i stranica za uređivanje: samo prije objave. Pokrenuti izbori
+// imaju glasove i tokene — uređivanje bi prepisalo tekuće glasanje.
+describe("isEditable", () => {
+  it.each(["DRAFT", "SCHEDULED"] as const)("%s se smije uređivati", (s) => {
+    expect(isEditable(s)).toBe(true);
+  });
+  it.each(["ACTIVE", "CLOSED", "ARCHIVED"] as const)("%s se ne smije uređivati", (s) => {
+    expect(isEditable(s)).toBe(false);
+  });
+});
+
+// Obrat za čarobnjak u načinu uređivanja: spremljeni trenutak mora se vratiti
+// kao isti zidni sat koji je administrator utipkao, u obje polovice godine.
+describe("instantToZonedWallClock", () => {
+  it("ljeto: 16:00Z je zidnih 18:00", () => {
+    expect(instantToZonedWallClock(new Date("2026-09-10T16:00:00Z"))).toBe(
+      "2026-09-10T18:00",
+    );
+  });
+
+  it("zima: 17:00Z je zidnih 18:00", () => {
+    expect(instantToZonedWallClock(new Date("2026-01-10T17:00:00Z"))).toBe(
+      "2026-01-10T18:00",
+    );
+  });
+
+  it("prelazi ponoć u zoni, ne u UTC-u", () => {
+    expect(instantToZonedWallClock(new Date("2026-09-10T22:30:00Z"))).toBe(
+      "2026-09-11T00:30",
+    );
+  });
+
+  it("kružno putovanje sa zonedWallClockToInstant", () => {
+    for (const wall of ["2026-03-01T09:15", "2026-07-20T23:59", "2026-12-31T00:00"]) {
+      expect(instantToZonedWallClock(zonedWallClockToInstant(wall)!)).toBe(wall);
+    }
   });
 });
 

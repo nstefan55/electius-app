@@ -1,13 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { session } from "./session-fixture";
 
+// Transakcijski klijent za updateElection — hoisted jer ga koristi tvornica mocka.
+const tx = vi.hoisted(() => ({
+  election: { updateMany: vi.fn() },
+  voteOption: { deleteMany: vi.fn(), createMany: vi.fn() },
+  voter: { deleteMany: vi.fn(), createMany: vi.fn() },
+}));
+
 // Mock the two seams (DB + session) per the action-test pattern.
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findUnique: vi.fn() },
     election: { create: vi.fn() },
+    $transaction: vi.fn(),
   },
 }));
+// refresh() baca izvan prave radnje poslužitelja.
+vi.mock("next/cache", () => ({ refresh: vi.fn() }));
 vi.mock("@/lib/auth/require-session", () => ({
   requireSession: vi.fn(),
 }));
@@ -26,7 +36,10 @@ const { resolveEntitlement } = await import(
   "@/lib/services/entitlement.service"
 );
 const { clearSweepGate } = await import("@/lib/services/sweep-gate");
-const { createElection } = await import("@/actions/create-election");
+const { refresh } = await import("next/cache");
+const { createElection, updateElection } = await import(
+  "@/actions/create-election"
+);
 
 const basePayload = {
   title: "Student council",
@@ -427,5 +440,211 @@ describe("createElection — obavijesti o izlaznosti", () => {
     });
 
     expect(res).toEqual({ success: false, error: "voterReminderLocked" });
+  });
+});
+
+// Način uređivanja. Ista pravila kao stvaranje (dijele prepareWizard i
+// planRefusal), pa se ovdje pinja samo ono što je uređivanju vlastito: WHERE s
+// organizacijom i statusom, zamjena kandidata i birača, i da odbijanje ne piše.
+describe("updateElection", () => {
+  const whereOf = () =>
+    vi.mocked(tx.election.updateMany).mock.calls[0]![0]!.where;
+
+  beforeEach(() => {
+    // Gornji beforeEach samo postavlja vrijednost; brojač poziva bi inače nosio
+    // pozive iz prethodnih testova.
+    vi.mocked(requireSession).mockClear();
+    vi.mocked(refresh).mockClear();
+    vi.mocked(prisma.$transaction)
+      .mockReset()
+      .mockImplementation(((fn: (t: typeof tx) => unknown) => fn(tx)) as never);
+    vi.mocked(tx.election.updateMany).mockReset().mockResolvedValue({ count: 1 });
+    for (const m of [
+      tx.voteOption.deleteMany,
+      tx.voteOption.createMany,
+      tx.voter.deleteMany,
+      tx.voter.createMany,
+    ]) {
+      vi.mocked(m).mockReset().mockResolvedValue({ count: 0 } as never);
+    }
+  });
+
+  it("odbija neispravan id prije sesije", async () => {
+    expect(await updateElection(42, basePayload)).toEqual({
+      success: false,
+      error: "invalid",
+    });
+    expect(requireSession).not.toHaveBeenCalled();
+  });
+
+  it("dijeli pravila čarobnjaka (sprega tipa i metode)", async () => {
+    const res = await updateElection("el_1", {
+      ...basePayload,
+      electionType: "POLL",
+      votingType: "MULTI_CHOICE",
+    });
+    expect(res).toEqual({ success: false, error: "coupling" });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("WHERE nosi id, organizaciju i samo DRAFT/SCHEDULED", async () => {
+    await updateElection("el_1", basePayload);
+
+    expect(whereOf()).toEqual({
+      id: "el_1",
+      organizationId: "org_1",
+      status: { in: ["DRAFT", "SCHEDULED"] },
+    });
+  });
+
+  it("zamjenjuje kandidate i birače, s deduplikacijom i redoslijedom", async () => {
+    const res = await updateElection("el_1", basePayload);
+    expect(res).toEqual({ success: true, data: { id: "el_1" } });
+    // Bez ovoga pregled nakon spremanja pokazuje stari naslov iz layouta.
+    expect(refresh).toHaveBeenCalledOnce();
+
+    expect(tx.voteOption.deleteMany).toHaveBeenCalledWith({
+      where: { electionId: "el_1" },
+    });
+    expect(tx.voteOption.createMany).toHaveBeenCalledWith({
+      data: [
+        { text: "Ana", description: null, orderIndex: 0, electionId: "el_1" },
+        { text: "Marko", description: "2nd year", orderIndex: 1, electionId: "el_1" },
+      ],
+    });
+    expect(tx.voter.deleteMany).toHaveBeenCalledWith({
+      where: { electionId: "el_1" },
+    });
+    const voters = vi.mocked(tx.voter.createMany).mock.calls[0]![0]!.data;
+    expect(voters).toEqual([
+      { email: "petra@unizg.hr", firstName: "Petra", lastName: "Novak", electionId: "el_1" },
+      { email: "luka@unizg.hr", firstName: "Luka", lastName: null, electionId: "el_1" },
+    ]);
+  });
+
+  it("pokrenuti/tuđi/nepostojeći izbori: invalidStatus i ništa se ne briše", async () => {
+    vi.mocked(tx.election.updateMany).mockResolvedValue({ count: 0 });
+
+    const res = await updateElection("el_1", basePayload);
+
+    expect(res).toEqual({ success: false, error: "invalidStatus" });
+    expect(tx.voteOption.deleteMany).not.toHaveBeenCalled();
+    expect(tx.voter.deleteMany).not.toHaveBeenCalled();
+    expect(clearSweepGate).not.toHaveBeenCalled();
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("zakazano spremanje piše SCHEDULED i briše rok metle", async () => {
+    await updateElection("el_1", {
+      ...basePayload,
+      startMode: "scheduled",
+      startAt: "2999-06-01T08:00",
+      closeAt: "2999-06-01T20:00",
+    });
+
+    const data = vi.mocked(tx.election.updateMany).mock.calls[0]![0]!.data;
+    expect(data.status).toBe("SCHEDULED");
+    expect(clearSweepGate).toHaveBeenCalledOnce();
+  });
+
+  it("skica vraća i zakazane izbore u DRAFT, bez brisanja roka", async () => {
+    await updateElection(
+      "el_1",
+      {
+        ...basePayload,
+        startMode: "scheduled",
+        startAt: "2999-06-01T08:00",
+        closeAt: "2999-06-01T20:00",
+      },
+      true,
+    );
+
+    const data = vi.mocked(tx.election.updateMany).mock.calls[0]![0]!.data;
+    expect(data.status).toBe("DRAFT");
+    expect(clearSweepGate).not.toHaveBeenCalled();
+  });
+
+  it("razrješava pravo za izbore koji se uređuju", async () => {
+    await updateElection("el_1", basePayload);
+    expect(resolveEntitlement).toHaveBeenCalledWith("el_1", "org_1");
+  });
+
+  it("granica birača odbija prije transakcije", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+    const voters = Array.from({ length: 51 }, (_, i) => ({
+      name: `V ${i}`,
+      email: `v${i}@unizg.hr`,
+    }));
+
+    const res = await updateElection("el_1", { ...basePayload, voters });
+
+    expect(res).toEqual({ success: false, error: "voterCap", cap: 50 });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("Free ne može uključiti LIVE ni kroz uređivanje skice", async () => {
+    vi.mocked(resolveEntitlement).mockResolvedValue({ kind: "free" });
+
+    const res = await updateElection(
+      "el_1",
+      { ...basePayload, liveResults: true },
+      true,
+    );
+
+    expect(res).toEqual({ success: false, error: "liveResultsLocked" });
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+  });
+
+  it("pad baze daje failed, ne invalidStatus", async () => {
+    vi.mocked(tx.voter.createMany).mockRejectedValue(new Error("boom"));
+
+    expect(await updateElection("el_1", basePayload)).toEqual({
+      success: false,
+      error: "failed",
+    });
+  });
+});
+
+// Pravilo statusa (2026-09-26): zakazano znači zakazani način I upisan početak.
+// Prazan početak sprema skicu — tako se zakazani izbori vraćaju u DRAFT kad se
+// datum izbriše — a neispravan datum ostaje greška.
+describe("zakazani način bez početka", () => {
+  const noStart = {
+    ...basePayload,
+    startMode: "scheduled",
+    startAt: "",
+    closeAt: "2999-06-01T20:00",
+  };
+
+  it("createElection sprema DRAFT i ne dira rok metle", async () => {
+    vi.mocked(clearSweepGate).mockClear();
+    const res = await createElection(noStart);
+
+    expect(res.success).toBe(true);
+    const arg = vi.mocked(prisma.election.create).mock.calls[0][0];
+    expect(arg.data.status).toBe("DRAFT");
+    expect(clearSweepGate).not.toHaveBeenCalled();
+  });
+
+  it("updateElection vraća zakazane izbore u DRAFT kad je datum izbrisan", async () => {
+    vi.mocked(prisma.$transaction).mockImplementation(((
+      fn: (t: typeof tx) => unknown,
+    ) => fn(tx)) as never);
+    vi.mocked(tx.election.updateMany).mockReset().mockResolvedValue({ count: 1 });
+
+    await updateElection("el_1", noStart);
+
+    const data = vi.mocked(tx.election.updateMany).mock.calls[0]![0]!.data;
+    expect(data.status).toBe("DRAFT");
+  });
+
+  it("neispravan (ne prazan) početak je greška, ne tiha skica", async () => {
+    // Skica, jer bi puno spremanje palo i na provjeri roka — ovako pada SAMO na
+    // provjeri neispravnog datuma.
+    const res = await createElection(
+      { ...noStart, startAt: "2999-13-45T99:00" },
+      true,
+    );
+    expect(res).toEqual({ success: false, error: "schedule" });
   });
 });

@@ -118,8 +118,11 @@ export async function POST(request: Request) {
     // Same atomic-guard shape as startElection: the status check lives in the
     // WHERE clause, so a concurrent sweep flips each election exactly once.
     // startsAt stays as scheduled — the admin picked that time.
+    // startsAt je i u WHERE: od uređivanja izbora (wizard edit mode) početak se
+    // može pomaknuti između gornjeg findMany i ovog upisa. Bez uvjeta metla bi
+    // pokrenula izbore koje je administrator upravo odgodio.
     const { count } = await prisma.election.updateMany({
-      where: { id, status: "SCHEDULED" },
+      where: { id, status: "SCHEDULED", startsAt: { lte: new Date() } },
       data: { status: "ACTIVE" },
     });
     if (count === 0) continue;
