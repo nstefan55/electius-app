@@ -11,6 +11,13 @@ export type ElectionStatus =
 
 export type ResultsMode = "AFTER_CLOSE" | "LIVE";
 
+// Uređivati se smiju samo izbori prije objave — nema glasova ni tokena, pa se
+// kandidati i birači smiju zamijeniti. Jedno pravilo za gumb Uredi, stranicu
+// za uređivanje i WHERE u updateElection (invarijanta #5).
+export const EDITABLE_STATUSES = ["DRAFT", "SCHEDULED"] as const;
+export const isEditable = (status: ElectionStatus) =>
+  (EDITABLE_STATUSES as readonly ElectionStatus[]).includes(status);
+
 export interface DashboardElection {
   id: string;
   name: string;
@@ -329,6 +336,13 @@ export function zonedWallClockToInstant(wallClock: string): Date | null {
   if (probe.getUTCMonth() !== MO - 1 || probe.getUTCDate() !== D) return null;
   const first = naive - zoneOffsetMs(probe);
   return new Date(naive - zoneOffsetMs(new Date(first)));
+}
+
+// Obrat gornjeg: spremljeni trenutak → zidni sat za čarobnjak u načinu
+// uređivanja ("2026-09-10T18:00"). Sekunde otpadaju jer ih čarobnjak nema.
+export function instantToZonedWallClock(instant: Date): string {
+  const local = new Date(instant.getTime() + zoneOffsetMs(instant));
+  return local.toISOString().slice(0, 16);
 }
 
 // Godina zatvaranja u zoni izbora. Filtar i prikaz moraju gledati istu zonu,

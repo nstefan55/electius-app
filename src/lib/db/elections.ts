@@ -2,7 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import type { DashboardElection, ElectionStatus } from "@/lib/elections-view";
+import {
+  EDITABLE_STATUSES,
+  type DashboardElection,
+  type ElectionStatus,
+} from "@/lib/elections-view";
 import { clampPage, pageCountOf } from "@/lib/pagination";
 import { mutationsFrozen } from "@/lib/services/token.service";
 import {
@@ -299,6 +303,46 @@ export const getBallotPreview = cache(
     return e ? { votingType: e.votingType, options: e.options } : null;
   },
 );
+
+// Sve što čarobnjak u načinu uređivanja treba da popuni svih pet koraka.
+// Status stoji u WHERE: pokrenuti izbori vraćaju null kao i tuđi ili nepostojeći,
+// pa stranica ne može otvoriti obrazac za izbore koji se više ne smiju mijenjati.
+// Ne treba cache(): čita ga samo stranica za uređivanje, jednom po zahtjevu.
+export async function getElectionForEdit(id: string, organizationId: string) {
+  return prisma.election.findFirst({
+    where: { id, organizationId, status: { in: [...EDITABLE_STATUSES] } },
+    select: {
+      title: true,
+      description: true,
+      electionType: true,
+      votingType: true,
+      status: true,
+      startsAt: true,
+      endsAt: true,
+      resultsMode: true,
+      resultsVisible: true,
+      allowAbstain: true,
+      quorumThreshold: true,
+      adminTurnoutReminder: true,
+      voterReminder24h: true,
+      options: {
+        orderBy: { orderIndex: "asc" },
+        select: { text: true, description: true },
+      },
+      // ponytail: cijeli popis u stanje klijenta — sitno na MVP razini (Free 50,
+      // Pro 500 po izborima); straničenje tek ako granica naraste.
+      // id kao drugi ključ: uređivanje piše sve birače jednim INSERT-om, pa
+      // dijele createdAt — bez njega bi se redoslijed miješao između uređivanja.
+      voters: {
+        orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+        select: { email: true, firstName: true, lastName: true },
+      },
+    },
+  });
+}
+export type ElectionForEdit = NonNullable<
+  Awaited<ReturnType<typeof getElectionForEdit>>
+>;
 
 // Popis birača za CSV izvoz. `select` je granica anonimnosti: nema tokena ni
 // hasha, ništa spojivo s glasačkim listićem.

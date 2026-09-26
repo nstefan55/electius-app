@@ -532,6 +532,10 @@
       "continue": "Continue",
       "create": "Create election",
       "creating": "Creating…",
+      "editTitle": "Edit election",
+      "saveChanges": "Save changes",
+      "saving": "Saving…",
+      "changesSaved": "Changes saved",
       "errors": {
         "titleRequired": "Add an election title to continue",
         "candidatesRequired": "Add at least two candidates to continue",
@@ -540,7 +544,8 @@
         "voterCap": "The voter list exceeds your plan limit ({cap}).",
         "liveResultsLocked": "Live results are a Pro feature.",
         "voterReminderLocked": "Automatic voter reminders are a Pro feature.",
-        "adminTurnoutLocked": "Automatic turnout updates are a Pro feature."
+        "adminTurnoutLocked": "Automatic turnout updates are a Pro feature.",
+        "editLocked": "This election has started in the meantime, so it can no longer be edited."
       },
       "step1": {
         "title": "Basic information",
@@ -702,7 +707,7 @@
         "noVoters": "No voters added yet",
         "settings": "Schedule & settings",
         "startManual": "Manually (you open voting)",
-        "startUnset": "Scheduled — no time set",
+        "startUnset": "Scheduled with no start — saves as a draft",
         "closeUnset": "Not set",
         "defaultsOnly": "Defaults only"
       },
@@ -761,7 +766,6 @@
         "remove": "Remove election",
         "exit": "Exit",
         "exportCsv": "Export results",
-        "editSoon": "Editing an election is coming soon.",
         "notScheduled": "Not scheduled",
         "closeTitle": "Close election early?",
         "closeBody": "Voting will close immediately instead of {date}. Once closed, no more ballots can be cast. This action is irreversible.",

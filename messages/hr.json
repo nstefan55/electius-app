@@ -532,6 +532,10 @@
       "continue": "Nastavi",
       "create": "Izradi izbore",
       "creating": "Izrada…",
+      "editTitle": "Uređivanje izbora",
+      "saveChanges": "Spremi promjene",
+      "saving": "Spremanje…",
+      "changesSaved": "Promjene su spremljene",
       "errors": {
         "titleRequired": "Dodajte naziv izbora za nastavak",
         "candidatesRequired": "Dodajte barem dva kandidata za nastavak",
@@ -540,7 +544,8 @@
         "voterCap": "Popis birača premašuje granicu plana ({cap}).",
         "liveResultsLocked": "Rezultati uživo dio su Pro plana.",
         "voterReminderLocked": "Automatski podsjetnici biračima dio su Pro plana.",
-        "adminTurnoutLocked": "Automatske obavijesti o izlaznosti dio su Pro plana."
+        "adminTurnoutLocked": "Automatske obavijesti o izlaznosti dio su Pro plana.",
+        "editLocked": "Izbori su u međuvremenu pokrenuti pa se više ne mogu uređivati."
       },
       "step1": {
         "title": "Osnovni podaci",
@@ -702,7 +707,7 @@
         "noVoters": "Još nema dodanih glasača",
         "settings": "Raspored i postavke",
         "startManual": "Ručno (vi otvarate glasovanje)",
-        "startUnset": "Zakazano — vrijeme nije postavljeno",
+        "startUnset": "Zakazano bez početka — sprema se kao skica",
         "closeUnset": "Nije postavljeno",
         "defaultsOnly": "Samo zadane postavke"
       },
@@ -761,7 +766,6 @@
         "remove": "Ukloni izbore",
         "exit": "Izlaz",
         "exportCsv": "Izvoz rezultata",
-        "editSoon": "Uređivanje izbora uskoro stiže.",
         "notScheduled": "Nije zakazano",
         "closeTitle": "Zatvoriti izbore ranije?",
         "closeBody": "Glasanje će se odmah zatvoriti umjesto {date}. Nakon zatvaranja glasovi se više ne mogu predati. Ova radnja je nepovratna.",

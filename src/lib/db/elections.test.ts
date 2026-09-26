@@ -56,6 +56,20 @@ describe("upiti po id-u izbora", () => {
   });
 });
 
+// Uređivanje: osim organizacije, i status stoji u WHERE — pokrenuti izbori
+// moraju izgledati jednako kao nepostojeći, inače se obrazac otvori nad njima.
+describe("getElectionForEdit", () => {
+  it("traži id, organizationId i samo DRAFT/SCHEDULED", async () => {
+    await db.getElectionForEdit("el_1", ORG);
+
+    expect(firstWhere()).toEqual({
+      id: "el_1",
+      organizationId: ORG,
+      status: { in: ["DRAFT", "SCHEDULED"] },
+    });
+  });
+});
+
 // Popisi nemaju id u URL-u, pa je organizacija jedini filtar koji ih dijeli.
 describe("popisi po organizaciji", () => {
   type Listed = { name: string; run: () => Promise<unknown>; where: object };

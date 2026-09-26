@@ -28,6 +28,7 @@ import { StatusBadge } from "@/components/elections/status-badge";
 import { ArchiveConfirmDialog } from "@/components/elections/archive-confirm-dialog";
 import {
   formatVotingDateTime,
+  isEditable,
   resultsDetailAccess,
   shortRoot,
   type ElectionStatus,
@@ -93,7 +94,7 @@ export function ElectionTopbar({
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  const showEdit = status === "DRAFT" || status === "SCHEDULED";
+  const showEdit = isEditable(status);
   const showClose = status === "ACTIVE";
   const showArchive = status === "CLOSED";
   const showRemove = status !== "ACTIVE";
@@ -187,17 +188,10 @@ export function ElectionTopbar({
           <StatusBadge status={status} size="md" />
 
           {showEdit && (
-            <button
-              type="button"
-              // ponytail: no edit route exists yet — the wizard only creates.
-              // Placeholder until the wizard grows an edit mode (see
-              // docs/post-mvp-feature-list.md).
-              onClick={() => toast(t("editSoon"))}
-              className={GHOST_BTN}
-            >
+            <Link href={`/elections/${id}/edit`} className={GHOST_BTN}>
               <Pencil className="size-4" aria-hidden />
               {t("edit")}
-            </button>
+            </Link>
           )}
 
           <button

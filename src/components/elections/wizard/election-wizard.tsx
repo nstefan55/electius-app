@@ -6,7 +6,11 @@ import { Check, Eye, Save, X, ChevronLeft, ChevronRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
-import { createElection, type WizardPayload } from "@/actions/create-election";
+import {
+  createElection,
+  updateElection,
+  type WizardPayload,
+} from "@/actions/create-election";
 import { voterCap, type Entitlement } from "@/lib/entitlements";
 import { StepBasicInfo } from "./step-basic-info";
 import { StepCandidates } from "./step-candidates";
@@ -45,17 +49,35 @@ function toPayload(data: WizardData): WizardPayload {
 // treba znati je li prekidač zaključan, a oba trebaju znati postoji li plan
 // iznad. `Entitlement` je diskriminirana unija primitiva, pa prelazi granicu
 // poslužitelj/klijent kakva jest — zato entitlements.ts namjerno nije server-only.
-export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
+//
+// Način uređivanja (wizard edit mode): `editId` + `initial` stižu s
+// /elections/[id]/edit. Isti koraci, ista pravila, druga radnja — spremanje
+// ažurira izbore i vraća na njihov pregled umjesto na ekran "stvoreno".
+export function ElectionWizard({
+  entitlement,
+  editId,
+  initial,
+}: {
+  entitlement: Entitlement;
+  editId?: string;
+  initial?: WizardData;
+}) {
   const t = useTranslations("dashboard.wizard");
   const cap = voterCap(entitlement);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const [step, setStep] = useState(1);
-  const [data, setData] = useState<WizardData>(INITIAL_WIZARD_DATA);
+  const [data, setData] = useState<WizardData>(initial ?? INITIAL_WIZARD_DATA);
   const [createdId, setCreatedId] = useState<string | null>(null);
 
   const patch = (p: Partial<WizardData>) => setData((d) => ({ ...d, ...p }));
+
+  const exitHref = editId ? `/elections/${editId}` : "/elections";
+  const save = (draft: boolean) =>
+    editId
+      ? updateElection(editId, toPayload(data), draft)
+      : createElection(toPayload(data), draft);
 
   const stepLabel = t("stepLabel", {
     n: step,
@@ -75,11 +97,12 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
       setStep(2);
       return false;
     }
-    if (upTo >= 4 && data.startMode === "scheduled") {
+    // Prazan početak u zakazanom načinu nije greška — izbori se spremaju kao
+    // skica (isto pravilo kao prepareWizard). Provjerava se tek upisan datum.
+    if (upTo >= 4 && data.startMode === "scheduled" && data.startAt) {
       const start = new Date(data.startAt);
       const close = new Date(data.closeAt);
       if (
-        !data.startAt ||
         !data.closeAt ||
         isNaN(start.getTime()) ||
         isNaN(close.getTime()) ||
@@ -120,20 +143,34 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
       toast.error(t(`errors.${res.error}`));
       return;
     }
+    if (res.error === "invalidStatus") {
+      // Izbori su se u međuvremenu pokrenuli (metla ili drugi prozor) —
+      // spremanje bi prepisalo tekuće glasanje, pa ga radnja odbija.
+      toast.error(t("errors.editLocked"));
+      return;
+    }
+    if (res.error === "schedule") {
+      // Najčešće prošli rok zatvaranja na skici koja se uređuje — polje je na
+      // koraku 4, pa poruka vodi onamo, ne ostaje uz sažetak.
+      setStep(4);
+      toast.error(t("errors.scheduleInvalid"));
+      return;
+    }
     toast.error(
-      res.error === "schedule"
-        ? t("errors.scheduleInvalid")
-        : res.error === "candidates"
-          ? t("errors.candidatesRequired")
-          : t("errors.createFailed"),
+      res.error === "candidates"
+        ? t("errors.candidatesRequired")
+        : t("errors.createFailed"),
     );
   }
 
   function submit() {
     if (!validate(4)) return;
     startTransition(async () => {
-      const res = await createElection(toPayload(data));
-      if (res.success) {
+      const res = await save(false);
+      if (res.success && editId) {
+        toast.success(t("changesSaved"));
+        router.push(exitHref);
+      } else if (res.success) {
         setCreatedId(res.data.id);
         router.refresh(); // the /elections list behind the modal has a new row
       } else {
@@ -149,12 +186,13 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
       return;
     }
     startTransition(async () => {
-      const res = await createElection(toPayload(data), true);
+      const res = await save(true);
       if (res.success) {
         toast.success(t("draftSaved"));
         // No refresh() here — it would race and cancel the push; /elections is
-        // dynamic and re-fetches fresh on navigation anyway.
-        router.push("/elections");
+        // dynamic and re-fetches fresh on navigation anyway. (Edit mode: the
+        // action itself calls refresh(), so the [id] layout is already fresh.)
+        router.push(exitHref);
       } else {
         showError(res);
       }
@@ -185,7 +223,7 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
       <header className="flex h-17 shrink-0 items-center justify-between border-b border-border bg-white px-5 sm:px-7">
         <div className="flex min-w-0 items-center gap-4">
           <Link
-            href="/elections"
+            href={exitHref}
             aria-label={t("close")}
             className="flex size-11 shrink-0 items-center justify-center rounded-md border border-border bg-white text-muted-foreground transition-colors hover:bg-neutral-100 hover:text-neutral-800"
           >
@@ -193,7 +231,7 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
           </Link>
           <div className="min-w-0">
             <div className="truncate font-heading text-lg leading-tight font-semibold text-neutral-800">
-              {t("title")}
+              {editId ? t("editTitle") : t("title")}
             </div>
             <div className="mt-px text-[0.8125rem] text-muted-foreground">
               {stepLabel}
@@ -308,7 +346,13 @@ export function ElectionWizard({ entitlement }: { entitlement: Entitlement }) {
               className="inline-flex h-11.5 items-center gap-2 rounded-md bg-primary px-6 text-[0.9375rem] font-semibold text-primary-foreground shadow-xs transition-colors hover:bg-brand-600 disabled:opacity-60"
             >
               <Check className="size-4.5" strokeWidth={2.4} />
-              {isPending ? t("creating") : t("create")}
+              {editId
+                ? isPending
+                  ? t("saving")
+                  : t("saveChanges")
+                : isPending
+                  ? t("creating")
+                  : t("create")}
             </button>
           ) : (
             <button
