@@ -1137,15 +1137,9 @@
         "stagedEmpty": "You have not added any voters yet.",
         "clearAll": "Clear all",
         "removeRow": "Remove from list",
-        "activeWarnTitle": "Voting is in progress",
-        "activeWarnBody": "New voters are invited immediately and count towards turnout, which lowers the percentage and can affect quorum. While voting is open, added voters can no longer be removed.",
         "cancel": "Cancel",
         "submit": "{count, plural, one {Add # voter} other {Add # voters}}",
-        "submitInvite": "{count, plural, one {Add and invite # voter} other {Add and invite # voters}}",
         "added": "{count, plural, one {# voter added} other {# voters added}}",
-        "addedInvited": "{count, plural, one {# voter added and invited} other {# voters added and invited}}",
-        "addedWindowOver": "{count, plural, one {# voter added} other {# voters added}}, but the voting deadline has passed so no invitation was sent.",
-        "addedPartial": "{count, plural, one {# voter added} other {# voters added}}, but {failed, plural, one {# invitation could not be sent} other {# invitations could not be sent}}.",
         "allDuplicates": "Every voter you entered is already on the list.",
         "closed": "The voter list can no longer be changed.",
         "failed": "Could not add the voters. Please try again.",
@@ -1155,8 +1149,7 @@
         "capTitle": "Plan limit reached",
         "capBody": "This election can hold at most {cap} voters. It currently has {current} and you are adding {adding}.",
         "capLink": "See plans",
-        "capUsage": "{used} of {cap} voters used.",
-        "electionEnded": "The voting deadline has passed — voters can no longer be added."
+        "capUsage": "{used} of {cap} voters used."
       },
       "cap": {
         "usage": "{used} of {cap} voters used"
@@ -1166,7 +1159,8 @@
         "filter": "Delivery failed",
         "summary": "Not delivered: {count}",
         "summaryAction": "Not delivered: {count} — show only these voters"
-      }
+      },
+      "listClosed": "The voter list closed when voting started — no new voters can be added."
     },
     "profile": {
       "title": "Profile",

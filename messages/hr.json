@@ -1137,15 +1137,9 @@
         "stagedEmpty": "Još niste dodali nijednog birača.",
         "clearAll": "Očisti sve",
         "removeRow": "Ukloni iz popisa",
-        "activeWarnTitle": "Glasanje je u tijeku",
-        "activeWarnBody": "Novi birači odmah dobivaju pozivnicu i ulaze u izlaznost, što snižava postotak i može utjecati na kvorum. Dok glasanje traje, dodane birače više nije moguće ukloniti.",
         "cancel": "Odustani",
         "submit": "{count, plural, one {Dodaj # birača} few {Dodaj # birača} other {Dodaj # birača}}",
-        "submitInvite": "{count, plural, one {Dodaj i pozovi # birača} few {Dodaj i pozovi # birača} other {Dodaj i pozovi # birača}}",
         "added": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}",
-        "addedInvited": "{count, plural, one {Dodan # birač i poslana mu je pozivnica} few {Dodana # birača i poslane su im pozivnice} other {Dodano # birača i poslane su im pozivnice}}",
-        "addedWindowOver": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}, ali rok za glasanje je prošao pa pozivnica nije poslana.",
-        "addedPartial": "{count, plural, one {Dodan # birač} few {Dodana # birača} other {Dodano # birača}}, ali {failed, plural, one {# pozivnica nije poslana} few {# pozivnice nisu poslane} other {# pozivnica nije poslano}}.",
         "allDuplicates": "Svi uneseni birači već su na popisu.",
         "closed": "Popis birača se više ne može mijenjati.",
         "failed": "Dodavanje nije uspjelo. Pokušajte ponovno.",
@@ -1155,8 +1149,7 @@
         "capTitle": "Dosegnuta granica plana",
         "capBody": "Ovi izbori mogu imati najviše {cap} birača. Trenutačno ih je {current}, a dodajete još {adding}.",
         "capLink": "Pogledaj planove",
-        "capUsage": "Iskorišteno {used} od {cap} birača.",
-        "electionEnded": "Rok za glasanje je prošao — birači se više ne mogu dodati."
+        "capUsage": "Iskorišteno {used} od {cap} birača."
       },
       "cap": {
         "usage": "Iskorišteno {used} od {cap} birača"
@@ -1166,7 +1159,8 @@
         "filter": "Neisporučeno",
         "summary": "Neisporučeno: {count}",
         "summaryAction": "Neisporučeno: {count} — prikaži samo te birače"
-      }
+      },
+      "listClosed": "Popis birača zaključen je pokretanjem glasanja — novi birači se više ne mogu dodati."
     },
     "profile": {
       "title": "Profil",

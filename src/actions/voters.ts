@@ -8,11 +8,9 @@ import {
   toVoterFields,
   voterRowSchema,
 } from "@/lib/wizard-csv";
-import {
-  inviteVoter,
-  publishElection,
-} from "@/lib/services/publication.service";
+import { inviteVoter } from "@/lib/services/publication.service";
 import { voterCap } from "@/lib/entitlements";
+import { EDITABLE_STATUSES } from "@/lib/elections-view";
 import { resolveEntitlement } from "@/lib/services/entitlement.service";
 import { mutationsFrozen } from "@/lib/services/token.service";
 import { resolveLocale } from "@/i18n/config";
@@ -20,12 +18,8 @@ import { resolveLocale } from "@/i18n/config";
 // Upravljanje biračima (voter-management-spec). Svaka akcija je org-scoped i
 // nosi status izbora u WHERE klauzuli — nikad pročitaj-pa-provjeri.
 //
-// Odluke 2026-07-26:
-//  · Brisanje samo dok izbori nisu počeli (DRAFT/SCHEDULED). Dodavanje tijekom
-//    glasanja samo snižava izlaznost (kvorum teže), brisanje bi je dizalo i
-//    moglo proizvesti kvorum koji nije postignut.
-//  · Birač dodan u ACTIVE izbore dobiva pozivnicu odmah — PENDING birač bez
-//    poveznice je nevidljivo pokvaren, a već se broji u nazivniku izlaznosti.
+// Odluke:
+//  · Popis se zatvara pokretanjem glasanja (2026-09-27, poništava 2026-07-26).
 //  · Bez odgode između ponovnih slanja — kao sendElectionReminders.
 
 type ActionResult = { success: boolean; error?: string };
@@ -33,20 +27,14 @@ type ActionResult = { success: boolean; error?: string };
 export type AddVotersResult = ActionResult & {
   added?: number;
   skipped?: number;
-  sent?: number;
-  failed?: number;
-  // Birači su dodani, ali rok je istekao pa pozivnica nije poslana.
-  blocked?: "windowOver";
   // Uz error: "voterCap". Granica i trenutačno stanje putuju s odbijanjem jer
   // ih poruka mora imenovati — goli `error: string` to ne može (§4).
   cap?: number;
   current?: number;
 };
 
-// Popis se smije mijenjati dok izbori nisu gotovi.
+// Ime se smije ispraviti dok izbori nisu gotovi (kozmetika, ne mijenja popis).
 const OPEN_STATUSES = ["DRAFT", "SCHEDULED", "ACTIVE"] as const;
-// Brisanje: samo prije otvaranja glasanja.
-const REMOVABLE_STATUSES = ["DRAFT", "SCHEDULED"] as const;
 
 const addSchema = z.object({
   electionId: z.string().min(1),
@@ -73,34 +61,16 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
     // za usporedbu bez obzira na velika/mala slova.
     // ponytail: čita sve e-adrese izbora. Dovoljno za MVP (Free 50, seed 285)
     // — suzi na kandidatski skup ako Pro popisi narastu na tisuće.
+    // Bez provjere roka: windowOver bi nacrt stariji od 30 dana proglasio gotovim.
     const election = await prisma.election.findFirst({
       where: {
         id: electionId,
         organizationId,
-        status: { in: [...OPEN_STATUSES] },
+        status: { in: [...EDITABLE_STATUSES] },
       },
-      select: {
-        status: true,
-        startsAt: true,
-        endsAt: true,
-        voters: { select: { email: true } },
-      },
+      select: { voters: { select: { email: true } } },
     });
     if (!election) return { success: false, error: "invalidStatus" };
-
-    // Rok je prošao → odbij UPIS, ne samo slanje (zahtjev 3). Prije se redak
-    // ubacivao pa bi publishElection vratio blocked: birači bi ušli u nazivnik
-    // izlaznosti gotovih izbora i mogli postignuti kvorum gurnuti ispod praga —
-    // upis koji mijenja rezultat nakon što je glasanje završilo.
-    //
-    // Odbijanje ide NEUSPJEŠNIM putem, nikad kroz `blocked`: `blocked` je
-    // kvalifikator uspjeha ("dodani su, ali pozivnica nije poslana") i dijalog
-    // ga čita tek nakon res.success — ista greška koju je granica birača već
-    // zabilježila. Provjera stoji prije deduplikacije i granice: gotovi izbori
-    // se odbijaju bez obzira na sadržaj popisa.
-    if (mutationsFrozen(election)) {
-      return { success: false, error: "electionEnded" };
-    }
 
     // @@unique([email, electionId]) bi odbio cijeli createMany na duplikatu, pa
     // se filtrira unaprijed: prvo unutar unosa, zatim prema postojećem popisu.
@@ -120,18 +90,10 @@ export async function addVoters(input: unknown): Promise<AddVotersResult> {
       return { success: false, error: "voterCap", cap, current };
     }
 
+    // ponytail: status i upis bez transakcije — pokretanje između njih ostavlja PENDING bez pozivnice (resend popravlja); transakcija ako zatreba.
     await prisma.voter.createMany({
       data: fresh.map((r) => ({ electionId, ...toVoterFields(r) })),
     });
-
-    // Glasanje već traje → pozovi odmah. publishElection cilja samo PENDING,
-    // dakle točno nove retke; postojeći birači se ne diraju. Ako je rok
-    // istekao, birači SU dodani (pripadaju popisu) ali ništa ne odlazi —
-    // publishElection vraća blocked, koji ide ravno u dijalog.
-    if (election.status === "ACTIVE") {
-      const sent = await publishElection(electionId).catch(() => null);
-      return { success: true, added: fresh.length, skipped, ...(sent ?? {}) };
-    }
 
     return { success: true, added: fresh.length, skipped };
   } catch {
@@ -192,7 +154,7 @@ export async function removeVoter(voterId: string): Promise<ActionResult> {
         status: { not: "VOTED" },
         election: {
           organizationId,
-          status: { in: [...REMOVABLE_STATUSES] },
+          status: { in: [...EDITABLE_STATUSES] },
         },
       },
     });

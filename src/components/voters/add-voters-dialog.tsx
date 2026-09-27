@@ -14,7 +14,6 @@ import {
 } from "@/components/elections/wizard/wizard-shared";
 import { parseVotersCsv, voterRowSchema, type VoterRow } from "@/lib/wizard-csv";
 import { Link, useRouter } from "@/i18n/navigation";
-import type { ElectionStatus } from "@/lib/elections-view";
 import {
   canUpgrade,
   nearCap,
@@ -28,16 +27,15 @@ import { upgradeHref } from "@/lib/upgrade-context";
 //
 // Redci se skupljaju lokalno i šalju jednim pozivom — jedan round trip i jedna
 // poruka o preskočenim duplikatima umjesto po retku.
+// Samo DRAFT/SCHEDULED — pozivnice šalje pokretanje glasanja.
 export function AddVotersDialog({
   electionId,
-  electionStatus,
   open,
   onOpenChange,
   entitlement,
   voterCount,
 }: {
   electionId: string;
-  electionStatus: ElectionStatus;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   entitlement: Entitlement;
@@ -60,10 +58,6 @@ export function AddVotersDialog({
     cap: number;
     current: number;
   } | null>(null);
-
-  // Glasanje traje → dodavanje je neopozivo (brisanje je dopušteno samo prije
-  // otvaranja), a novi birač odmah dobiva ispravnu poveznicu.
-  const isActive = electionStatus === "ACTIVE";
 
   const has = (em: string) =>
     rows.some((r) => r.email.toLowerCase() === em.toLowerCase());
@@ -113,9 +107,6 @@ export function AddVotersDialog({
     startTransition(async () => {
       const res = await addVoters({ electionId, rows });
       if (!res.success) {
-        // Granica je odbijanje, ne kvalifikator uspjeha: `blocked` čita se tek
-        // ispod ove grane i znači "dodani su, ali pozivnica nije poslana".
-        // Kroz njega bi odbijanje tiho završilo u generičkoj poruci o grešci.
         if (res.error === "voterCap") {
           setCapError({
             cap: res.cap ?? cap,
@@ -123,13 +114,7 @@ export function AddVotersDialog({
           });
           return;
         }
-        // Rezerva: gumb je skriven na gotovim izborima, ali stranica može biti
-        // stara — a radnja je granica, ne UI. `closed` govori o statusu; ovo o
-        // roku, pa ima vlastitu poruku.
-        if (res.error === "electionEnded") {
-          toast.error(t("electionEnded"));
-          return;
-        }
+        // Rezerva za stranicu otvorenu preko pokretanja glasanja.
         toast.error(t(res.error === "invalidStatus" ? "closed" : "failed"));
         return;
       }
@@ -137,11 +122,6 @@ export function AddVotersDialog({
       // `skipped` može biti veći od onoga što je klijent vidio.
       const added = res.added ?? 0;
       if (added === 0) toast(t("allDuplicates"));
-      // Birači su dodani, ali rok je prošao — poveznica nije poslana i ne može
-      // biti. Prije grane s greškom slanja: ovo nije neuspjeh, nego odbijanje.
-      else if (res.blocked) toast(t("addedWindowOver", { count: added }));
-      else if (res.failed) toast.success(t("addedPartial", { count: added, failed: res.failed }));
-      else if (res.sent) toast.success(t("addedInvited", { count: added }));
       else toast.success(t("added", { count: added }));
 
       reset();
@@ -351,21 +331,6 @@ export function AddVotersDialog({
                 )}
               </p>
             )}
-
-            {/* Dodavanje u izbore koji traju mijenja nazivnik izlaznosti i ne
-                može se poništiti — zato upozorenje ide PRIJE unosa. */}
-            {isActive && rows.length > 0 && (
-              <div className="mt-5 flex gap-3 rounded-md border-l-[3px] border-warning-500 bg-warning-50 px-4 py-3.5">
-                <TriangleAlert
-                  className="mt-0.5 size-5 shrink-0 text-warning-700"
-                  aria-hidden
-                />
-                <div className="text-[0.84375rem] leading-relaxed text-warning-700">
-                  <p className="font-semibold">{t("activeWarnTitle")}</p>
-                  <p className="mt-0.5">{t("activeWarnBody")}</p>
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="flex justify-end gap-3 border-t border-border px-6 py-4">
@@ -378,9 +343,7 @@ export function AddVotersDialog({
               disabled={rows.length === 0 || pending}
               className="inline-flex h-11 items-center rounded-md bg-primary px-5.5 text-[0.9375rem] font-semibold text-primary-foreground transition-colors hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {isActive
-                ? t("submitInvite", { count: rows.length })
-                : t("submit", { count: rows.length })}
+              {t("submit", { count: rows.length })}
             </button>
           </div>
         </Dialog.Popup>
