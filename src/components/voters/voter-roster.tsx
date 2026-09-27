@@ -28,7 +28,11 @@ import { AddVotersDialog } from "@/components/voters/add-voters-dialog";
 import { Pagination } from "@/components/ui/pagination";
 import { Link, useRouter } from "@/i18n/navigation";
 import type { RosterVoter, VoterRoster as Roster } from "@/lib/db/voters";
-import { formatCount, type ElectionStatus } from "@/lib/elections-view";
+import {
+  formatCount,
+  isEditable,
+  type ElectionStatus,
+} from "@/lib/elections-view";
 import {
   canUpgrade,
   nearCap,
@@ -118,12 +122,10 @@ export function VoterRoster({
   const { counts, voters, page, pageCount, matched, deliveryFailed } = roster;
   const filtering = Boolean(query.q || query.status);
   // Ista pravila kao akcije na poslužitelju — gumb koji uvijek pada nije ponuda.
-  // `frozen` zamjenjuje raniju provjeru statusa: pokriva i CLOSED/ARCHIVED i
-  // ACTIVE izbore kojima je rok prošao, gdje su akcije jednako odbijene.
-  const canAdd = !frozen;
+  // Popis se zatvara pokretanjem glasanja — isto pravilo kao addVoters/removeVoter.
+  const canAdd = isEditable(electionStatus);
   const canEdit = !frozen;
-  const canRemove =
-    electionStatus === "DRAFT" || electionStatus === "SCHEDULED";
+  const canRemove = isEditable(electionStatus);
   const canResend = electionStatus === "ACTIVE" && !frozen;
   // Izbornik koji se otvori u prazno nije ponuda: na gotovim izborima otpadaju
   // sve tri stavke, pa otpada i gumb koji ih otvara.
@@ -218,6 +220,12 @@ export function VoterRoster({
             <UserPlus className="size-4.25" aria-hidden />
             {t("add.button")}
           </button>
+        )}
+        {/* Razlog na mjestu nestalog gumba (samo ACTIVE). */}
+        {electionStatus === "ACTIVE" && (
+          <span className="ml-auto text-[0.8125rem] text-neutral-600">
+            {t("listClosed")}
+          </span>
         )}
       </div>
 
@@ -459,7 +467,6 @@ export function VoterRoster({
 
       <AddVotersDialog
         electionId={electionId}
-        electionStatus={electionStatus}
         open={addOpen}
         onOpenChange={setAddOpen}
         entitlement={entitlement}

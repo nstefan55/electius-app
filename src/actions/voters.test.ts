@@ -74,16 +74,15 @@ describe("addVoters", () => {
     expect(prisma.election.findFirst).not.toHaveBeenCalled();
   });
 
-  it("scopes the lookup to the org AND to a still-open election", async () => {
+  it("scopes the lookup to the org AND to an election that has not started", async () => {
     mockElection(null);
     const result = await addVoters({ electionId: "e1", rows });
 
     expect(result).toEqual({ success: false, error: "invalidStatus" });
     const where = vi.mocked(prisma.election.findFirst).mock.calls[0]![0]!.where;
     expect(where).toMatchObject({ id: "e1", organizationId: "org_1" });
-    expect(where?.status).toEqual({
-      in: ["DRAFT", "SCHEDULED", "ACTIVE"],
-    });
+    // Popis se zatvara pokretanjem glasanja (2026-09-27): ACTIVE nije u skupu.
+    expect(where?.status).toEqual({ in: ["DRAFT", "SCHEDULED"] });
     expect(prisma.voter.createMany).not.toHaveBeenCalled();
   });
 
@@ -161,53 +160,13 @@ describe("addVoters", () => {
     ]);
   });
 
-  it("invites immediately on an ACTIVE election (odluka 2026-07-26)", async () => {
-    mockElection({ status: "ACTIVE", voters: [] });
-    vi.mocked(publishElection).mockResolvedValue({ sent: 1, failed: 0 });
-
-    const result = await addVoters({ electionId: "e1", rows });
-
-    expect(publishElection).toHaveBeenCalledWith("e1");
-    expect(result).toEqual({ success: true, added: 1, skipped: 0, sent: 1, failed: 0 });
-  });
-
-  it("still adds the voters when the window is over, but reports nothing was sent", async () => {
-    // Birači pripadaju popisu bez obzira na rok — samo poveznica ne ide.
-    mockElection({ status: "ACTIVE", voters: [] });
-    vi.mocked(publishElection).mockResolvedValue({
-      sent: 0,
-      failed: 0,
-      blocked: "windowOver",
-    });
-
-    expect(await addVoters({ electionId: "e1", rows })).toEqual({
-      success: true,
-      added: 1,
-      skipped: 0,
-      sent: 0,
-      failed: 0,
-      blocked: "windowOver",
-    });
-  });
-
-  it("does not send on an election that has not opened yet", async () => {
+  it("never sends — invitations go out when the election starts", async () => {
     mockElection({ status: "SCHEDULED", voters: [] });
 
     const result = await addVoters({ electionId: "e1", rows });
 
     expect(publishElection).not.toHaveBeenCalled();
     expect(result).toEqual({ success: true, added: 1, skipped: 0 });
-  });
-
-  it("still reports success when the send pipeline throws", async () => {
-    // Birači su upisani — neuspjelo slanje ih ostavlja PENDING i ponovljivima.
-    mockElection({ status: "ACTIVE", voters: [] });
-    vi.mocked(publishElection).mockRejectedValue(new Error("resend down"));
-
-    expect(await addVoters({ electionId: "e1", rows })).toMatchObject({
-      success: true,
-      added: 1,
-    });
   });
 });
 
@@ -497,58 +456,42 @@ describe("addVoters — granica plana", () => {
 
 });
 
-// G4 — zahtjev 3. Prije se redak UPISIVAO pa bi samo slanje bilo blokirano;
-// birači bi ušli u nazivnik izlaznosti gotovih izbora i mogli postignuti
-// kvorum gurnuti ispod praga.
-describe("addVoters — izbori kojima je rok prošao", () => {
+// Granica je WHERE: mock ne filtrira, pa se za ACTIVE simulira null iz baze.
+describe("addVoters — zatvoren popis", () => {
   const rows = [{ name: "Ana Horvat", email: "ana@example.com" }];
-  const ENDED = {
-    startsAt: new Date("2026-07-01T00:00:00Z"),
-    endsAt: new Date("2026-07-10T00:00:00Z"),
-  };
 
-  it("odbija upis u ACTIVE izbore kojima je prozor gotov", async () => {
-    mockElection({ status: "ACTIVE", ...ENDED, voters: [] });
+  it("odbija izbore koji su počeli i ne upisuje ništa", async () => {
+    mockElection(null);
 
     const res = await addVoters({ electionId: "e1", rows });
 
-    expect(res).toEqual({ success: false, error: "electionEnded" });
+    expect(res).toEqual({ success: false, error: "invalidStatus" });
     // Zaštita koja odbija NAKON upisa gora je od nikakve zaštite.
     expect(prisma.voter.createMany).not.toHaveBeenCalled();
     expect(publishElection).not.toHaveBeenCalled();
   });
 
-  it("odbijanje ide neuspješnim putem, nikad kroz `blocked`", async () => {
-    mockElection({ status: "ACTIVE", ...ENDED, voters: [] });
-
-    const res = await addVoters({ electionId: "e1", rows });
-
-    // `blocked` je kvalifikator uspjeha; dijalog ga čita tek nakon res.success,
-    // pa bi odbijanje kroz njega tiho ispalo u generičku poruku o grešci.
-    expect(res.success).toBe(false);
-    expect(res.blocked).toBeUndefined();
-  });
-
   it("odbija prije deduplikacije i granice — sadržaj popisa ne mijenja odgovor", async () => {
-    mockElection({
-      status: "ACTIVE",
-      ...ENDED,
-      voters: [{ email: "ana@example.com" }],
-    });
+    mockElection(null);
 
-    // Svi redci su duplikati; bez provjere prozora ovo bi vratilo uspjeh.
-    const res = await addVoters({ electionId: "e1", rows });
+    await addVoters({ electionId: "e1", rows });
 
-    expect(res).toEqual({ success: false, error: "electionEnded" });
     expect(resolveEntitlement).not.toHaveBeenCalled();
   });
 
-  it("i dalje prima birače dok je prozor otvoren", async () => {
-    mockElection({ status: "ACTIVE", voters: [] });
+  it("nacrt stariji od 30 dana s rezerviranim datumima i dalje prima birače", async () => {
+    // windowOver bi ove datume nakon 30 dana proglasio gotovima.
+    const placeholder = new Date("2026-01-01T00:00:00Z");
+    mockElection({
+      status: "DRAFT",
+      startsAt: placeholder,
+      endsAt: placeholder,
+      voters: [],
+    });
 
     const res = await addVoters({ electionId: "e1", rows });
 
-    expect(res.success).toBe(true);
+    expect(res).toEqual({ success: true, added: 1, skipped: 0 });
     expect(prisma.voter.createMany).toHaveBeenCalled();
   });
 });
