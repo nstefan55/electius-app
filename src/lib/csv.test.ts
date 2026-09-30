@@ -5,6 +5,7 @@ import {
   csvFilename,
   csvPreamble,
   csvResponse,
+  decodeCsv,
   delimiterFor,
   detectDelimiter,
   exportFilename,
@@ -214,6 +215,60 @@ describe("detectDelimiter", () => {
   it("preskače prazne retke na početku", () => {
     expect(detectDelimiter("\n\nIme;E-mail")).toBe(";");
   });
+
+  // Excel "Tekst (razdvojen tabulatorima)" preimenovan u .csv. Prije: pad na
+  // zarez, cijeli redak jedna ćelija, svaki birač odbijen.
+  it("prepoznaje TAB", () => {
+    expect(detectDelimiter("full_name\temail")).toBe("\t");
+    expect(detectDelimiter("Ime\tPrezime\tE-mail")).toBe("\t");
+  });
+
+  it("TAB u navodnicima se ne broji", () => {
+    expect(detectDelimiter('"a\tb\tc",x')).toBe(",");
+  });
+
+  it("zarez ili točkazarez u imenu ne nadglasa TAB", () => {
+    expect(detectDelimiter("Horvat, Ana\ta@b.hr")).toBe("\t");
+    expect(detectDelimiter("Horvat; Ana\ta@b.hr")).toBe("\t");
+    expect(detectDelimiter("Ime\tPrezime\tE-mail, službeni")).toBe("\t");
+  });
+
+  it("TAB u podatku zarezne datoteke ne otima razdjelnik", () => {
+    expect(detectDelimiter("a,b,c\td")).toBe(",");
+  });
+});
+
+describe("decodeCsv", () => {
+  const bytes = (...b: number[]) => new Uint8Array(b);
+  const utf8 = (s: string) => new TextEncoder().encode(s);
+
+  it("čita UTF-8 i miče BOM", () => {
+    expect(decodeCsv(utf8("Štefančić"))).toBe("Štefančić");
+    expect(decodeCsv(utf8(`${CSV_BOM}Štefančić`))).toBe("Štefančić");
+  });
+
+  it("neispravan UTF-8 čita kao windows-1250", () => {
+    // Š č ć đ ž u windows-1250 — hrvatski Excel "CSV (razdvojen zarezom)".
+    expect(decodeCsv(bytes(0x8a, 0xe8, 0xe6, 0xf0, 0x9e))).toBe("Ščćđž");
+  });
+
+  it("čita Excelov 'Unicode tekst' (UTF-16 LE s BOM-om)", () => {
+    const s = "Ime\tE-mail\r\nŠtefančić\ta@b.hr";
+    const le = [0xff, 0xfe];
+    for (const ch of s) {
+      const c = ch.charCodeAt(0);
+      le.push(c & 0xff, c >> 8);
+    }
+    expect(decodeCsv(bytes(...le))).toBe(s);
+  });
+
+  it("čita UTF-16 BE s BOM-om", () => {
+    expect(decodeCsv(bytes(0xfe, 0xff, 0x01, 0x60, 0x00, 0x61))).toBe("Ša");
+  });
+
+  it("prazna datoteka je prazan tekst", () => {
+    expect(decodeCsv(bytes())).toBe("");
+  });
 });
 
 describe("parseCsv", () => {
@@ -290,6 +345,13 @@ describe("readCsv", () => {
     expect(readCsv("Ime;E-mail\nAna;a@b.hr")).toEqual([
       ["Ime", "E-mail"],
       ["Ana", "a@b.hr"],
+    ]);
+  });
+
+  it("dijeli po TAB-u", () => {
+    expect(readCsv("full_name\temail\r\nAna Horvat\ta@b.hr\r\n")).toEqual([
+      ["full_name", "email"],
+      ["Ana Horvat", "a@b.hr"],
     ]);
   });
 
