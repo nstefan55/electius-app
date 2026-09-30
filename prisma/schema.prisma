@@ -333,7 +333,7 @@ model VoterToken {
 
 model Vote {
   id         String   @id @default(cuid())
-  voteHash   String   @unique // SHA-256(electionId + optionIds + timestamp)
+  voteHash   String   @unique // randombytes(32) SHA-256 hex — prevents timing correlation
   batchOrder Int // crypto.randomInt() — prevents timing correlation
   createdAt  DateTime @default(now())
 

@@ -1,7 +1,7 @@
 {
   "name": "electius",
   "version": "0.9.84",
-  "private": true,
+  "private": false,
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
@@ -14,8 +14,6 @@
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
-    "db:seed": "npx tsx --conditions react-server prisma/demo-user-seed.ts",
-    "db:seed:pro": "npx tsx --conditions react-server prisma/demo-user-seed.ts --pro",
     "db:cleanup-dev": "npx tsx scripts/cleanup-users.ts",
     "cron:sweep": "node scripts/cron-sweep.mjs",
     "typecheck": "tsc --noEmit"
