@@ -89,7 +89,7 @@ export function BillingCard({
       bodyClassName="flex flex-col gap-5 p-6"
     >
       {processing && (
-        <div className="flex items-start gap-3 rounded-md border-l-[3px] border-brand-500 bg-brand-50 p-4">
+        <div className="flex items-start gap-3 rounded-md bg-brand-50 p-4">
           <Spinner
             label={t("processing.title")}
             className="mt-0.5 size-4 shrink-0 border-2 border-brand-700/30 border-t-brand-700"

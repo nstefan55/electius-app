@@ -176,7 +176,7 @@ export function StepVoters({
             provodi), na ≥80% samo tiha najava — otkriti granicu tek pri
             spremanju, s 300 pripremljenih redaka, je najskuplji trenutak. */}
         {data.voters.length > cap ? (
-          <div className="mt-4 rounded-md border-l-[3px] border-error-500 bg-error-50 px-4 py-3.5 text-[0.84375rem] leading-relaxed text-error-700">
+          <div className="mt-4 rounded-md bg-error-50 px-4 py-3.5 text-[0.84375rem] leading-relaxed text-error-700">
             <p className="font-semibold">{t("capTitle")}</p>
             <p className="mt-0.5">
               {t("capBody", { cap, current: data.voters.length })}

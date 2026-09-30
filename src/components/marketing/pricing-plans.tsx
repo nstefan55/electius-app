@@ -31,7 +31,7 @@ export function PricingPlans() {
     <>
       {/* Cijene su planirane, nisu ponuda — nema pravnog subjekta ni aktivne naplate.
           Uklanja se kad BILLING_ENABLED postane true. */}
-      <div className="mx-auto mb-8 flex max-w-220 items-start gap-3 rounded-md border-l-[3px] border-brand-500 bg-brand-50 p-4">
+      <div className="mx-auto mb-8 flex max-w-220 items-start gap-3 rounded-md bg-brand-50 p-4">
         <Info aria-hidden="true" className="mt-px size-5 flex-none text-brand-700" />
         <p className="text-[0.90625rem] leading-normal text-neutral-800">
           {t("betaNotice")}

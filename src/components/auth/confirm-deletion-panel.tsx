@@ -85,7 +85,7 @@ export function ConfirmDeletionPanel() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-start gap-3.5 rounded-md border-l-3 border-error-500 bg-error-50 p-4">
+      <div className="flex items-start gap-3.5 rounded-md bg-error-50 p-4">
         <TriangleAlert className="mt-0.5 size-5 shrink-0 text-error-700" />
         <div>
           <p className="text-sm font-semibold text-error-700">{t("warnTitle")}</p>

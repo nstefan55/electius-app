@@ -1,4 +1,4 @@
-# Electius - Your Organization Voting Companion
+# Electius - Secure Voting for Organizations
 
 **Electius** is a web platform for secure electronic voting, built for organizations — universities, unions, companies, and associations. It covers the entire election lifecycle in one place: from preparation and invitations, through voting and results, to long-term archiving — with guarantees of **anonymity**, **integrity**, and **audit documentation**, and no IT knowledge required.
 

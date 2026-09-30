@@ -83,3 +83,4 @@ export const termsUrl = () => `${APEX}/terms`;
 // rješava, a odvela bi čitatelja na drugi origin.
 export const voterNoticeUrl = (locale: string) =>
   `${APEX}/${locale}/privacy/voters`;
+

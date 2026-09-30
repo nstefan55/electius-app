@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale } from "next-intl/server";
@@ -61,6 +62,10 @@ export const requireSession = cache(async (): Promise<Session> => {
     // owns profile + org creation and unblocks the account.
     redirect(`/${await resolveLocale()}/setup`);
   }
+
+  // D9: jedina oznaka koju Sentryju dajemo o tome TKO je pogođen. Id
+  // organizacije, nikad e-pošta ni ime — ruta dolazi sama, iz transakcije.
+  Sentry.setTag("organizationId", admin.organizationId);
 
   return {
     user: {

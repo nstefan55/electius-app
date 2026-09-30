@@ -191,7 +191,7 @@ export async function ElectionReport({
       {/* Traka privremenog izvještaja (dizajn: §7.10 upozorenje). Stoji iznad
           rezultata jer mijenja značenje svega ispod. */}
       {preliminary && (
-        <div className="mt-6 rounded-md border-l-[3px] border-warning-500 bg-warning-50 px-5 py-4 break-inside-avoid">
+        <div className="mt-6 rounded-md bg-warning-50 px-5 py-4 break-inside-avoid">
           <div className="font-heading text-[0.9375rem] font-bold text-warning-700">
             {t("preliminaryTitle")}
           </div>
@@ -371,7 +371,7 @@ function WinnerBlock({
 }) {
   if (outcome.kind === "none") {
     return (
-      <div className="mt-4 rounded-[10px] border border-border border-l-4 border-l-neutral-400 bg-neutral-50 px-6 py-5 break-inside-avoid">
+      <div className="mt-4 rounded-[10px] border border-border bg-neutral-50 px-6 py-5 break-inside-avoid">
         <div className="font-heading text-[1.0625rem] font-bold text-neutral-800">
           {labels.none}
         </div>
@@ -384,7 +384,7 @@ function WinnerBlock({
   const lead = outcome.candidates[0];
 
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-6 rounded-[10px] border border-[#DDE6F2] border-l-4 border-l-brand-900 bg-[#F3F6FB] px-6 py-5 break-inside-avoid">
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-6 rounded-[10px] border border-[#DDE6F2] bg-[#F3F6FB] px-6 py-5 break-inside-avoid">
       <div className="flex min-w-0 items-center gap-4">
         {!tie && (
           <span className="flex size-13 shrink-0 items-center justify-center rounded-full bg-brand-900 font-heading text-lg font-bold text-white">
