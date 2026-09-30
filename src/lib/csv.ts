@@ -89,18 +89,45 @@ export function stripBom(text: string): string {
   return text.startsWith(CSV_BOM) ? text.slice(1) : text;
 }
 
-// Bez `sep=` retka: broji razdjelnike izvan navodnika u prvom retku sa sadržajem.
+// Excel na Windowsu ne sprema u UTF-8: "CSV" i "Tekst (razdvojen
+// tabulatorima)" idu u kodnoj stranici sustava, "Unicode tekst" u UTF-16.
+// FileReader.readAsText sve čita kao UTF-8, pa Š postane �. BOM govori sam;
+// bez njega strogi UTF-8, a što njemu ne prođe čita se kao windows-1250 —
+// srednjoeuropska stranica s č, ć, đ, š, ž na mjestima gdje ih ostavlja
+// hrvatski Excel (i Š/Ž/š/ž na istim mjestima kao zapadni windows-1252).
+export function decodeCsv(bytes: Uint8Array): string {
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) {
+    return new TextDecoder("utf-16le").decode(bytes);
+  }
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) {
+    return new TextDecoder("utf-16be").decode(bytes);
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder("windows-1250").decode(bytes);
+  }
+}
+
+// Bez `sep=` retka: broji razdjelnike izvan navodnika u prvom retku sa
+// sadržajem. TAB je Excelov "Tekst (razdvojen tabulatorima)" i "Unicode
+// tekst" — oba završe preimenovana u .csv.
 export function detectDelimiter(text: string): string {
   const line = text.split(/\r?\n/).find((l) => l.trim()) ?? "";
   let quoted = false;
   let comma = 0;
   let semi = 0;
+  let tab = 0;
   for (const ch of line) {
     if (ch === '"') quoted = !quoted;
     else if (quoted) continue;
     else if (ch === ",") comma++;
     else if (ch === ";") semi++;
+    else if (ch === "\t") tab++;
   }
+  // TAB dobiva neriješeno: iz ćelije tablice gotovo nikad ne dođe, a zarez u
+  // imenu ("Horvat, Ana") dolazi stalno.
+  if (tab > 0 && tab >= Math.max(comma, semi)) return "\t";
   return semi > comma ? ";" : ",";
 }
 

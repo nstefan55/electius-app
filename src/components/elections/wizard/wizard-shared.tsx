@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Check, Upload } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
+import { decodeCsv } from "@/lib/csv";
 import {
   validateCsvFile,
   type CandidateRow,
@@ -251,9 +252,11 @@ export function CsvDropZone({
       toast.error(errors[err]);
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => onText(String(reader.result));
-    reader.readAsText(file);
+    // Raw bytes, not readAsText: that assumes UTF-8 and mangles an Excel
+    // windows-1250 / UTF-16 file before decodeCsv can recognise it.
+    void file
+      .arrayBuffer()
+      .then((buf) => onText(decodeCsv(new Uint8Array(buf))));
   }
 
   return (
