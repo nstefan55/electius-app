@@ -108,7 +108,7 @@ export default async function ElectionReportPage({
   return (
     <>
       {brandingUpsell && (
-        <div className="mb-5 rounded-md border-l-[3px] border-brand-500 bg-brand-50 px-4 py-3 text-[0.8125rem] leading-relaxed text-neutral-800 print:hidden">
+        <div className="mb-5 rounded-md bg-brand-50 px-4 py-3 text-[0.8125rem] leading-relaxed text-neutral-800 print:hidden">
           {tu("gates.brandedReports")}{" "}
           <Link
             href={upgradeHref("brandedReports")}

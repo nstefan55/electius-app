@@ -7,30 +7,17 @@ config({ path: `.env.${process.env.NODE_ENV ?? "development"}` });
 import { defineConfig } from "prisma/config";
 
 const directUrl = process.env["DIRECT_URL"];
-
-// Bez DIRECT_URL-a Prisma javi "The datasource.url property is required in your
-// Prisma config file", što upućuje na OVU datoteku — a url je tu, prazna je samo
-// varijabla. Poruka je koštala pravog vremena, pa je ovdje zamijenjena onom koja
-// imenuje uzrok.
-//
-// Rušimo SAMO naredbe kojima baza stvarno treba: `prisma generate` radi i bez
-// ijednog URL-a i vrti se u buildu, a CI ga zove bez ijedne tajne — bezuvjetni
-// throw srušio bi svaki job.
-//
-// Namjerno NEMA pada na DATABASE_URL: taj je poolan (PgBouncer), a migracije
-// idu nepoolanom vezom. Tiha zamjena prekršila bi tu odluku bez ijednog traga.
-// `migrate diff` radi i bez baze (--from-empty); traži je samo uz config datasource.
 const [, , command, sub] = process.argv;
 const needsDatabase =
   (command === "migrate" || command === "db" || command === "studio") &&
   (sub !== "diff" || process.argv.some((a) => a.includes("config-datasource")));
 
 if (needsDatabase && !directUrl) {
+  const invoked = [command, sub].filter(Boolean).join(" ");
   throw new Error(
-    "DIRECT_URL nije postavljen, pa migracija nema na što se spojiti. " +
-      "Postavi ga (nepoolani Neon URL) u okruženju koje pokreće naredbu — " +
-      "npr. Vercel → Settings → Environment Variables. Lokalno dolazi iz " +
-      `.env.${process.env.NODE_ENV ?? "development"}, koji nije u gitu.`,
+    `Prisma "${invoked}" traži bazu, a DIRECT_URL nije postavljen. ` +
+      "Vercel → Settings → Environment Variables. Lokalno dolazi iz " +
+      `.env.${process.env.NODE_ENV ?? "development"}.`,
   );
 }
 
@@ -38,7 +25,6 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
-    seed: "tsx --conditions react-server prisma/demo-user-seed.ts",
   },
   datasource: {
     // Migrations/CLI use the DIRECT (unpooled) Neon connection.

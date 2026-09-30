@@ -279,7 +279,7 @@ export function AddVotersDialog({
             {/* Odbijanje zbog granice — na mjestu neuspjeha, s brojkama i
                 poveznicom. Nikad golo "potrebna je nadogradnja" (§8). */}
             {capError && (
-              <div className="mt-5 flex gap-3 rounded-md border-l-[3px] border-error-500 bg-error-50 px-4 py-3.5">
+              <div className="mt-5 flex gap-3 rounded-md bg-error-50 px-4 py-3.5">
                 <TriangleAlert
                   className="mt-0.5 size-5 shrink-0 text-error-700"
                   aria-hidden
