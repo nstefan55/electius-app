@@ -48,6 +48,10 @@ letters. For a clean file, save as **CSV UTF-8** in Excel.
 
 ## Fixtures
 
+> **Removed 2026-10-05 (v0.9.86).** `fixtures/voters/` was deleted in `9463263` and the two tests
+> that read it went with it in `chore/unblock-ci-checks`. `decodeCsv` keeps its byte-level unit tests
+> in `csv.test.ts`. The section below describes the files as they were.
+
 `fixtures/voters/` holds real files that tests read as bytes, the same way the drop zone does. Both can
 be uploaded by hand through the wizard or the "add voters" dialog.
 
