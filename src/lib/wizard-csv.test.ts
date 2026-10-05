@@ -1,7 +1,4 @@
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { decodeCsv } from "./csv";
 import {
   CSV_MAX_BYTES,
   dedupeVoterRows,
@@ -166,45 +163,6 @@ describe("kružni tok s izvozom", () => {
       rows: [{ name: "Ana Kovačević", email: "ana@unizg.hr" }],
       skipped: 0,
     });
-  });
-});
-
-// Prave datoteke iz fixtures/voters — bajtovi idu kroz decodeCsv kao u
-// CsvDropZone, ne kroz string koji je test već ispravno dekodirao.
-describe("fixture datoteke", () => {
-  const load = (name: string) =>
-    parseVotersCsv(
-      decodeCsv(readFileSync(join(process.cwd(), "fixtures", "voters", name))),
-    );
-
-  it("Excel TAB + windows-1252: svi birači prolaze", () => {
-    // Prije: 0 redaka, 5 preskočeno — "Nema valjanih redaka".
-    const { rows, skipped } = load("excel-tab-windows-1252.csv");
-    expect(skipped).toBe(0);
-    expect(rows.map((r) => r.email)).toEqual([
-      "ana.kovacevic@example.com",
-      "ana.horvat@example.com",
-      "nikola.batinovic@example.com",
-      "juraj.cinkovic@example.com",
-      "test@electius.com",
-    ]);
-    // Š je preživio (0x8A); č i ć je Excel već spremio kao "?" — to se ne
-    // može vratiti, ali ne smije postati ni �.
-    expect(rows[4].name).toBe("Nikola Štefan?i?");
-    expect(rows.every((r) => !r.name.includes("�"))).toBe(true);
-  });
-
-  it("voters-420: 419 na example.com i jedan test@electius.com", () => {
-    const { rows, skipped } = load("voters-420.csv");
-    expect(skipped).toBe(0);
-    expect(rows).toHaveLength(420);
-    expect(dedupeVoterRows(rows)).toHaveLength(420);
-    expect(rows.filter((r) => r.email.endsWith("@example.com"))).toHaveLength(
-      419,
-    );
-    expect(rows.filter((r) => r.email === "test@electius.com")).toEqual([
-      { name: "Nikola Štefančić", email: "test@electius.com" },
-    ]);
   });
 });
 

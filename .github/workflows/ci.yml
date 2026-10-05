@@ -123,7 +123,12 @@ jobs:
           node-version-file: package.json
           cache: npm
       - run: npm ci
-      - run: npm audit --audit-level=high
+      # The gate covers what ships. Dev tooling (eslint, the shadcn CLI) only ever globs our own input,
+      # so its advisories are reported but do not block — GHSA-vfj7-8cjw-p6xm (braces) has no patched release.
+      - run: npm audit --omit=dev --audit-level=high
+      - name: npm audit (incl. dev tooling, non-blocking)
+        run: npm audit --audit-level=high
+        continue-on-error: true
 
   pr-hygiene:
     # PR-only: both checks need a base commit to diff against, and both turn a rule this project has
