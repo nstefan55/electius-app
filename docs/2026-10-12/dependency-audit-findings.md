@@ -15,15 +15,15 @@ The weekly scheduled CI run on `main` (2026-10-12) failed the **production** aud
 Both had a non-breaking fix (`npm audit fix`, no `--force`). The lockfile update carries them;
 `shadcn` 4.21.1 → 4.21.4 and `eslint-config-next` 16.3.8 → 16.4.0 came with it (both dev-only).
 
-## What was removed, and why
+## What was left out, and why
 
-- **`@shadcn/registry` in `dependencies`.** Nothing imports it; it is a transitive dependency of the
-  shadcn CLI. Listing it as a production dependency moved `fast-glob` → `braces` into the production
-  tree, which would have made the production gate fail on GHSA-vfj7-8cjw-p6xm.
-- **`overrides.braces: ^3.0.3`.** A no-op: 3.0.3 is the newest `braces` release and is the vulnerable
-  version. An override can only force a version that exists.
-- **The non-blocking full-audit step in `ci.yml`.** It audited dev tooling with `continue-on-error`,
-  so it never blocked a merge but drew a failed step on every run. The production gate is unchanged.
+- **No `@shadcn/registry` in `dependencies`, no `overrides.braces`.** Both were tried locally and left
+  out. `@shadcn/registry` is only a transitive dependency of the shadcn CLI, and listing it in production
+  pulls `fast-glob` → `braces` into the production tree (GHSA-vfj7-8cjw-p6xm), failing the gate. A
+  `braces` override is a no-op: 3.0.3 is the newest release and is itself the vulnerable version.
+- **The non-blocking full-audit step in `ci.yml` is removed.** It audited dev tooling with
+  `continue-on-error`, so it never blocked a merge but drew a failed step on every run. The production
+  gate is unchanged.
 
 ## Trade-off
 
