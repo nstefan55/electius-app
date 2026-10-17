@@ -1,7 +1,11 @@
 import "server-only";
 
 import { randomBytes, randomInt } from "crypto";
+import * as Sentry from "@sentry/nextjs";
+import { after } from "next/server";
+import { resolveLocale } from "@/i18n/config";
 import { prisma } from "@/lib/prisma";
+import { sendVoteConfirmationEmail } from "./email.service";
 import { hashToken, mutationsFrozen } from "./token.service";
 
 // Vote casting — stage 2 of the Security & Integrity Model (voter-flow-spec,
@@ -189,6 +193,7 @@ export async function castVote(
       electionId: true,
       voter: {
         select: {
+          email: true,
           election: {
             select: {
               status: true,
@@ -196,6 +201,9 @@ export async function castVote(
               endsAt: true,
               votingType: true,
               options: { select: { id: true } },
+              title: true,
+              organization: { select: { name: true, contactEmail: true } },
+              createdBy: { select: { locale: true } },
             },
           },
         },
@@ -260,6 +268,34 @@ export async function castVote(
       },
     });
   });
+
+  // Potvrda tek nakon upisa i nakon odgovora: birač ne čeka Resend, a kvar
+  // slanja ne dira zabilježen glas. Ništa od listića ne ide u poruku.
+  // ponytail: Resendovo vrijeme slanja poklapa se s Vote.createdAt, pa zapisi
+  // Resenda + baza otkrivaju odabir (prihvaćeno 2026-10-17). Lijek: createdAt
+  // zaokružen na dan, ili slanje skupno pri zatvaranju izbora.
+  const confirmation = {
+    id: token.electionId,
+    title: election.title,
+    organizationName: election.organization.name,
+    organizationEmail: election.organization.contactEmail,
+  };
+  after(() =>
+    sendVoteConfirmationEmail(
+      token.voter.email,
+      confirmation,
+      resolveLocale(election.createdBy.locale),
+    ).catch((error) => {
+      console.error("[vote] confirmation email failed", {
+        id: token.electionId,
+        error,
+      });
+      Sentry.captureException(error, {
+        tags: { route: "api/vote", pass: "confirmation" },
+        extra: { electionId: token.electionId },
+      });
+    }),
+  );
 
   return { voteHash };
 }

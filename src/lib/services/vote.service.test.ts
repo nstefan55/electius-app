@@ -15,7 +15,20 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// after() traje izvan zahtjeva, pa ga test samo hvata i pokreće ručno.
+const scheduled = vi.hoisted(() => [] as Array<() => Promise<unknown>>);
+vi.mock("next/server", () => ({
+  after: (cb: () => Promise<unknown>) => scheduled.push(cb),
+}));
+vi.mock("@/lib/services/email.service", () => ({
+  sendVoteConfirmationEmail: vi.fn(),
+}));
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
+
 const { prisma } = await import("@/lib/prisma");
+const { sendVoteConfirmationEmail } = await import(
+  "@/lib/services/email.service"
+);
 const { hashToken } = await import("@/lib/services/token.service");
 const { getBallotState, castVote, newVoteReceipt, VoteError } = await import(
   "@/lib/services/vote.service"
@@ -51,6 +64,8 @@ beforeEach(() => {
     (cb as unknown as (t: typeof tx) => Promise<unknown>)(tx),
   );
   tx.voterToken.updateMany.mockResolvedValue({ count: 1 });
+  scheduled.length = 0;
+  vi.mocked(sendVoteConfirmationEmail).mockReset().mockResolvedValue(undefined);
 });
 
 describe("newVoteReceipt", () => {
@@ -231,12 +246,16 @@ describe("castVote", () => {
     voterId: "v_1",
     electionId: "el_1",
     voter: {
+      email: "ana@example.com",
       election: {
         status: "ACTIVE",
         startsAt: PAST,
         endsAt: FUTURE,
         votingType: "SINGLE_CHOICE",
         options: [{ id: "o1" }, { id: "o2" }],
+        title: "Studentski zbor 2026",
+        organization: { name: "VVG", contactEmail: "izbori@vvg.hr" },
+        createdBy: { locale: "en" },
         ...election,
       },
     },
@@ -374,6 +393,47 @@ describe("castVote", () => {
     await expectCode(castVote("raw", ["o1"]), "used");
     expect(tx.vote.create).not.toHaveBeenCalled();
     expect(tx.voter.update).not.toHaveBeenCalled();
+    expect(scheduled).toHaveLength(0);
+  });
+
+  // Potvrda nosi samo "ova adresa je glasovala" — nikad odabir, kod ni token.
+  it("schedules one confirmation after the cast, carrying nothing from the ballot", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(castTokenRow());
+
+    const { voteHash } = await castVote("raw-token-secret", ["o2"]);
+    expect(sendVoteConfirmationEmail).not.toHaveBeenCalled();
+    expect(scheduled).toHaveLength(1);
+    await scheduled[0]();
+
+    expect(sendVoteConfirmationEmail).toHaveBeenCalledWith(
+      "ana@example.com",
+      {
+        id: "el_1",
+        title: "Studentski zbor 2026",
+        organizationName: "VVG",
+        organizationEmail: "izbori@vvg.hr",
+      },
+      "en",
+    );
+    const sent = JSON.stringify(vi.mocked(sendVoteConfirmationEmail).mock.calls);
+    expect(sent).not.toContain(voteHash);
+    expect(sent).not.toContain("raw-token-secret");
+    expect(sent).not.toContain("o2");
+  });
+
+  it("schedules nothing when the ballot is refused", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(castTokenRow());
+    await expectCode(castVote("raw", ["o1", "o2"]), "selection");
+    expect(scheduled).toHaveLength(0);
+  });
+
+  it("a failed confirmation send never rejects", async () => {
+    vi.mocked(prisma.voterToken.findUnique).mockResolvedValue(castTokenRow());
+    vi.mocked(sendVoteConfirmationEmail).mockRejectedValue(new Error("down"));
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    await castVote("raw", ["o1"]);
+    await expect(scheduled[0]()).resolves.toBeUndefined();
   });
 
   it("VoteError carries the code", () => {

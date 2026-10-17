@@ -7,11 +7,18 @@ import {
   formatVotingDateTime,
   quorumRequiredVoters,
 } from "@/lib/elections-view";
-import { electionOverviewUrl, voteUrl, voterNoticeUrl } from "@/lib/urls";
+import {
+  electionOverviewUrl,
+  newElectionUrl,
+  verifyUrl,
+  voteUrl,
+  voterNoticeUrl,
+} from "@/lib/urls";
 import { hashToken } from "./token.service";
 
 // Email transport (project-overview §Service Layer): verification OTP, password
-// reset, account deletion, voter invitations and reminders.
+// reset, account deletion, admin welcome, voter invitations, reminders and vote
+// confirmations.
 //
 // Tekst više NIJE ovdje (faza 2). Svih pet poruka živi kao objavljen predložak u
 // Resendu, a kod šalje samo alias i varijable — ispravak teksta je uređivanje u
@@ -41,7 +48,9 @@ export type EmailType =
   | "password-changed"
   | "invite"
   | "reminder"
-  | "turnout";
+  | "turnout"
+  | "welcome"
+  | "vote-confirmation";
 
 // Alias predloška u Resendu. Stabilan je i čitljiv, pa u kodu stoji on, a ne id.
 // Jezik je DIO aliasa: predložak nosi tekst, pa je odabir jezika odabir
@@ -59,6 +68,8 @@ const TEMPLATE: Record<EmailType, string> = {
   invite: "voter-invite",
   reminder: "voter-reminder",
   turnout: "admin-turnout",
+  welcome: "welcome",
+  "vote-confirmation": "vote-confirmation",
 };
 
 function templateId(type: EmailType, locale: Locale): string {
@@ -295,6 +306,42 @@ export async function sendPasswordChangedEmail(to: string, locale: Locale) {
   );
 }
 
+// ───────── Dobrodošlica novom administratoru ─────────
+
+export interface WelcomeAdmin {
+  userId: string;
+  firstName: string;
+  organizationName: string;
+}
+
+// Šalje se jednom, kad /setup stvori organizaciju — tek tada administrator
+// postoji (ime, organizacija, potvrđena adresa), i to za e-mail i za Google put.
+// Ime i naziv su pod kontrolom korisnika, pa idu u paru kao kod pozivnice.
+// Ključ po korisniku guta dvostruko slanje obrasca; slanje je najbolji-napor
+// i pozivatelj hvata pogrešku.
+export async function sendWelcomeEmail(
+  to: string,
+  admin: WelcomeAdmin,
+  locale: Locale,
+) {
+  await send(
+    {
+      to,
+      template: {
+        id: templateId("welcome", locale),
+        variables: {
+          NAME: admin.firstName,
+          NAME_HTML: escapeHtml(admin.firstName),
+          ORG: admin.organizationName,
+          ORG_HTML: escapeHtml(admin.organizationName),
+          URL: newElectionUrl(locale),
+        },
+      },
+    },
+    { type: "welcome", idempotencyKey: `welcome:${admin.userId}` },
+  );
+}
+
 // ───────── Voter invitations (election-publication-spec §3) ─────────
 
 // One entry per voter; rawToken becomes the magic-link URL and is never
@@ -335,23 +382,7 @@ async function sendBallotLinkEmails(
   extra: Record<string, string> = {},
 ): Promise<RejectedIndices> {
   const id = templateId(kind, locale);
-  const shared = {
-    TITLE: election.title,
-    TITLE_HTML: escapeHtml(election.title),
-    ORG: election.organizationName,
-    ORG_HTML: escapeHtml(election.organizationName),
-    // Par kao i gore, i to nije opreznost bez pokrića: adresa se u HTML-u
-    // pojavljuje i kao href="mailto:…", dakle u kontekstu atributa, gdje
-    // navodnik zatvara atribut. Zod je provjerava kao e-mail, ali provjera
-    // oblika nije izlazno bježanje.
-    ORG_EMAIL: election.organizationEmail,
-    ORG_EMAIL_HTML: escapeHtml(election.organizationEmail),
-    // Obavijest o obradi podataka (čl. 14.). Mora biti u PRVOJ poruci koju
-    // birač primi — čl. 14. st. 3. t. (b) veže rok upravo na nju — a to je
-    // ova. Adresa nosi jezik, jer ga nosi i predložak koji je ispisuje.
-    NOTICE_URL: voterNoticeUrl(locale),
-    ...extra,
-  };
+  const shared = { ...electionVariables(election, locale), ...extra };
 
   return sendBatch(
     recipients.map((r) => ({
@@ -366,6 +397,27 @@ async function sendBallotLinkEmails(
   );
 }
 
+// Varijable izbora koje dijele sve poruke biraču. Jedno mjesto, da parovi
+// sirovo/escapano ne mogu otići svaki na svoju stranu.
+function electionVariables(election: InvitationElection, locale: Locale) {
+  return {
+    TITLE: election.title,
+    TITLE_HTML: escapeHtml(election.title),
+    ORG: election.organizationName,
+    ORG_HTML: escapeHtml(election.organizationName),
+    // Par kao i gore, i to nije opreznost bez pokrića: adresa se u HTML-u
+    // pojavljuje i kao href="mailto:…", dakle u kontekstu atributa, gdje
+    // navodnik zatvara atribut. Zod je provjerava kao e-mail, ali provjera
+    // oblika nije izlazno bježanje.
+    ORG_EMAIL: election.organizationEmail,
+    ORG_EMAIL_HTML: escapeHtml(election.organizationEmail),
+    // Obavijest o obradi podataka (čl. 14.). Mora biti u PRVOJ poruci koju
+    // birač primi — čl. 14. st. 3. t. (b) veže rok upravo na nju — a to je
+    // ova. Adresa nosi jezik, jer ga nosi i predložak koji je ispisuje.
+    NOTICE_URL: voterNoticeUrl(locale),
+  };
+}
+
 export async function sendInvitationEmails(
   recipients: InvitationRecipient[],
   election: InvitationElection,
@@ -374,6 +426,31 @@ export async function sendInvitationEmails(
   if (recipients.length === 0) return [];
 
   return sendBallotLinkEmails("invite", election, recipients, locale);
+}
+
+// ───────── Potvrda glasovanja ─────────
+
+// Namjerno bez odabira, koda potvrde i ikakve poveznice s tokenom: Resend smije
+// znati samo da je ova adresa glasovala. Bez ključa idempotentnosti — token
+// uspije samo jednom, pa ponovljenog slanja nema.
+export async function sendVoteConfirmationEmail(
+  to: string,
+  election: InvitationElection,
+  locale: Locale,
+) {
+  await send(
+    {
+      to,
+      template: {
+        id: templateId("vote-confirmation", locale),
+        variables: {
+          ...electionVariables(election, locale),
+          VERIFY_URL: verifyUrl(locale, election.id),
+        },
+      },
+    },
+    { type: "vote-confirmation", electionId: election.id },
+  );
 }
 
 // ───────── Podsjetnici (pro-features §2) ─────────
