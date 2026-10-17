@@ -14,8 +14,10 @@ vi.mock("@/lib/prisma", () => ({
     $transaction: vi.fn(async (ops: unknown[]) => ops),
   },
 }));
+vi.mock("@/lib/services/email.service", () => ({ sendWelcomeEmail: vi.fn() }));
 
 const { prisma } = await import("@/lib/prisma");
+const { sendWelcomeEmail } = await import("@/lib/services/email.service");
 const { auth } = await import("@/lib/auth");
 const { completeSetup } = await import("@/actions/setup");
 const { TERMS_VERSION } = await import("@/lib/legal");
@@ -34,6 +36,7 @@ beforeEach(() => {
   vi.mocked(prisma.user.findUnique).mockReset();
   vi.mocked(prisma.user.update).mockReset();
   vi.mocked(prisma.organization.update).mockReset();
+  vi.mocked(sendWelcomeEmail).mockReset();
 });
 
 describe("completeSetup — pristanak na uvjete", () => {
@@ -196,5 +199,59 @@ describe("completeSetup — pristanak zapisan na registraciji (v0.9.69)", () => 
     };
     expect(userCall.data.termsAcceptedAt).toBeInstanceOf(Date);
     expect(userCall.data.termsVersion).toBe(TERMS_VERSION);
+  });
+});
+
+describe("completeSetup — poruka dobrodošlice", () => {
+  const firstSetup = {
+    organizationId: null,
+    termsAcceptedAt: null,
+    termsVersion: null,
+    locale: "en",
+    organization: null,
+  };
+
+  it("šalje se jednom, kad nastane organizacija, na jeziku korisnika", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(firstSetup as never);
+
+    expect(await completeSetup({ ...input, terms: true })).toEqual({
+      success: true,
+    });
+    expect(sendWelcomeEmail).toHaveBeenCalledTimes(1);
+    expect(sendWelcomeEmail).toHaveBeenCalledWith(
+      "ana@example.com",
+      { userId: "u1", firstName: "Ana", organizationName: "Sveučilište u Zagrebu" },
+      "en",
+    );
+  });
+
+  it("povratak na /setup (uređivanje profila) ne šalje ništa", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({
+      organizationId: "org1",
+      locale: "hr",
+      organization: { termsAcceptedAt: new Date("2026-01-01") },
+    } as never);
+
+    expect(await completeSetup(input)).toEqual({ success: true });
+    expect(sendWelcomeEmail).not.toHaveBeenCalled();
+  });
+
+  it("kvar slanja ne ruši postavljanje — organizacija već postoji", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(firstSetup as never);
+    vi.mocked(sendWelcomeEmail).mockRejectedValue(new Error("resend down"));
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    expect(await completeSetup({ ...input, terms: true })).toEqual({
+      success: true,
+    });
+    expect(log).toHaveBeenCalled();
+    log.mockRestore();
+  });
+
+  it("odbijeni pristanak ne šalje dobrodošlicu", async () => {
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(firstSetup as never);
+
+    expect(await completeSetup(input)).toEqual({ success: false, error: "terms" });
+    expect(sendWelcomeEmail).not.toHaveBeenCalled();
   });
 });

@@ -23,6 +23,8 @@ const {
   sendReminderEmails,
   sendResetPasswordEmail,
   sendTurnoutEmails,
+  sendVoteConfirmationEmail,
+  sendWelcomeEmail,
 } = await import("@/lib/services/email.service");
 
 const election = {
@@ -417,6 +419,65 @@ describe("sendPasswordChangedEmail", () => {
     await sendPasswordChangedEmail("a@example.com", "hr");
     const tags = (emailSend.mock.calls[0][0] as { tags: { name: string; value: string }[] }).tags;
     expect(tags).toEqual([{ name: "type", value: "password-changed" }]);
+  });
+});
+
+describe("sendWelcomeEmail", () => {
+  const admin = {
+    userId: "u_1",
+    firstName: "Ana",
+    organizationName: `O'Brien & <b>Co</b>`,
+  };
+
+  it("selects the locale template and links to that locale's wizard", async () => {
+    await sendWelcomeEmail("a@example.com", admin, "en");
+    const tpl = templateOf(emailSend.mock.calls[0][0]);
+    expect(tpl.id).toBe("electius-welcome-en");
+    // Bez prefiksa bi 307 na /hr engleskom administratoru dao hrvatsko sučelje.
+    expect(String(tpl.variables.URL)).toMatch(/\/en\/elections\/new$/);
+  });
+
+  it("passes admin-controlled values as a raw/escaped pair", async () => {
+    await sendWelcomeEmail("a@example.com", admin, "hr");
+    const vars = templateOf(emailSend.mock.calls[0][0]).variables;
+    expect(vars.ORG).toBe(`O'Brien & <b>Co</b>`);
+    expect(vars.ORG_HTML).toBe("O&#39;Brien &amp; &lt;b&gt;Co&lt;/b&gt;");
+    expect(vars.NAME).toBe("Ana");
+  });
+
+  it("dedupes a double /setup submit with a per-user key and tags the type", async () => {
+    await sendWelcomeEmail("a@example.com", admin, "hr");
+    expect(keyOf(emailSend.mock.calls[0])).toBe("welcome:u_1");
+    expect(emailSend.mock.calls[0][0].tags).toEqual([{ name: "type", value: "welcome" }]);
+  });
+});
+
+describe("sendVoteConfirmationEmail", () => {
+  it("sends only election facts and the public verify page — no link that works as a key", async () => {
+    await sendVoteConfirmationEmail("ana@example.com", election, "en");
+    const tpl = templateOf(emailSend.mock.calls[0][0]);
+    expect(tpl.id).toBe("electius-vote-confirmation-en");
+    // Popis je zatvoren: novi ključ (odabir, kod, URL s tokenom) mora pasti ovdje.
+    expect(Object.keys(tpl.variables).sort()).toEqual([
+      "NOTICE_URL",
+      "ORG",
+      "ORG_EMAIL",
+      "ORG_EMAIL_HTML",
+      "ORG_HTML",
+      "TITLE",
+      "TITLE_HTML",
+      "VERIFY_URL",
+    ]);
+    expect(String(tpl.variables.VERIFY_URL)).toMatch(/\/en\/verify\/el_1$/);
+  });
+
+  it("tags type + election and carries no idempotency key", async () => {
+    await sendVoteConfirmationEmail("ana@example.com", election, "hr");
+    expect(emailSend.mock.calls[0][0].tags).toEqual([
+      { name: "type", value: "vote-confirmation" },
+      { name: "electionId", value: "el_1" },
+    ]);
+    expect(keyOf(emailSend.mock.calls[0])).toBeUndefined();
   });
 });
 

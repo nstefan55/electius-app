@@ -6,6 +6,8 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OrganizationType } from "@/generated/prisma/client";
 import { TERMS_VERSION } from "@/lib/legal";
+import { resolveLocale } from "@/i18n/config";
+import { sendWelcomeEmail } from "@/lib/services/email.service";
 
 // Profile + organization setup (setup-page-spec). Creates the admin's org and
 // completes their name — the step that unblocks fresh accounts, since
@@ -42,6 +44,7 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
         organizationId: true,
         termsAcceptedAt: true,
         termsVersion: true,
+        locale: true,
         organization: { select: { termsAcceptedAt: true } },
       },
     });
@@ -118,6 +121,19 @@ export async function completeSetup(input: unknown): Promise<ActionResult> {
           },
         },
       });
+
+      // Dobrodošlica samo ovdje: povratak na /setup je uređivanje profila.
+      // Najbolji-napor — organizacija već postoji, pa kvar slanja ne smije
+      // vratiti "failed".
+      try {
+        await sendWelcomeEmail(
+          session.user.email,
+          { userId: session.user.id, firstName, organizationName },
+          resolveLocale(admin.locale),
+        );
+      } catch (e) {
+        console.error("[setup] welcome email failed", e);
+      }
     }
     return { success: true };
   } catch {

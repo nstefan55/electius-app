@@ -41,6 +41,12 @@ export const publicResultsUrl = (id: string) => `${APEX}/results/${id}`;
 // vodi. Neprefiksano, kao i ostale ovdje: ciljni host 307-a na zadani jezik.
 export const electionOverviewUrl = (id: string) => `${APP}/elections/${id}`;
 
+// Gumb poruke dobrodošlice. S prefiksom jezika iz istog razloga kao
+// voterNoticeUrl: predložak je jezik već odabrao, a neprefiksirana adresa 307-a
+// na hr, pa bi engleski administrator dobio hrvatsko sučelje.
+export const newElectionUrl = (locale: string) =>
+  `${APP}/${locale}/elections/new`;
+
 // Odredište poveznice za brisanje računa. NAMJERNO naša stranica, a ne
 // BetterAuthova /api/auth/delete-user/callback ruta: taj je poziv GET koji traži
 // sesiju, pa svaki neuspjeh (otvoreno na mobitelu, istekla sesija, iskorištena
@@ -83,4 +89,9 @@ export const termsUrl = () => `${APEX}/terms`;
 // rješava, a odvela bi čitatelja na drugi origin.
 export const voterNoticeUrl = (locale: string) =>
   `${APEX}/${locale}/privacy/voters`;
+
+// Stranica za provjeru koda, iz potvrde o glasovanju. Prefiks jezika iz istog
+// razloga kao gore; nosi samo id izbora — kod birač upisuje sam.
+export const verifyUrl = (locale: string, electionId: string) =>
+  `${APEX}/${locale}/verify/${electionId}`;
 

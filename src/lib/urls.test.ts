@@ -62,6 +62,11 @@ describe("urls", () => {
     expect(voterNoticeUrl("hr")).toBe("https://electius.com/hr/privacy/voters");
     expect(voterNoticeUrl("hr")).not.toContain("dashboard.");
   });
+  it("points the confirmation email's verify link at the apex, with a locale", async () => {
+    const { verifyUrl } = await import("@/lib/urls");
+    expect(verifyUrl("en", "el_1")).toBe("https://electius.com/en/verify/el_1");
+    expect(verifyUrl("hr", "el_1")).not.toContain("dashboard.");
+  });
 
   it("points the delete-account link at our page, not the BetterAuth API route", async () => {
     const { confirmDeletionUrl } = await import("@/lib/urls");
