@@ -45,8 +45,9 @@ thesis-dashboard.html
 demo-user-seed.ts
 
 
-# .claude — ONLY the three agents the CI reviewers invoke are tracked (D1,
-# context/features/ci-cd-pr-pipeline.md). Everything else stays local: agent-memory/ is
+# .claude — ONLY the agents a CI workflow invokes are tracked: the three reviewers (D1,
+# context/features/ci-cd-pr-pipeline.md) and the fw-* loop agents the agentic workflows run
+# (docs/2026-10-20/agentic-ci-pipeline.md). Everything else stays local: agent-memory/ is
 # unattended-run output no human has read, settings.local.json is machine-specific, skills/
 # read context/ files that are not in the repo, and coder/code-scanner are invoked by no
 # workflow. The never-stage-.claude habit is now a rule: `git add .claude` cannot sweep them in.
@@ -56,6 +57,7 @@ demo-user-seed.ts
 !.claude/agents/pr-reviewer.md
 !.claude/agents/auth-auditor.md
 !.claude/agents/ui-reviewer.md
+!.claude/agents/fw-*.md
 CLAUDE.md
 AGENTS.md
 !context/*
@@ -70,6 +72,8 @@ INSTRUCTIONS.md
 workflow-spec.md
 # /feature-workflow job state (local runtime files; context/ itself is not ignored here).
 context/jobs/
+# Agentic CI job folders on the runner (uploaded as artifacts, never committed).
+.agentic/
 logs
 audit-results
 
