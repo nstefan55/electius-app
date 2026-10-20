@@ -66,6 +66,8 @@ AGENTS.md
 # `!context/*` iznad ponovno uključuje sve pod context/, pa ovo mora biti izričito.
 context/database/production-demo-seed.ts
 INSTRUCTIONS.md
+# Local workflow spec: describes skills and context/ files that are not in the repo either.
+workflow-spec.md
 logs
 audit-results
 
