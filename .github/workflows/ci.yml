@@ -123,8 +123,8 @@ jobs:
           node-version-file: package.json
           cache: npm
       - run: npm ci
-      # The gate covers what ships. Dev tooling (eslint, the shadcn CLI) only ever globs our own input, so it is
-      # not audited here — GHSA-vfj7-8cjw-p6xm (braces) has no patched release. Run a full `npm audit` locally.
+      # The gate covers what ships. Dev tooling (eslint) only ever globs our own input, so it is not audited
+      # here. Run a full `npm audit` locally.
       - run: npm audit --omit=dev --audit-level=high
 
   pr-hygiene:
