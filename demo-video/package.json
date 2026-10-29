@@ -1,0 +1,29 @@
+{
+  "name": "electius-demo-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Remotion demo video: University of Zagreb administrator creates a Studentski zbor election in Electius (hr).",
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render ElectiusDemo out/electius-demo-studentski-zbor.mp4",
+    "still": "remotion still ElectiusDemo out/still.png --frame=300",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.539",
+    "@remotion/fonts": "4.0.539",
+    "@remotion/transitions": "4.0.539",
+    "lucide-react": "1.64.0",
+    "qrcode.react": "4.2.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.539"
+  },
+  "devDependencies": {
+    "@fontsource/noto-sans": "5.3.0",
+    "@fontsource/poppins": "5.3.0",
+    "@fontsource/roboto-mono": "5.3.0",
+    "@types/react": "19.2.0",
+    "typescript": "5.9.3"
+  }
+}

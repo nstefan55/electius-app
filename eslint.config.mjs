@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Design prototypes + specs — not project source.
     "context/**",
+    // Remotion demo video — standalone project with its own package.json.
+    "demo-video/**",
   ]),
 ]);
 
