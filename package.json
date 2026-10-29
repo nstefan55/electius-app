@@ -1,6 +1,6 @@
 {
   "name": "electius",
-  "version": "0.9.88",
+  "version": "0.9.89",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -57,14 +57,13 @@
     "@types/node": "^26.4.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
-    "@vitest/coverage-v8": "^4.1.11",
+    "@vitest/coverage-v8": "^4.1.12",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.4.0",
-    "shadcn": "^4.21.4",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.12"
   },
   "engines": {
     "node": "24.x"
